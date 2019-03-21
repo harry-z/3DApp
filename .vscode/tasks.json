@@ -1,0 +1,47 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "VS2015 Debug",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Debug" ],
+            "command": "${workspaceFolder}/BuildVS2015.bat",
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2015 Release",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Release" ],
+            "command": "${workspaceFolder}/BuildVS2015.bat",
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2015 RelWithDebInfo",
+            "group": "build",
+            "type": "shell",
+            "args": [ "RelWithDebInfo" ],
+            "command": "${workspaceFolder}/BuildVS2015.bat",
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2015 MinSizeRel",
+            "group": "build",
+            "type": "shell",
+            "args": [ "MinSizeRel" ],
+            "command": "${workspaceFolder}/BuildVS2015.bat",
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        }
+    ]
+}

@@ -2,13 +2,13 @@
 
 #include "PreHeader.h"
 
-#include "Array.h"
+// #include "Array.h"
 // #include "Buffer.h"
 // #include "File.h"
-// #include "Global.h"
+#include "Global.h"
 // #include "Hashmap.h"
 // #include "IdPool.h"
-// #include "LinkList.h"
+#include "LinkList.h"
 // #include "Log.h"
 #include "Matrix.h"
 // #include "Memory.h"

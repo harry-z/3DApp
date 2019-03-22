@@ -13,6 +13,7 @@ if (WIN32)
     add_definitions("-DPLATFORM_WIN")
 endif ()
 
+add_subdirectory(lib)
 add_subdirectory(src)
 
 # add_executable(${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp)

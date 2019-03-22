@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "VS2015 Debug",
+            "label": "VS2015 Win64 Debug",
             "group": "build",
             "type": "shell",
             "args": [ "Debug" ],
@@ -14,7 +14,7 @@
             ]
         },
         {
-            "label": "VS2015 Release",
+            "label": "VS2015 Win64 Release",
             "group": "build",
             "type": "shell",
             "args": [ "Release" ],
@@ -24,7 +24,7 @@
             ]
         },
         {
-            "label": "VS2015 RelWithDebInfo",
+            "label": "VS2015 Win64 RelWithDebInfo",
             "group": "build",
             "type": "shell",
             "args": [ "RelWithDebInfo" ],
@@ -34,7 +34,7 @@
             ]
         },
         {
-            "label": "VS2015 MinSizeRel",
+            "label": "VS2015 Win64 MinSizeRel",
             "group": "build",
             "type": "shell",
             "args": [ "MinSizeRel" ],

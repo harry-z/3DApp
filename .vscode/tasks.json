@@ -4,40 +4,40 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "VS2015 Win64 Debug",
+            "label": "VS2015 Win64 D3D9 Debug",
             "group": "build",
             "type": "shell",
-            "args": [ "Debug" ],
+            "args": [ "Debug", "D3D9" ],
             "command": "${workspaceFolder}/BuildVS2015.bat",
             "problemMatcher": [
                 "$msCompile"
             ]
         },
         {
-            "label": "VS2015 Win64 Release",
+            "label": "VS2015 Win64 D3D9 Release",
             "group": "build",
             "type": "shell",
-            "args": [ "Release" ],
+            "args": [ "Release", "D3D9" ],
             "command": "${workspaceFolder}/BuildVS2015.bat",
             "problemMatcher": [
                 "$msCompile"
             ]
         },
         {
-            "label": "VS2015 Win64 RelWithDebInfo",
+            "label": "VS2015 Win64 D3D9 RelWithDebInfo",
             "group": "build",
             "type": "shell",
-            "args": [ "RelWithDebInfo" ],
+            "args": [ "RelWithDebInfo", "D3D9" ],
             "command": "${workspaceFolder}/BuildVS2015.bat",
             "problemMatcher": [
                 "$msCompile"
             ]
         },
         {
-            "label": "VS2015 Win64 MinSizeRel",
+            "label": "VS2015 Win64 D3D9 MinSizeRel",
             "group": "build",
             "type": "shell",
-            "args": [ "MinSizeRel" ],
+            "args": [ "MinSizeRel", "D3D9" ],
             "command": "${workspaceFolder}/BuildVS2015.bat",
             "problemMatcher": [
                 "$msCompile"

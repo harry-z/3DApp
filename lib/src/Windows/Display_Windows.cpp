@@ -94,37 +94,31 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam) 
 	}
 }
 
-CDisplayWindows::CDisplayWindows(const DisplayParameters &params) {
+CDisplayWindows::CDisplayWindows() {
 	DWORD dwStyle = WS_VISIBLE | WS_CLIPCHILDREN;
 	DWORD dwStyleEx = 0;
 	int nLeft, nTop;
 	dword nWidth, nHeight;
-	if (params.m_bFullScreen) {
+
+	RECT rect;
+	GetWindowRect(GetDesktopWindow(), &rect);
+
+	bool bFullScreen = false;
+	if (bFullScreen) {
 		dwStyle |= WS_POPUP;
 		dwStyleEx |= WS_EX_TOPMOST;
 		nLeft = nTop = 0;
-		RECT rect;
-		GetWindowRect(GetDesktopWindow(), &rect);
 		nWidth = rect.right - rect.left;
 		nHeight = rect.bottom - rect.top;
 	}
 	else {
-		switch (params.m_eBorder) {
-		case EBorderMode::EBorder_None:
-			dwStyle |= WS_POPUP;
-			break;
-		case EBorderMode::EBorder_Resized:
-			dwStyle |= WS_OVERLAPPEDWINDOW;
-			break;
-		case EBorderMode::EBorder_Fixed:
-		default:
-			dwStyle |= (WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
-			break;
-		}
-		nLeft = params.m_nLeft;
-		nTop = params.m_nTop;
-		nWidth = params.m_nWidth;
-		nHeight = params.m_nHeight;
+		dwStyle |= (WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
+		LONG DesktopWidth = rect.right - rect.left;
+		LONG DesktopHeight = rect.bottom - rect.top;
+		nLeft = DesktopWidth * 0.5f * 0.25f;
+		nTop = DesktopHeight * 0.5f * 0.25f;
+		nWidth = DesktopWidth * 0.75f;
+		nHeight = DesktopHeight * 0.75f;
 	}
 	HINSTANCE hInst = GetModuleHandle(nullptr);
 	WNDCLASS WndClass;
@@ -137,24 +131,25 @@ CDisplayWindows::CDisplayWindows(const DisplayParameters &params) {
 	WndClass.hCursor = LoadCursor(0, IDC_ARROW);
 	WndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	WndClass.lpszMenuName = nullptr;
-	WndClass.lpszClassName = params.m_pszTitle;
+	WndClass.lpszClassName = "3DApp";
 	RegisterClass(&WndClass);
 
-	RECT rect;
+	m_nWidth = nWidth; m_nHeight = nHeight;
+
+	// RECT rect;
 	SetRect(&rect, 0, 0, nWidth, nHeight);
 	AdjustWindowRect(&rect, dwStyle, FALSE);
 	nWidth = rect.right - rect.left;
 	nHeight = rect.bottom - rect.top;
-	HWND hWnd = CreateWindowEx(dwStyleEx, params.m_pszTitle, params.m_pszTitle,
-		dwStyle, nLeft, nTop, nWidth, nHeight, params.m_hParent, nullptr, hInst, nullptr);
+	HWND hWnd = CreateWindowEx(dwStyleEx, WndClass.lpszClassName, WndClass.lpszClassName,
+		dwStyle, nLeft, nTop, nWidth, nHeight, nullptr, nullptr, hInst, nullptr);
 	ShowWindow(hWnd, SW_SHOWNORMAL);
 	UpdateWindow(hWnd);
 
 	m_nLeft = nLeft; m_nTop = nTop;
-	m_nWidth = params.m_nWidth; m_nHeight = params.m_nHeight;
 	m_dwStyle = dwStyle;
 	m_hWnd = hWnd;
-	m_bFullScreen = params.m_bFullScreen;
+	m_bFullScreen = bFullScreen;
 }
 void CDisplayWindows::Move(int x, int y) {
 	SetWindowPos(m_hWnd, nullptr, x, y, 0, 0, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);

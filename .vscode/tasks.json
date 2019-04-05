@@ -7,8 +7,8 @@
             "label": "VS2015 Win64 D3D9 Debug",
             "group": "build",
             "type": "shell",
-            "args": [ "Debug", "D3D9" ],
-            "command": "${workspaceFolder}/BuildVS2015.bat",
+            "args": [ "Visual Studio 14 2015 Win64", "Debug", "D3D9", "BuildVS2015" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
             "problemMatcher": [
                 "$msCompile"
             ]
@@ -17,8 +17,8 @@
             "label": "VS2015 Win64 D3D9 Release",
             "group": "build",
             "type": "shell",
-            "args": [ "Release", "D3D9" ],
-            "command": "${workspaceFolder}/BuildVS2015.bat",
+            "args": [ "Visual Studio 14 2015 Win64", "Release", "D3D9", "BuildVS2015" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
             "problemMatcher": [
                 "$msCompile"
             ]
@@ -27,8 +27,8 @@
             "label": "VS2015 Win64 D3D9 RelWithDebInfo",
             "group": "build",
             "type": "shell",
-            "args": [ "RelWithDebInfo", "D3D9" ],
-            "command": "${workspaceFolder}/BuildVS2015.bat",
+            "args": [ "Visual Studio 14 2015 Win64", "RelWithDebInfo", "D3D9", "BuildVS2015" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
             "problemMatcher": [
                 "$msCompile"
             ]
@@ -37,8 +37,48 @@
             "label": "VS2015 Win64 D3D9 MinSizeRel",
             "group": "build",
             "type": "shell",
-            "args": [ "MinSizeRel", "D3D9" ],
-            "command": "${workspaceFolder}/BuildVS2015.bat",
+            "args": [ "Visual Studio 14 2015 Win64", "MinSizeRel", "D3D9", "BuildVS2015" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2017 Win64 D3D9 Debug",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Visual Studio 15 2017 Win64", "Debug", "D3D9", "BuildVS2017" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2017 Win64 D3D9 Release",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Visual Studio 15 2017 Win64", "Release", "D3D9", "BuildVS2017" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2017 Win64 D3D9 RelWithDebInfo",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Visual Studio 15 2017 Win64", "RelWithDebInfo", "D3D9", "BuildVS2017" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2017 Win64 D3D9 MinSizeRel",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Visual Studio 15 2017 Win64", "MinSizeRel", "D3D9", "BuildVS2017" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
             "problemMatcher": [
                 "$msCompile"
             ]

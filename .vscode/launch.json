@@ -5,24 +5,46 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "VS2015 Win64 Release",
+            "name": "VS2015 Win64 Debug",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/buildVS2015/src/Release/3DApp.exe",
+            "program": "${workspaceFolder}/BuildVS2015/src/Debug/3DApp.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/buildVS2015/lib/src/Release",
+            "cwd": "${workspaceFolder}/BuildVS2015/lib/src/Debug",
             "environment": [],
             "externalConsole": true
         },
         {
-            "name": "VS2015 Win64 Debug",
+            "name": "VS2015 Win64 Release",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/buildVS2015/src/Debug/3DApp.exe",
+            "program": "${workspaceFolder}/BuildVS2015/src/Release/3DApp.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/buildVS2015/lib/src/Debug",
+            "cwd": "${workspaceFolder}/BuildVS2015/lib/src/Release",
+            "environment": [],
+            "externalConsole": true
+        },
+        {
+            "name": "VS2017 Win64 Debug",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/BuildVS2017/src/Debug/3DApp.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/BuildVS2017/lib/src/Debug",
+            "environment": [],
+            "externalConsole": true
+        },
+        {
+            "name": "VS2017 Win64 Release",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/BuildVS2017/src/Release/3DApp.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/BuildVS2017/lib/src/Release",
             "environment": [],
             "externalConsole": true
         }

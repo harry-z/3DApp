@@ -49,7 +49,7 @@ public:
 	void RunOneFrame(dword nFrameId);
 	
 
-	FORCE_INLINE CCamera* GetMainCamera() { return m_pMainCamera; }
+	inline CCamera* GetMainCamera() { return m_pMainCamera; }
 	ERenderAPI GetRenderAPIType() const;
 
 private:

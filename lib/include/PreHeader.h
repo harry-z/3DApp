@@ -43,11 +43,8 @@
 	#else
 		#define DLL_EXPORT __declspec(dllimport)
 	#endif
-
-	#define FORCE_INLINE __forceinline
 #else
 	// #define DLL_EXPORT
-	// #define FORCE_INLINE __attribute__((always_inline))
 #endif
 
 
@@ -74,7 +71,7 @@
 	#define ALIGNMENT(n) __attribute__((aligned(n)))
 #endif
 
-#define ALIGN_SIZE(bytes) ((bytes+ALIGN-1) & ~(ALIGN-1))
+#define ALIGN_SIZE(bytes) (((bytes)+ALIGN-1) & ~(ALIGN-1))
 
 #define EPSILON 1e-6
 
@@ -86,7 +83,7 @@
 #include <string.h>
 #include <exception>
 #include <new>
-
+#include <mutex>
 
 
 
@@ -210,13 +207,8 @@ inline bool fZero(float f) {
 	return *u.pi == 0;
 }
 
-#ifndef min
-    #define min(x, y) ((x) < (y) ? (x) : (y))
-#endif
+#define CSTR_MAX 256
 
-#ifndef max
-	#define max(x, y) ((x) > (y) ? (x) : (y))
-#endif
 
 // #if COMPILER == COMPILER_GNUCXX
 // #define stricmp strcasecmp

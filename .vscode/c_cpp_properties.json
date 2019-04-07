@@ -10,7 +10,8 @@
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "TARGET_PLATFORM=1"
             ],
             "windowsSdkVersion": "10.0.17134.0",
             "cStandard": "c11",

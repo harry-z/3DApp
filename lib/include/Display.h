@@ -9,8 +9,8 @@ public:
 
 	virtual void Move(int x, int y) { m_nLeft = x; m_nTop = y; }
 	virtual void Resize(dword w, dword h) { m_nWidth = w; m_nHeight = h; }
-	FORCE_INLINE void GetPosition(int &x, int &y) const { x = m_nLeft; y = m_nTop; }
-	FORCE_INLINE void GetDimension(dword &w, dword &h) const { w = m_nWidth; h = m_nHeight; }
+	inline void GetPosition(int &x, int &y) const { x = m_nLeft; y = m_nTop; }
+	inline void GetDimension(dword &w, dword &h) const { w = m_nWidth; h = m_nHeight; }
 	virtual bool MessagePump() = 0;
 
 	class IObserver {
@@ -20,10 +20,10 @@ public:
 		virtual void OnDisplayResized(dword w, dword h) = 0;
 		LinklistNode<IObserver> m_node;
 	};
-	FORCE_INLINE void AddDisplayObserver(IObserver *pObserver) {
+	inline void AddDisplayObserver(IObserver *pObserver) {
 		m_lstObserver.PushBack(&pObserver->m_node);
 	}
-	FORCE_INLINE void RemoveDisplayObserver(IObserver *pObserver) {
+	inline void RemoveDisplayObserver(IObserver *pObserver) {
 		m_lstObserver.Remove(&pObserver->m_node);
 	}
 	virtual void OnDisplayResized(dword w, dword h) {

@@ -10,14 +10,6 @@ public:
     void* Allocate(dword bytes);
     void Free(void *p);
 
-private:
-    enum {
-        INVALID_ALLOC = 0xdd,
-        SMALL_ALLOC = 0xaa,
-        MEDIUM_ALLOC = 0xbb,
-        LARGE_ALLOC = 0xcc
-    };
-
     struct Page
     {
         void *pData;
@@ -37,6 +29,14 @@ private:
         MediumHeapEntry *NextFree; // 后一个Free Entry，当Entry为已分配时为nullptr
         dword nSize; // 整个Entry的大小
         dword nFreeBlock; // 0 - Used Entry，1 - Free Entry
+    };
+
+private:
+    enum {
+        INVALID_ALLOC = 0xdd,
+        SMALL_ALLOC = 0xaa,
+        MEDIUM_ALLOC = 0xbb,
+        LARGE_ALLOC = 0xcc
     };
 
     void* SmallAllocate(dword bytes);

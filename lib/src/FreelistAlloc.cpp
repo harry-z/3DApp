@@ -408,7 +408,7 @@ CFreelistAlloc::Page* CFreelistAlloc::AllocatePage(dword nPageSize)
     Page *pPage;
     ++m_nPageRequest;
 
-    if (m_pSwapPage != nullptr && m_pSwapPage->nDataSize = nPageSize)
+    if (m_pSwapPage != nullptr && m_pSwapPage->nDataSize == nPageSize)
     {
         pPage = m_pSwapPage;
         m_pSwapPage = nullptr;
@@ -417,7 +417,10 @@ CFreelistAlloc::Page* CFreelistAlloc::AllocatePage(dword nPageSize)
     {
         // 实际Page需分配的总数
         dword nTotalSize = nPageSize + sizeof(Page);
-        // 多分配一点空间，是为了保证pData能够正确对齐
+        // 多分配ALIGN-1，是为了保证pData能够正确对齐
+        // 内存布局为[Page][nPageSize]
+        // pData指向nPageSize的起点，需要保证pData是对齐的，即pPage + sizeof(Page)要保证对齐
+        // 最坏情况需要把pData的起始向后移动ALIGN-1个字节
         pPage = (Page *)::malloc(nTotalSize + ALIGN - 1);
         if (pPage == nullptr)
         {

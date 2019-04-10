@@ -1,4 +1,5 @@
 #include "Memory.h"
+#include "FreelistAlloc.h"
 #include "LinkList.h"
 
 #include <malloc.h>
@@ -6,7 +7,7 @@
 #define INTERNAL_REALLOC(ptr, size) realloc(ptr, size);
 #define INTERNAL_FREE(ptr) free(ptr)
 
-
+CFreelistAlloc g_Heap;
 
 // #include "Threading.h"
 
@@ -24,9 +25,11 @@ struct MemAllocStats {
 MemAllocStats g_MemStats;
 
 void* MemAllocWithTrace(size_t sz, const char *source, dword line) {
-	size_t total = sz + sizeof(MemAllocTraceInfo);
-	total = ALIGN_SIZE(total);
-	byte *ptr = (byte *)INTERNAL_MALLOC(total);
+	dword nAlignedTraceInfo = ALIGN_SIZE(sizeof(MemAllocTraceInfo));
+	dword total = sz + nAlignedTraceInfo;
+	// total = ALIGN_SIZE(total);
+	byte *ptr = g_Heap.Allocate(total);
+	// byte *ptr = (byte *)INTERNAL_MALLOC(total);
 	if (ptr) {
 		MemAllocTraceInfo *pInfo = (MemAllocTraceInfo *)ptr;
 		memset(pInfo, 0, sizeof(MemAllocTraceInfo));
@@ -39,7 +42,7 @@ void* MemAllocWithTrace(size_t sz, const char *source, dword line) {
 		g_MemStats.m_list.PushBack(&pInfo->m_node);
 		g_MemStats.m_lock.unlock();
 
-		return ptr + sizeof(MemAllocTraceInfo);
+		return ptr + nAlignedTraceInfo;
 	}
 	return nullptr;
 }

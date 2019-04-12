@@ -15,6 +15,7 @@ C3DEngine::C3DEngine()
 , m_bUseExternalInputListener(false)
 , m_bUseExternalCameraController(false)
 {
+    CLog *pLog = new 
 #if defined(RENDERAPI_DX9)
     CRenderBackendDX9 *pRenderBackendDX9 = new CRenderBackendDX9;
     Global::m_pRenderBackend = pRenderBackendDX9;

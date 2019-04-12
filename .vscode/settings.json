@@ -33,6 +33,16 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xutility": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "chrono": "cpp",
+        "functional": "cpp",
+        "memory": "cpp",
+        "ratio": "cpp",
+        "string": "cpp",
+        "xthread": "cpp",
+        "thread": "cpp",
+        "tuple": "cpp",
+        "xfunctional": "cpp",
+        "xmemory": "cpp"
     }
 }

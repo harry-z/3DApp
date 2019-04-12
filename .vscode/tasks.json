@@ -9,6 +9,14 @@
             "type": "shell",
             "args": [ "Visual Studio 14 2015 Win64", "Debug", "D3D9", "BuildVS2015" ],
             "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
             "problemMatcher": [
                 "$msCompile"
             ]
@@ -19,6 +27,14 @@
             "type": "shell",
             "args": [ "Visual Studio 14 2015 Win64", "Release", "D3D9", "BuildVS2015" ],
             "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
             "problemMatcher": [
                 "$msCompile"
             ]
@@ -29,6 +45,14 @@
             "type": "shell",
             "args": [ "Visual Studio 14 2015 Win64", "RelWithDebInfo", "D3D9", "BuildVS2015" ],
             "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
             "problemMatcher": [
                 "$msCompile"
             ]
@@ -39,6 +63,14 @@
             "type": "shell",
             "args": [ "Visual Studio 14 2015 Win64", "MinSizeRel", "D3D9", "BuildVS2015" ],
             "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
             "problemMatcher": [
                 "$msCompile"
             ]
@@ -49,6 +81,14 @@
             "type": "shell",
             "args": [ "Visual Studio 15 2017 Win64", "Debug", "D3D9", "BuildVS2017" ],
             "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
             "problemMatcher": [
                 "$msCompile"
             ]
@@ -59,6 +99,14 @@
             "type": "shell",
             "args": [ "Visual Studio 15 2017 Win64", "Release", "D3D9", "BuildVS2017" ],
             "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
             "problemMatcher": [
                 "$msCompile"
             ]
@@ -69,6 +117,14 @@
             "type": "shell",
             "args": [ "Visual Studio 15 2017 Win64", "RelWithDebInfo", "D3D9", "BuildVS2017" ],
             "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
             "problemMatcher": [
                 "$msCompile"
             ]
@@ -79,6 +135,14 @@
             "type": "shell",
             "args": [ "Visual Studio 15 2017 Win64", "MinSizeRel", "D3D9", "BuildVS2017" ],
             "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
             "problemMatcher": [
                 "$msCompile"
             ]

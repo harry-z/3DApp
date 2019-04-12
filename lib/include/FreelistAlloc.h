@@ -75,4 +75,6 @@ private:
     dword m_nPageRequest;
     dword m_nSmallCurPageOffset;
     dword m_nOSAllocs;
+
+    std::mutex m_Memlock;
 };

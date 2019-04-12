@@ -28,7 +28,7 @@ CRenderBackendDX9::~CRenderBackendDX9() {
 }
 
 bool CRenderBackendDX9::Initialize(IDisplay *pDisplay) {
-	// CLog *pLog = Global::m_pLog;
+	CLog *pLog = Global::m_pLog;
 	IDisplayWindows *pDisplayWindows = (IDisplayWindows *)(pDisplay);
 
 	m_pD3D9 = Direct3DCreate9(D3D_SDK_VERSION);

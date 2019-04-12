@@ -30,6 +30,7 @@ CFreelistAlloc::~CFreelistAlloc()
 
 void* CFreelistAlloc::Allocate(dword bytes)
 {
+    std::lock_guard<std::mutex> slock(m_Memlock);
     if (bytes == 0)
         return nullptr;
     if ((bytes & ~255) == 0)
@@ -42,6 +43,7 @@ void* CFreelistAlloc::Allocate(dword bytes)
 
 void CFreelistAlloc::Free(void *p)
 {
+    std::lock_guard<std::mutex> slock(m_Memlock);
     if (p == nullptr)
         return;
     switch (((byte*)p)[-1])

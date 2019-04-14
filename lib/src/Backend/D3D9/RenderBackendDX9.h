@@ -17,7 +17,7 @@ class CShader;
 class CTexture;
 class CVertexLayoutDX9;
 
-class CRenderBackendDX9 : public IRenderBackend, public IDisplay::IObserver/*, public CObject*/ {
+class CRenderBackendDX9 : public IRenderBackend, public IDisplay::IObserver {
 public:
 	CRenderBackendDX9();
 	virtual ~CRenderBackendDX9();

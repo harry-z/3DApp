@@ -19,12 +19,14 @@ public:
 	String& operator= (const String &other);
 
 	bool operator== (const char *pszStr) const {
+		assert(pszStr != nullptr);
 		return strcmp(m_pData, pszStr) == 0;
 	}
 	bool operator== (const String &other) const {
 		return strcmp(m_pData, other.c_str()) == 0;
 	}
 	friend bool operator== (const char *pszStr, const String &str) {
+		assert(pszStr != nullptr);
 		return strcmp(pszStr, str.c_str()) == 0;
 	}
 
@@ -53,8 +55,8 @@ public:
 		return s;
 	}
 
-	char& operator[] (size_type index) { return m_pData[index]; }
-	char operator[] (size_type index) const { return m_pData[index]; }
+	char& operator[] (size_type index) { assert(index < m_nLen); return m_pData[index]; }
+	char operator[] (size_type index) const { assert(index < m_nLen); return m_pData[index]; }
 
 	
 
@@ -65,12 +67,10 @@ public:
 	void clear();
 
 	inline char& at(size_type index) {
-		assert(index >= 0 && index < m_nLen);
-		return m_pData[index];
+		return operator[] (index);
 	}
 	inline char at(size_type index) const {
-		assert(index >= 0 && index < m_nLen);
-		return m_pData[index];
+		return operator[] (index);
 	}
 
 	size_type find(char elem, size_type nOff = 0) const;
@@ -101,6 +101,8 @@ private:
 };
 
 inline String::String(const char *pszStr) {
+	assert(pszStr != nullptr);
+
 	Init();
 
 	size_type nLen = strlen(pszStr);
@@ -121,6 +123,7 @@ inline String::String(const String &other) {
 }
 
 inline String& String::operator=(const char *pszStr) {
+	assert(pszStr != nullptr);
 	size_type nLen = strlen(pszStr);
 	EnsureAllocated(nLen + 1);
 	strcpy(m_pData, pszStr);
@@ -192,6 +195,7 @@ inline void String::Init() {
 	m_nLen = 0;
 	m_nCapacity = STR_ALLOC_BASE;
 	m_pData = (char *)MEMALLOC(STR_ALLOC_BASE);
+	assert(m_pData != nullptr);
 	m_pData[0] = 0;
 }
 

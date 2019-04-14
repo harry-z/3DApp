@@ -57,7 +57,8 @@
 #define BIT_REMOVE(flag, bit) (flag) &= (~(bit))
 #define BIT_CHECK(flag, bit) ((flag) & (bit)) != 0
 
-#define SAFE_RELEASE(p) if (p) { (p)->Release(); (p) = 0; }
+#define SAFE_DELETE(p) if (p) { delete (p); (p) = nullptr; }
+#define SAFE_RELEASE(p) if (p) { (p)->Release(); (p) = nullptr; }
 
 #if TARGET_ARCHITECTURE == ARCHITECTURE_X86
 	#define ALIGN 4

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "PreHeader.h"
+
 template <class T>
 struct LinklistNode {
 	typedef T _Myt;
@@ -18,6 +20,7 @@ struct Linklist {
 	Linklist() : m_pRoot(nullptr), m_pTail(nullptr) {}
 	
 	void PushFront(_NodeType *pNode) {
+		assert(pNode != nullptr);
 		if (m_pRoot == nullptr)
 			m_pRoot = m_pTail = pNode; 
 		else { 
@@ -27,6 +30,7 @@ struct Linklist {
 		}
 	}
 	void PushBack(_NodeType *pNode) {
+		assert(pNode != nullptr);
 		if (m_pRoot == nullptr)
 			m_pRoot = m_pTail = pNode; 
 		else { 
@@ -36,6 +40,7 @@ struct Linklist {
 		}
 	}
 	void Remove(_NodeType *pNode) {
+		assert(pNode != nullptr);
 		if (pNode->m_pNext != nullptr)
 			pNode->m_pNext->m_pPrev = pNode->m_pPrev;
 		if (pNode->m_pPrev != nullptr)

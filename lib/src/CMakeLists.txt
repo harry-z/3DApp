@@ -11,8 +11,11 @@ add_library(${PROJECT_NAME}_lib SHARED
     File.cpp
     FreelistAlloc.cpp
     Global.cpp 
+    Hashmap.cpp
+    Log.cpp
     Matrix.cpp
     Memory.cpp
+    Str.cpp
     3DEngine.cpp
     ./Windows/Display_Windows.cpp
     ${RENDER_API_SRC})

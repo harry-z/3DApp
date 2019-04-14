@@ -2,6 +2,7 @@
 #include "Str.h"
 
 void CLog::Log(ELogType eLogType, ELogFlag eLogFlag, const char *pszLogString) {
+	assert(pszLogString != nullptr);
 	if ((dword)m_eLogLv < (dword)eLogFlag)
 		return;
 	String msg;

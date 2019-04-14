@@ -5,7 +5,7 @@
 #endif
 
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
-#include "Windows\Display_Windows.h"
+#include "Windows/Display_Windows.h"
 #endif
 
 C3DEngine::C3DEngine()
@@ -15,28 +15,46 @@ C3DEngine::C3DEngine()
 , m_bUseExternalInputListener(false)
 , m_bUseExternalCameraController(false)
 {
-    CLog *pLog = new 
-#if defined(RENDERAPI_DX9)
-    CRenderBackendDX9 *pRenderBackendDX9 = new CRenderBackendDX9;
-    Global::m_pRenderBackend = pRenderBackendDX9;
-#endif
+    
 }
 
 C3DEngine::~C3DEngine()
 {
 #if defined(RENDERAPI_DX9)
-    delete Global::m_pRenderBackend;
+    SAFE_DELETE(Global::m_pRenderBackend);
 #endif
-    delete Global::m_pDisplay;
+    SAFE_DELETE(Global::m_pDisplay);
+    SAFE_DELETE(Global::m_pLog);
 }
 
 bool C3DEngine::Initialize(CInputListener *pExternalInputListener /* = nullptr */, 
 	ICameraController *pExternalCameraController /* = nullptr */) 
 {
+    CLog *pLog = new CLog;
+    if (pLog == nullptr)
+        return false;
+    pLog->SetLogToDebugger(true);
+    pLog->SetLogToFile(true, "3DApp.log");
+    Global::m_pLog = pLog;
+
     IDisplay *pDisplay = new CDisplayWindows;
+    if (pDisplay == nullptr)
+        return false;
+    pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create Display Windows");
     Global::m_pDisplay = pDisplay;
+
+#if defined(RENDERAPI_DX9)
+    CRenderBackendDX9 *pRenderBackendDX9 = new CRenderBackendDX9;
+    if (pRenderBackendDX9 == nullptr)
+        return false;
+    pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create RenderBackend D3D9");
+    Global::m_pRenderBackend = pRenderBackendDX9;
+#endif
+
     if (!Global::m_pRenderBackend->Initialize(pDisplay))
         return false;
+
+    pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize 3DEngine");
     return true;
 }
 

@@ -33,11 +33,11 @@ bool CRenderBackendDX9::Initialize(IDisplay *pDisplay) {
 
 	m_pD3D9 = Direct3DCreate9(D3D_SDK_VERSION);
 	if (m_pD3D9 == nullptr) {
-		// pLog->Log(eLogType_Error, eLogFlag_Critical, "Can not create IDirect3D9 object");
+		pLog->Log(ELogType::eLogType_Error, ELogFlag::eLogFlag_Critical, "Can not create IDirect3D9 object");
 		return false;
 	}
 	if (!IsDepthFormatOk(D3DFMT_X8R8G8B8, D3DFMT_D24S8)) {
-		// pLog->Log(eLogType_Error, eLogFlag_Critical, "Can not use D24S8 depth format with the current back buffer");
+		pLog->Log(ELogType::eLogType_Error, ELogFlag::eLogFlag_Critical, "Can not use D24S8 depth format with the current back buffer");
 		return false;
 	}
 	/*DWORD dwMaxQuality = 0;
@@ -49,7 +49,7 @@ bool CRenderBackendDX9::Initialize(IDisplay *pDisplay) {
 		return false;
 	}*/
 
-	unsigned nBackBufferWidth, nBackBufferHeight;
+	dword nBackBufferWidth, nBackBufferHeight;
 	pDisplayWindows->GetDimension(nBackBufferWidth, nBackBufferHeight);
 	m_dpparams.AutoDepthStencilFormat = D3DFMT_D24S8;
 	m_dpparams.BackBufferCount = 1;
@@ -69,7 +69,7 @@ bool CRenderBackendDX9::Initialize(IDisplay *pDisplay) {
 		pDisplayWindows->GetHWnd(), D3DCREATE_HARDWARE_VERTEXPROCESSING,
 		&m_dpparams, &m_pD3DDevice9);
 	if (FAILED(hr)) {
-		// pLog->Log(eLogType_Error, eLogFlag_Critical, "Can not create D3D9 device");
+		pLog->Log(ELogType::eLogType_Error, ELogFlag::eLogFlag_Critical, "Can not create D3D9 device");
 		return false;
 	}
 	g_pDevice9 = m_pD3DDevice9;
@@ -77,7 +77,6 @@ bool CRenderBackendDX9::Initialize(IDisplay *pDisplay) {
 	m_pD3DDevice9->GetRenderTarget(0, &m_pBackbuffer);
 	m_pD3DDevice9->GetDepthStencilSurface(&m_pDepthStencil);
 
-	// m_pDeviceCaps9 = NEW_TYPE(D3DCAPS9);
 	m_pDeviceCaps9 = new D3DCAPS9;
 	memset(m_pDeviceCaps9, 0, sizeof(D3DCAPS9));
 	m_pD3DDevice9->GetDeviceCaps(m_pDeviceCaps9);
@@ -91,6 +90,8 @@ bool CRenderBackendDX9::Initialize(IDisplay *pDisplay) {
 
 	//m_Cache.Initialize(this);
 
+	pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize RenderBackend D3D9");
+
 	return true;
 }
 
@@ -98,10 +99,7 @@ void CRenderBackendDX9::Shutdown() {
 	// UninitializePredefinedVertexLayouts();
 	//UninitializePredefinedStates();
 	//UninitializePredefinedTextures();
-	if (m_pDeviceCaps9) {
-		// DELETE_TYPE(m_pDeviceCaps9, D3DCAPS9);
-		delete m_pDeviceCaps9;
-	}
+	SAFE_DELETE(m_pDeviceCaps9);
 	SAFE_RELEASE(m_pBackbuffer);
 	SAFE_RELEASE(m_pDepthStencil);
 	SAFE_RELEASE(m_pD3DDevice9);
@@ -201,7 +199,7 @@ bool CRenderBackendDX9::Reset(dword w, dword h) {
 	m_dpparams.BackBufferHeight = h;
 	HRESULT hr = m_pD3DDevice9->Reset(&m_dpparams);
 	if (FAILED(hr)) {
-		// Global::m_pLog->Log(eLogType_Error, eLogFlag_Critical, "Failed to reset D3D9 device");
+		Global::m_pLog->Log(ELogType::eLogType_Error, ELogFlag::eLogFlag_Critical, "Failed to reset D3D9 device");
 		return false;
 	}
 	m_pD3DDevice9->GetRenderTarget(0, &m_pBackbuffer);

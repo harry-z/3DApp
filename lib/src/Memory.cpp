@@ -31,7 +31,6 @@
 // #define INTERNAL_REALLOC(ptr, size) realloc(ptr, size);
 // #define INTERNAL_FREE(ptr) free(ptr)
 
-CFreelistAlloc g_Heap;
 
 // #include "Threading.h"
 
@@ -45,12 +44,32 @@ struct MemAllocTraceInfo {
 struct MemAllocStats {
 	std::mutex m_lock;
 	Linklist<MemAllocTraceInfo> m_list;
+	void AddStatInfo(LinklistNode<MemAllocTraceInfo> *pStatInfo) {
+		std::lock_guard<std::mutex> slock(m_lock);
+		m_list.PushBack(pStatInfo);
+	}
+	void RemoveStatInfo(LinklistNode<MemAllocTraceInfo> *pStatInfo) {
+		std::lock_guard<std::mutex> slock(m_lock);
+		m_list.Remove(pStatInfo);
+	}
 };
-MemAllocStats g_MemStats;
+
+class CMemoryWrapper {
+public:
+	CFreelistAlloc m_Heap;
+#ifdef TRACE_MEMORY_ALLOCATION
+	MemAllocStats m_MemStats;
+#endif
+	~CMemoryWrapper() {
+#ifdef TRACE_MEMORY_ALLOCATION
+		ReportMemleaks();
+#endif
+	}
+} g_MemoryWrapper;
 
 void* MemAllocWithTrace(size_t sz, const char *source, dword line) {
 	dword nAlignedTraceInfo = ALIGN_SIZE(sizeof(MemAllocTraceInfo));
-	byte *ptr = (byte *)g_Heap.Allocate(sz + nAlignedTraceInfo);
+	byte *ptr = (byte *)g_MemoryWrapper.m_Heap.Allocate(sz + nAlignedTraceInfo);
 	if (ptr) {
 		MemAllocTraceInfo *pInfo = (MemAllocTraceInfo *)ptr;
 		memset(pInfo, 0, sizeof(MemAllocTraceInfo));
@@ -59,59 +78,50 @@ void* MemAllocWithTrace(size_t sz, const char *source, dword line) {
 		pInfo->m_nLine = line;
 		pInfo->m_node.m_pOwner = pInfo;
 
-		g_MemStats.m_lock.lock();
-		g_MemStats.m_list.PushBack(&pInfo->m_node);
-		g_MemStats.m_lock.unlock();
+		g_MemoryWrapper.m_MemStats.AddStatInfo(&pInfo->m_node);
 
 		return ptr + nAlignedTraceInfo;
 	}
 	return nullptr;
 }
 
-void* MemReallocWithTrace(void *ptr, size_t sz, const char *source, dword line) {
-	dword nAlignedTraceInfo = ALIGN_SIZE(sizeof(MemAllocTraceInfo));
-	MemAllocTraceInfo *pInfo = (MemAllocTraceInfo *)((byte*)ptr - nAlignedTraceInfo);
-	g_MemStats.m_lock.lock();
-	g_MemStats.m_list.Remove(&pInfo->m_node);
-	g_MemStats.m_lock.unlock();
+// void* MemReallocWithTrace(void *ptr, size_t sz, const char *source, dword line) {
+// 	dword nAlignedTraceInfo = ALIGN_SIZE(sizeof(MemAllocTraceInfo));
+// 	MemAllocTraceInfo *pInfo = (MemAllocTraceInfo *)((byte*)ptr - nAlignedTraceInfo);
+// 	g_MemoryWrapper.m_MemStats.RemoveStatInfo(&pInfo->m_node);
+// 	g_MemoryWrapper.m_Heap.Free((void *)pInfo);
+// 	byte *newPtr = (byte *)g_MemoryWrapper.m_Heap.Allocate(sz + nAlignedTraceInfo);
+// 	if (newPtr) {
+// 		MemAllocTraceInfo *pInfo = (MemAllocTraceInfo *)newPtr;
+// 		strcpy(pInfo->m_szSource, source);
+// 		pInfo->m_nSize = sz;
+// 		pInfo->m_nLine = line;
+// 		pInfo->m_node.m_pOwner = pInfo;
 
-	g_Heap.Free((void *)pInfo);
-	byte *newPtr = (byte *)g_Heap.Allocate(sz + nAlignedTraceInfo);
-	if (newPtr) {
-		MemAllocTraceInfo *pInfo = (MemAllocTraceInfo *)newPtr;
-		strcpy(pInfo->m_szSource, source);
-		pInfo->m_nSize = sz;
-		pInfo->m_nLine = line;
-		pInfo->m_node.m_pOwner = pInfo;
+// 		g_MemoryWrapper.m_MemStats.AddStatInfo(&pInfo->m_node);
 
-		g_MemStats.m_lock.lock();
-		g_MemStats.m_list.PushBack(&pInfo->m_node);
-		g_MemStats.m_lock.unlock();
-
-		return newPtr + nAlignedTraceInfo;
-	}
-	return nullptr;
-}
+// 		return newPtr + nAlignedTraceInfo;
+// 	}
+// 	return nullptr;
+// }
 
 void* MemAlloc(size_t sz) {
-	return g_Heap.Allocate((dword)sz);
+	return g_MemoryWrapper.m_Heap.Allocate((dword)sz);
 }
 
-void* MemRealloc(void *ptr, size_t sz) {
-	g_Heap.Free(ptr);
-	return g_Heap.Allocate((dword)sz);
-}
+// void* MemRealloc(void *ptr, size_t sz) {
+// 	g_MemoryWrapper.m_Heap.Free(ptr);
+// 	return g_MemoryWrapper.m_Heap.Allocate((dword)sz);
+// }
 
 void MemFree(void *ptr) {
 #ifdef TRACE_MEMORY_ALLOCATION
 	dword nAlignedTraceInfo = ALIGN_SIZE(sizeof(MemAllocTraceInfo));
 	MemAllocTraceInfo *pInfo = (MemAllocTraceInfo *)((byte*)ptr - nAlignedTraceInfo);
-	g_MemStats.m_lock.lock();
-	g_MemStats.m_list.Remove(&pInfo->m_node);
-	g_MemStats.m_lock.unlock();
-	g_Heap.Free((void *)pInfo);
+	g_MemoryWrapper.m_MemStats.RemoveStatInfo(&pInfo->m_node);
+	g_MemoryWrapper.m_Heap.Free((void *)pInfo);
 #else
-	g_Heap.Free(ptr);
+	g_MemoryWrapper.m_Heap.Free(ptr);
 #endif
 }
 
@@ -125,9 +135,9 @@ void ReportMemleaks() {
 // #define DbgPrint(info) __android_log_print(ANDROID_LOG_INFO, "com.zy.renderer", "%s\n", info);
 // #endif
 
-	std::lock_guard<std::mutex> slock(g_MemStats.m_lock);
+	std::lock_guard<std::mutex> slock(g_MemoryWrapper.m_MemStats.m_lock);
 
-	Linklist<MemAllocTraceInfo>::_NodeType *tmp = g_MemStats.m_list.m_pRoot;
+	Linklist<MemAllocTraceInfo>::_NodeType *tmp = g_MemoryWrapper.m_MemStats.m_list.m_pRoot;
 	if (tmp == nullptr) {
 		DbgPrint("No memory leaks\n");
 		return;

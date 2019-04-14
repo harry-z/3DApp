@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Win32",
+            "name": "Win32 Debug",
             "includePath": [
                 "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
                 "${workspaceFolder}/lib/include",
@@ -9,13 +9,14 @@
             ],
             "defines": [
                 "_DEBUG",
-                "UNICODE",
-                "_UNICODE",
-                "TARGET_PLATFORM=1"
+                "PLATFORM_WIN",
+                "TRACE_MEMORY_ALLOCATION",
+                "ARCH_64",
+                "RENDERAPI_DX9"
             ],
             "windowsSdkVersion": "10.0.17134.0",
-            "cStandard": "c11",
-            "cppStandard": "c++17",
+            "cStandard": "c99",
+            "cppStandard": "c++11",
             "intelliSenseMode": "msvc-x64"
         }
     ],

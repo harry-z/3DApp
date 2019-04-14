@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/BuildVS2015/src/Debug/3DApp.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/BuildVS2015/lib/src/Debug",
+            "cwd": "${workspaceFolder}/BuildVS2015/src/Debug",
             "environment": [],
             "externalConsole": true
         },
@@ -22,7 +22,7 @@
             "program": "${workspaceFolder}/BuildVS2015/src/Release/3DApp.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/BuildVS2015/lib/src/Release",
+            "cwd": "${workspaceFolder}/BuildVS2015/src/Release",
             "environment": [],
             "externalConsole": true
         },
@@ -33,7 +33,7 @@
             "program": "${workspaceFolder}/BuildVS2017/src/Debug/3DApp.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/BuildVS2017/lib/src/Debug",
+            "cwd": "${workspaceFolder}/BuildVS2017/src/Debug",
             "environment": [],
             "externalConsole": true
         },
@@ -44,7 +44,7 @@
             "program": "${workspaceFolder}/BuildVS2017/src/Release/3DApp.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/BuildVS2017/lib/src/Release",
+            "cwd": "${workspaceFolder}/BuildVS2017/src/Release",
             "environment": [],
             "externalConsole": true
         }

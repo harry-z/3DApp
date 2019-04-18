@@ -85,54 +85,11 @@
 #include <exception>
 #include <new>
 #include <mutex>
-
-
-
-
-//#if REDIRECT_NEW_DELETE == 1
-//
-//#if DEBUG_MEMORY == 1
-//
-//extern "C" DLL_EXPORT void* ConstructObj(size_t s, const char *source, unsigned line);
-//extern "C" DLL_EXPORT void DeconstructObj(void *p);
-//template <class T>
-//inline T* ConstructNObj(size_t s,  unsigned n, const char *source, unsigned line) {
-//	T *p = (T*)ConstructObj(s * n, source, line);
-//	for (unsigned i = 0; i < n; ++i)
-//		new (p + i) T();
-//	return p;
-//}
-//
-//#define NEW(T) new(ConstructObj(sizeof(T), __FILE__, __LINE__))
-//#define DEL(ptr, T) ptr->~T(); DeconstructObj(ptr);
-//#define NEW_ARRAY(T, n) ConstructNObj<T>(sizeof(T), n, __FILE__, __LINE__)
-//#define DEL_ARRAY(ptr, T, n) \
-//	for (unsigned i=0; i<n; ++i) \
-//		ptr[i].~T(); \
-//	DeconstructObj(ptr);
-//
-//#else
-//
-//void* operator new (size_t s);
-//void operator delete (void *p);
-//void* operator new[] (size_t s);
-//void operator delete[] (void *p);
-//
-//#define NEW(T) new
-//#define DEL(ptr, T) delete ptr
-//#define NEW_ARRAY(T, n) new T[n]
-//#define DEL_ARRAY(ptr, T, n) delete[] ptr
-//
-//#endif
-//
-//#else
-//
-//#define NEW(T) new
-//#define DEL(ptr, T) delete
-//#define NEW_ARRAY(T, n) new T[n]
-//#define DEL_ARRAY(ptr, T, n) delete[] ptr
-//
-//#endif
+#include <thread>
+#include <chrono>
+#include <atomic>
+#include <functional>
+#include <thread>
 
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
 	#include <Windows.h>

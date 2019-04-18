@@ -1,4 +1,6 @@
 #include "3DEngine.h"
+#include "Camera.h"
+#include "JobSystem.h"
 
 #ifdef RENDERAPI_DX9
 #include "Backend/D3D9/RenderBackendDX9.h"
@@ -15,44 +17,50 @@ C3DEngine::C3DEngine()
 , m_bUseExternalInputListener(false)
 , m_bUseExternalCameraController(false)
 {
-    
+    Global::m_p3DEngine = this;
 }
 
 C3DEngine::~C3DEngine()
 {
+    SAFE_DELETE(m_pMainCamera);
 #if defined(RENDERAPI_DX9)
     SAFE_DELETE(Global::m_pRenderBackend);
 #endif
     SAFE_DELETE(Global::m_pDisplay);
+    SAFE_DELETE(Global::m_pJobSystem);
     SAFE_DELETE(Global::m_pLog);
+
+    Global::m_p3DEngine = nullptr;
 }
 
 bool C3DEngine::Initialize(CInputListener *pExternalInputListener /* = nullptr */, 
 	ICameraController *pExternalCameraController /* = nullptr */) 
 {
     CLog *pLog = new CLog;
-    if (pLog == nullptr)
-        return false;
     pLog->SetLogToDebugger(true);
     pLog->SetLogToFile(true, "3DApp.log");
     Global::m_pLog = pLog;
 
     IDisplay *pDisplay = new CDisplayWindows;
-    if (pDisplay == nullptr)
+    if (!pDisplay->Initialize())
         return false;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create Display Windows");
     Global::m_pDisplay = pDisplay;
 
 #if defined(RENDERAPI_DX9)
     CRenderBackendDX9 *pRenderBackendDX9 = new CRenderBackendDX9;
-    if (pRenderBackendDX9 == nullptr)
-        return false;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create RenderBackend D3D9");
     Global::m_pRenderBackend = pRenderBackendDX9;
 #endif
 
     if (!Global::m_pRenderBackend->Initialize(pDisplay))
         return false;
+    pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize RenderBackend");
+
+    m_pMainCamera = new CCamera;
+
+    CJobSystem *pJobSystem = new CJobSystem;
+    pJobSystem->Initialize();
 
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize 3DEngine");
     return true;

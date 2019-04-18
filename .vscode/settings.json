@@ -43,6 +43,8 @@
         "thread": "cpp",
         "tuple": "cpp",
         "xfunctional": "cpp",
-        "xmemory": "cpp"
+        "xmemory": "cpp",
+        "atomic": "cpp",
+        "xxatomic": "cpp"
     }
 }

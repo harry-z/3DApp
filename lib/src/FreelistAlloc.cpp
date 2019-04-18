@@ -1,6 +1,7 @@
 #include "FreelistAlloc.h"
 
 // #define SMALL_HEADER_SIZE ( (int)(sizeof(byte) + sizeof(byte)) )
+constexpr dword MEDIUM_PAGE_SIZE = 65536 - sizeof(CFreelistAlloc::Page);
 constexpr dword SMALL_HEADER_SIZE = (dword)(sizeof(byte) * 2);
 constexpr dword MEDIUM_HEADER_SIZE = (dword)(sizeof(CFreelistAlloc::MediumHeapEntry) + sizeof(byte));
 constexpr dword MEDIUM_SMALLEST_SIZE = ALIGN_SIZE(256) + ALIGN_SIZE(MEDIUM_HEADER_SIZE);
@@ -14,7 +15,7 @@ CFreelistAlloc::CFreelistAlloc()
 , m_pMediumFirstUsedPage(nullptr)
 , m_pSwapPage(nullptr)
 , m_pLargeFirstUsedPage(nullptr)
-, m_nPageSize(65536 - sizeof(Page))
+, m_nPageSize(MEDIUM_PAGE_SIZE)
 , m_nPageAllocated(0)
 , m_nPageRequest(0)
 , m_nSmallCurPageOffset(0)
@@ -22,11 +23,48 @@ CFreelistAlloc::CFreelistAlloc()
 {
     memset(m_ppSmallFirstFree, 0, sizeof(m_ppSmallFirstFree));
     m_pSmallCurPage = AllocatePage(m_nPageSize);
-    assert(m_pSmallCurPage != nullptr);
 }
 
 CFreelistAlloc::~CFreelistAlloc()
-{}
+{
+    if (m_pSmallCurPage != nullptr)
+        FreePage(m_pSmallCurPage);
+    Page *p = m_pSmallFirstUsedPage;
+    while (p)
+    {
+        Page *pNext = p->pNext;
+        FreePage(p);
+        p = pNext;
+    }
+
+    p = m_pLargeFirstUsedPage;
+    while (p)
+    {
+        Page *pNext = p->pNext;
+        FreePage(p);
+        p = pNext;
+    }
+
+    p = m_pMediumFirstFreePage;
+    while (p)
+    {
+        Page *pNext = p->pNext;
+        FreePage(p);
+        p = pNext;
+    }
+
+    p = m_pMediumFirstUsedPage;
+    while (p)
+    {
+        Page *pNext = p->pNext;
+        FreePage(p);
+        p = pNext;
+    }
+
+    if (m_pSwapPage)
+        FreePageReal(m_pSwapPage);
+    m_pSwapPage = nullptr;
+}
 
 void* CFreelistAlloc::Allocate(dword bytes)
 {
@@ -43,9 +81,8 @@ void* CFreelistAlloc::Allocate(dword bytes)
 
 void CFreelistAlloc::Free(void *p)
 {
+    assert(p != nullptr);
     std::lock_guard<std::mutex> slock(m_Memlock);
-    if (p == nullptr)
-        return;
     switch (((byte*)p)[-1])
     {
         case SMALL_ALLOC:
@@ -90,8 +127,7 @@ void* CFreelistAlloc::SmallAllocate(dword bytes)
         m_pSmallFirstUsedPage = m_pSmallCurPage;
         // 重新分配一个当前页
         m_pSmallCurPage = AllocatePage(m_nPageSize);
-        if (m_pSmallCurPage == nullptr)
-            return nullptr;
+        assert(m_pSmallCurPage != nullptr);
         m_nSmallCurPageOffset = ALIGN_SIZE(0);
     }
 
@@ -114,6 +150,7 @@ void CFreelistAlloc::SmallFree(void *p)
     if (idx >= (256/ALIGN))
     {
         assert(0 && "SmallFree: Invalid memory block");
+        return;
     }
 
     // 将SmallFirstFree当前的头地址存入p的头四个字节中
@@ -136,8 +173,7 @@ void* CFreelistAlloc::MediumAllocate(dword bytes)
     if (pPage == nullptr)
     {
         pPage = AllocatePage(m_nPageSize);
-        if (pPage == nullptr)
-            return nullptr;
+        assert(pPage != nullptr);
 
         pPage->pPrev = nullptr;
         pPage->pNext = m_pMediumFirstFreePage;
@@ -376,8 +412,7 @@ void* CFreelistAlloc::LargeAllocate(dword bytes)
 {
     dword nAlignedHeaderSize = ALIGN_SIZE(LARGE_HEADER_SIZE);
     Page *pPage = AllocatePage(bytes + nAlignedHeaderSize);
-    if (pPage == nullptr)
-        return nullptr;
+    assert(pPage != nullptr);
     byte *pData = ((byte *)pPage->pData) + nAlignedHeaderSize;
     pData[-1] = LARGE_ALLOC;
     ((uintptr_t *)pPage->pData)[0] = (uintptr_t)pPage;
@@ -444,8 +479,6 @@ CFreelistAlloc::Page* CFreelistAlloc::AllocatePage(dword nPageSize)
 
 void CFreelistAlloc::FreePage(Page *pPage)
 {
-    if (pPage == nullptr)
-        return;
     if (pPage->nDataSize == m_nPageSize && m_pSwapPage == nullptr)
         m_pSwapPage = pPage;
     else
@@ -456,6 +489,5 @@ void CFreelistAlloc::FreePage(Page *pPage)
 
 void CFreelistAlloc::FreePageReal(Page *pPage)
 {
-    assert(pPage != nullptr);
     ::free(pPage);
 }

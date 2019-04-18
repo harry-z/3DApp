@@ -20,6 +20,11 @@ struct Vec2 {
 	void Set(float x_, float y_) {
 		x = x_; y = y_;
 	}
+
+	// (0, 0)
+	static DLL_EXPORT const Vec2 s_ZeroVector;
+	// (1, 1)
+	static DLL_EXPORT const Vec2 s_UnitVector;
 };
 
 struct Vec3 {
@@ -120,6 +125,17 @@ struct Vec3 {
 		ret.LinearToSRGB();
 		return ret;
 	}
+
+	// (0, 0, 0)
+	static DLL_EXPORT const Vec3 s_ZeroVector;
+	// (1, 0, 0)
+	static DLL_EXPORT const Vec3 s_UnitX;
+	// (0, 1, 0)
+	static DLL_EXPORT const Vec3 s_UnitY;
+	// (0, 0, 1)
+	static DLL_EXPORT const Vec3 s_UnitZ;
+	// (1, 1, 1)
+	static DLL_EXPORT const Vec3 s_UnitVector;
 };
 
 struct Vec4 {
@@ -140,4 +156,9 @@ struct Vec4 {
 	void Set(float x_, float y_, float z_, float w_) {
 		x = x_; y = y_; z = z_; w = w_;
 	}
+
+	// (0, 0, 0, 0)
+	static DLL_EXPORT const Vec4 s_ZeroVector;
+	// (1, 1, 1, 1)
+	static DLL_EXPORT const Vec4 s_UnitVector;
 };

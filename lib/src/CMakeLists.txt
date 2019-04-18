@@ -8,14 +8,21 @@ if (${RENDER_API} STREQUAL "D3D9")
 endif ()
 
 add_library(${PROJECT_NAME}_lib SHARED 
+    Camera.cpp
     File.cpp
     FreelistAlloc.cpp
     Global.cpp 
     Hashmap.cpp
+    InputListener.cpp
+    JobSystem.cpp
     Log.cpp
     Matrix.cpp
     Memory.cpp
+    Pool.cpp
+    Stack.cpp
     Str.cpp
+    Timer.cpp
+    Worker.cpp
     3DEngine.cpp
     ./Windows/Display_Windows.cpp
     ${RENDER_API_SRC})

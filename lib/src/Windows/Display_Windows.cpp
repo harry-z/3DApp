@@ -94,7 +94,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam) 
 	}
 }
 
-CDisplayWindows::CDisplayWindows() {
+CDisplayWindows::CDisplayWindows() {}
+bool CDisplayWindows::Initialize() {
 	DWORD dwStyle = WS_VISIBLE | WS_CLIPCHILDREN;
 	DWORD dwStyleEx = 0;
 	int nLeft, nTop;
@@ -132,7 +133,8 @@ CDisplayWindows::CDisplayWindows() {
 	WndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	WndClass.lpszMenuName = nullptr;
 	WndClass.lpszClassName = "3DApp";
-	RegisterClass(&WndClass);
+	if (!RegisterClass(&WndClass))
+		return false;
 
 	m_nWidth = nWidth; m_nHeight = nHeight;
 
@@ -143,6 +145,8 @@ CDisplayWindows::CDisplayWindows() {
 	nHeight = rect.bottom - rect.top;
 	HWND hWnd = CreateWindowEx(dwStyleEx, WndClass.lpszClassName, WndClass.lpszClassName,
 		dwStyle, nLeft, nTop, nWidth, nHeight, nullptr, nullptr, hInst, nullptr);
+	if (hWnd == INVALID_HANDLE_VALUE)
+		return false;
 	ShowWindow(hWnd, SW_SHOWNORMAL);
 	UpdateWindow(hWnd);
 
@@ -150,6 +154,7 @@ CDisplayWindows::CDisplayWindows() {
 	m_dwStyle = dwStyle;
 	m_hWnd = hWnd;
 	m_bFullScreen = bFullScreen;
+	return true;
 }
 void CDisplayWindows::Move(int x, int y) {
 	SetWindowPos(m_hWnd, nullptr, x, y, 0, 0, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);

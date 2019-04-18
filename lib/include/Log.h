@@ -30,6 +30,7 @@ public:
 		b ? (BIT_ADD(m_nLogMode, LOGMODE_CONSOLE)) : (BIT_REMOVE(m_nLogMode, LOGMODE_CONSOLE));
 	}
 	inline void SetLogToFile(bool b, const char *pszLogFileName) {
+		assert(pszLogFileName != nullptr);
 		b ? (BIT_ADD(m_nLogMode, LOGMODE_FILE)) : (BIT_REMOVE(m_nLogMode, LOGMODE_FILE));
 		if (b)
 			m_LogFile.Open(pszLogFileName, "w+");

@@ -35,6 +35,7 @@ void String::Reallocate(size_type nSize) {
 		newSize = nSize + STR_ALLOC_GRAN - mod;
 
 	char *pTempData = (char *)MEMALLOC(newSize);
+	assert(pTempData != nullptr);
 	strcpy(pTempData, m_pData);
 	pTempData[m_nLen] = 0;
 	MEMFREE(m_pData);

@@ -56,14 +56,17 @@ public:
 		else {
 			if (m_pElements != nullptr) {
 				_PointerType pTempElements = (T*)MEMALLOC(sizeof(_ValueType)*m_nAllocCount);
+				assert(pTempElements != nullptr);
 				if (m_nCount)
 					memcpy(pTempElements, m_pElements, sizeof(_ValueType)*m_nCount);
 				MEMFREE(m_pElements);
-				// m_pElements = (T*)MEMREALLOC(m_pElements, sizeof(_ValueType)*m_nAllocCount);
 				m_pElements = pTempElements;
 			}
 			else
+			{
 				m_pElements = (T*)MEMALLOC(sizeof(_ValueType)*m_nAllocCount);
+				assert(m_pElements != nullptr);
+			}
 		}
 	}
 	void Remove(dword nIndex, dword nCount = 1) {
@@ -72,11 +75,11 @@ public:
 			m_nCount -= nCount;
 		}
 	}
-	FORCE_INLINE dword Num() const { return m_nCount; }
-	FORCE_INLINE dword Capacity() const { return m_nAllocCount; }
-	FORCE_INLINE bool Empty() const { return m_nCount == 0; }
-	FORCE_INLINE bool Full() const { return m_nCount >= m_nAllocCount; }
-	FORCE_INLINE void SetNum(dword nCount) { m_nCount = nCount; }
+	inline dword Num() const { return m_nCount; }
+	inline dword Capacity() const { return m_nAllocCount; }
+	inline bool Empty() const { return m_nCount == 0; }
+	inline bool Full() const { return m_nCount >= m_nAllocCount; }
+	inline void SetNum(dword nCount) { m_nCount = nCount; }
 	void Clear() {
 		memset(m_pElements, 0, sizeof(_ValueType)*m_nAllocCount);
 	}

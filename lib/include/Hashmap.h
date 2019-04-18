@@ -94,7 +94,6 @@ public:
 			while (pTemp) {
 				Pair *pPair = pTemp->m_pOwner;
 				pTemp = pTemp->m_pNext;
-				// DELETE_TYPE(pPair, Pair);
 				delete pPair;
 			}
 		}
@@ -131,6 +130,8 @@ public:
 			return m_pHashmap != other.m_pHashmap || m_pCurrNode != other.m_pCurrNode || m_nCurrSlotIndex != other.m_nCurrSlotIndex;
 		}
 		void operator++ () {
+			assert(m_pCurrNode != nullptr);
+			assert(m_pHashmap != nullptr);
 			m_pCurrNode = m_pCurrNode->m_pNext;
 			if (m_pCurrNode == nullptr) {
 				bool bReachEnd = true;
@@ -146,6 +147,8 @@ public:
 			}
 		}
 		void operator-- () {
+			assert(m_pCurrNode != nullptr);
+			assert(m_pHashmap != nullptr);
 			m_pCurrNode = m_pCurrNode->m_pPrev;
 			if (m_pCurrNode == nullptr) {
 				while (--m_nCurrSlotIndex >= 0) {
@@ -209,6 +212,8 @@ public:
 			return m_pHashmap != other.m_pHashmap || m_pCurrNode != other.m_pCurrNode || m_nCurrSlotIndex != other.m_nCurrSlotIndex;
 		}
 		void operator++ () {
+			assert(m_pCurrNode != nullptr);
+			assert(m_pHashmap != nullptr);
 			m_pCurrNode = m_pCurrNode->m_pNext;
 			if (m_pCurrNode == nullptr) {
 				bool bReachEnd = true;
@@ -224,6 +229,8 @@ public:
 			}
 		}
 		void operator-- () {
+			assert(m_pCurrNode != nullptr);
+			assert(m_pHashmap != nullptr);
 			m_pCurrNode = m_pCurrNode->m_pPrev;
 			if (m_pCurrNode == nullptr) {
 				while (--m_nCurrSlotIndex >= 0) {
@@ -269,7 +276,6 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 	CHashmap<Key, Value, KeyTraits, ValueTraits>::CHashmap(dword nSlotCount)
 {
 	m_nSlotCount = GetPrime(nSlotCount);
-	// m_pSlots = NEW_TYPE_ARRAY(Slot, m_nSlotCount);
 	m_pSlots = new Slot[m_nSlotCount];
 }
 
@@ -278,7 +284,6 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 	CHashmap<Key, Value, KeyTraits, ValueTraits>::~CHashmap() 
 {
 	if (m_pSlots) {
-		// DELETE_TYPE_ARRAY(m_pSlots, Slot, m_nSlotCount);
 		delete[] m_pSlots;
 		m_pSlots = nullptr;
 	}
@@ -289,12 +294,10 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 	void CHashmap<Key, Value, KeyTraits, ValueTraits>::SetSlotCount(dword nSlotCount)
 {
 	if (m_pSlots) {
-		// DELETE_TYPE_ARRAY(m_pSlots, Slot, m_nSlotCount);
 		delete[] m_pSlots;
 		m_pSlots = nullptr;
 	}
 	m_nSlotCount = GetPrime(nSlotCount);
-	// m_pSlots = NEW_TYPE_ARRAY(Slot, m_nSlotCount);
 	m_pSlots = new Slot[m_nSlotCount];
 }
 
@@ -305,7 +308,6 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 	if (!Has(key)) {
 		dword hash = Hash<_KeyType>()(key);
 		dword idx = hash % m_nSlotCount;
-		// Pair *pair = NEW_TYPE(Pair);
 		Pair *pair = new Pair;
 		pair->first = key;
 		pair->second = const_cast<_ValueRefType>(value);
@@ -332,7 +334,6 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 		}
 		if (p) {
 			m_pSlots[idx].list.Remove(p);
-			// DELETE_TYPE(p->m_pOwner, Pair);
 			delete p->m_pOwner;
 			return true;
 		}
@@ -403,7 +404,6 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 	void CHashmap<Key, Value, KeyTraits, ValueTraits>::Clear()
 {
 	if (m_pSlots) {
-		// DELETE_TYPE_ARRAY(m_pSlots, Slot, m_nSlotCount);
 		delete[] m_pSlots;
 		m_pSlots = nullptr;
 	}
@@ -414,9 +414,7 @@ template <class Key, class Value,
 	void CHashmap<Key, Value, KeyTraits, ValueTraits>::Reset()
 {
 	if (m_pSlots) {
-		// DELETE_TYPE_ARRAY(m_pSlots, Slot, m_nSlotCount);
 		delete[] m_pSlots;
-		// m_pSlots = NEW_TYPE_ARRAY(Slot, m_nSlotCount);
 		m_pSlots = new Slotp[m_nSlotCount];
 	}
 }

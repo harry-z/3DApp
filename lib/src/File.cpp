@@ -6,6 +6,9 @@ CFile::~CFile() {
 	Close();
 }
 bool CFile::Open(const char *pszFileName, const char *pszMode) {
+	if (pszFileName == nullptr || pszMode == nullptr)
+		return false;
+
 	Close();
    	m_pFile = fopen(pszFileName, pszMode);
 	return m_pFile != nullptr;
@@ -26,6 +29,7 @@ size_t CFile::ReadRaw(INOUT void *pBuffer, size_t nSizeInBytes) {
 	return fread(pBuffer, 1, nSizeInBytes, m_pFile);
 }
 long CFile::Length() {
+	assert(m_pFile);
 	long pos = ftell(m_pFile);
 	fseek(m_pFile, 0, SEEK_END);
 	long len = ftell(m_pFile);
@@ -33,20 +37,26 @@ long CFile::Length() {
 	return len;
 }
 bool CFile::Seek(long seek, int mode) {
+	assert(m_pFile);
 	return fseek(m_pFile, seek, mode) == 0;
 }
 bool CFile::SeekToBegin() {
+	assert(m_pFile);
 	return fseek(m_pFile, 0, SEEK_SET) == 0;
 }
 bool CFile::SeekToEnd() {
+	assert(m_pFile);
 	return fseek(m_pFile, 0, SEEK_END) == 0;
 }
 long CFile::GetPosition() {
+	assert(m_pFile);
 	return ftell(m_pFile);
 }
 bool CFile::IsEof() {
+	assert(m_pFile);
 	return feof(m_pFile) != 0;
 }
 void CFile::Flush() {
+	assert(m_pFile);
 	fflush(m_pFile);
 }

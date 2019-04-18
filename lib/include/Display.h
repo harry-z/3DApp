@@ -7,6 +7,7 @@ class IDisplay {
 public:
 	virtual ~IDisplay() {}
 
+	virtual bool Initialize() = 0;
 	virtual void Move(int x, int y) { m_nLeft = x; m_nTop = y; }
 	virtual void Resize(dword w, dword h) { m_nWidth = w; m_nHeight = h; }
 	inline void GetPosition(int &x, int &y) const { x = m_nLeft; y = m_nTop; }
@@ -21,9 +22,11 @@ public:
 		LinklistNode<IObserver> m_node;
 	};
 	inline void AddDisplayObserver(IObserver *pObserver) {
+		assert(pObserver != nullptr);
 		m_lstObserver.PushBack(&pObserver->m_node);
 	}
 	inline void RemoveDisplayObserver(IObserver *pObserver) {
+		assert(pObserver != nullptr);
 		m_lstObserver.Remove(&pObserver->m_node);
 	}
 	virtual void OnDisplayResized(dword w, dword h) {

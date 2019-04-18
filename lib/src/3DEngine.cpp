@@ -6,6 +6,10 @@
 #include "Backend/D3D9/RenderBackendDX9.h"
 #endif
 
+#ifdef INPUTAPI_DINPUT
+#include "Backend/DInput/InputListenerDInput.h"
+#endif
+
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
 #include "Windows/Display_Windows.h"
 #endif
@@ -23,8 +27,11 @@ C3DEngine::C3DEngine()
 C3DEngine::~C3DEngine()
 {
     SAFE_DELETE(m_pMainCamera);
-#if defined(RENDERAPI_DX9)
+#ifdef RENDERAPI_DX9
     SAFE_DELETE(Global::m_pRenderBackend);
+#endif
+#ifdef INPUTAPI_DINPUT
+    SAFE_DELETE(Global::m_pInputListener);
 #endif
     SAFE_DELETE(Global::m_pDisplay);
     SAFE_DELETE(Global::m_pJobSystem);
@@ -47,7 +54,7 @@ bool C3DEngine::Initialize(CInputListener *pExternalInputListener /* = nullptr *
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create Display Windows");
     Global::m_pDisplay = pDisplay;
 
-#if defined(RENDERAPI_DX9)
+#ifdef RENDERAPI_DX9
     CRenderBackendDX9 *pRenderBackendDX9 = new CRenderBackendDX9;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create RenderBackend D3D9");
     Global::m_pRenderBackend = pRenderBackendDX9;
@@ -58,6 +65,15 @@ bool C3DEngine::Initialize(CInputListener *pExternalInputListener /* = nullptr *
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize RenderBackend");
 
     m_pMainCamera = new CCamera;
+
+#ifdef INPUTAPI_DINPUT
+    CInputListenerDInput *pInputDInput = new CInputListenerDInput;
+    pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create InputListener DInput8");
+    Global::m_pInputListener = pInputDInput;
+#endif
+    if (!Global::m_pInputListener->Initialize(pDisplay))
+        return false;
+    pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize InputListener");
 
     CJobSystem *pJobSystem = new CJobSystem;
     pJobSystem->Initialize();
@@ -70,6 +86,7 @@ void C3DEngine::Run()
 {
     IDisplay * __restrict pDisplay = Global::m_pDisplay;
     IRenderBackend * __restrict pRenderBackend = Global::m_pRenderBackend;
+    CInputListener * __restrict pInputListener = Global::m_pInputListener;
 
     dword nFrameId = 0;
     while (pDisplay->MessagePump())
@@ -82,6 +99,8 @@ void C3DEngine::Run()
 				return;
 		}
 
+        pInputListener->Capture();
+
         Frame(nFrameId);
 
         ++nFrameId;
@@ -90,13 +109,18 @@ void C3DEngine::Run()
 
 void C3DEngine::RunOneFrame(dword nFrameId)
 {
-    EDeviceState devState = Global::m_pRenderBackend->CheckDeviceState();
+    IRenderBackend * __restrict pRenderBackend = Global::m_pRenderBackend;
+    CInputListener * __restrict pInputListener = Global::m_pInputListener;
+
+    EDeviceState devState = pRenderBackend->CheckDeviceState();
     if (devState == EDeviceState::EDevState_Lost)
         return;
     else if (devState == EDeviceState::EDevState_Notreset) {
-        if (!Global::m_pRenderBackend->HandleDeviceLost())
+        if (!pRenderBackend->HandleDeviceLost())
             return;
     }
+
+    pInputListener->Capture();
 
     Frame(nFrameId);
 }

@@ -7,6 +7,12 @@ if (${RENDER_API} STREQUAL "D3D9")
     link_libraries(d3d9 d3dcompiler dxguid)
 endif ()
 
+if (WIN32)
+    add_definitions("-DINPUTAPI_DINPUT")
+    aux_source_directory(${PROJECT_SOURCE_DIR}/lib/src/Backend/DInput INPUT_API_SRC)
+    link_libraries(dinput8)
+endif ()
+
 add_library(${PROJECT_NAME}_lib SHARED 
     Camera.cpp
     File.cpp
@@ -25,4 +31,5 @@ add_library(${PROJECT_NAME}_lib SHARED
     Worker.cpp
     3DEngine.cpp
     ./Windows/Display_Windows.cpp
-    ${RENDER_API_SRC})
+    ${RENDER_API_SRC}
+    ${INPUT_API_SRC})

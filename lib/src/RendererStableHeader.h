@@ -3,14 +3,11 @@
 #include "PreHeader.h"
 
 #ifdef RENDERAPI_DX9
-
 	#ifdef _DEBUG
 		#define D3D_DEBUG_INFO
 	#endif
 	#include <d3d9.h>
 	#include <d3dcompiler.h>
-	#define DIRECTINPUT_VERSION 0x0800
-	#include <dinput.h>
 	// #pragma comment(lib, "d3d9.lib")
 	// #pragma comment(lib, "d3dcompiler.lib")
 	// #pragma comment(lib, "dxguid.lib")
@@ -51,6 +48,11 @@
 // 		dword m_code;
 // 	};
 
+#endif
+
+#ifdef INPUTAPI_DINPUT
+	#define DIRECTINPUT_VERSION 0x0800
+	#include <dinput.h>
 #endif
 	
 /*#define SHADER_VS_UNIFORM_CAMERA_SLOT 0

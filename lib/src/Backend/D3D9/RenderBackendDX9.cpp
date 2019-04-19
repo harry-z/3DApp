@@ -77,7 +77,7 @@ bool CRenderBackendDX9::Initialize(IDisplay *pDisplay) {
 	m_pD3DDevice9->GetRenderTarget(0, &m_pBackbuffer);
 	m_pD3DDevice9->GetDepthStencilSurface(&m_pDepthStencil);
 
-	m_pDeviceCaps9 = new D3DCAPS9;
+	m_pDeviceCaps9 = NEW_TYPE(D3DCAPS9);
 	memset(m_pDeviceCaps9, 0, sizeof(D3DCAPS9));
 	m_pD3DDevice9->GetDeviceCaps(m_pDeviceCaps9);
 	g_pCaps9 = m_pDeviceCaps9;
@@ -99,7 +99,11 @@ void CRenderBackendDX9::Shutdown() {
 	// UninitializePredefinedVertexLayouts();
 	//UninitializePredefinedStates();
 	//UninitializePredefinedTextures();
-	SAFE_DELETE(m_pDeviceCaps9);
+	if (m_pDeviceCaps9)
+	{
+		DELETE_TYPE(m_pDeviceCaps9, D3DCAPS9);
+		m_pDeviceCaps9 = nullptr;
+	}
 	SAFE_RELEASE(m_pBackbuffer);
 	SAFE_RELEASE(m_pDepthStencil);
 	SAFE_RELEASE(m_pD3DDevice9);

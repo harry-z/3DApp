@@ -10,6 +10,7 @@ endif ()
 if (WIN32)
     add_definitions("-DINPUTAPI_DINPUT")
     aux_source_directory(${PROJECT_SOURCE_DIR}/lib/src/Backend/DInput INPUT_API_SRC)
+    aux_source_directory(${PROJECT_SOURCE_DIR}/lib/src/Windows/ DISPLAY_SRC)
     link_libraries(dinput8)
 endif ()
 
@@ -30,6 +31,6 @@ add_library(${PROJECT_NAME}_lib SHARED
     Timer.cpp
     Worker.cpp
     3DEngine.cpp
-    ./Windows/Display_Windows.cpp
     ${RENDER_API_SRC}
-    ${INPUT_API_SRC})
+    ${INPUT_API_SRC}
+    ${DISPLAY_SRC})

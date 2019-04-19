@@ -20,14 +20,16 @@ m_nWorkerIndex(-1)
 }
 
 CJobSystem::~CJobSystem() {
+	using namespace std;
 	// 阻塞主线程直到所有的工作线程全部执行完成
 	for (byte i = 0; i < m_nWorkerCount; ++i) {
 		m_pWorkers[i].NotifyFinished();
 		m_ppThreads[i]->join();
-		delete m_ppThreads[i];
+		DELETE_TYPE(m_ppThreads[i], thread);
 	}
 	MEMFREE(m_ppThreads);
-	delete[] m_pWorkers;
+	// delete[] m_pWorkers;
+	DELETE_TYPE_ARRAY(m_pWorkers, CWorker, m_nWorkerCount);
 }
 
 void CJobSystem::Initialize() {
@@ -49,10 +51,11 @@ void CJobSystem::Initialize() {
 //     m_nWorkerCount = android_getCpuCount() - 1;
 #endif
 	m_nWorkerCount = max(1, m_nWorkerCount);
-	m_pWorkers = new CWorker[m_nWorkerCount];
+	// m_pWorkers = new CWorker[m_nWorkerCount];
+	m_pWorkers = NEW_TYPE_ARRAY(CWorker, m_nWorkerCount);
 	m_ppThreads = (std::thread**)MEMALLOC(sizeof(std::thread**) * m_nWorkerCount);
 	for (byte i = 0; i < m_nWorkerCount; ++i)
-		m_ppThreads[i] = new std::thread(ThreadFunc, &m_pWorkers[i]);
+		m_ppThreads[i] = NEW_TYPE(std::thread)(ThreadFunc, &m_pWorkers[i]);
 }
 
 Job* CJobSystem::CreateJob(EJobType nJobType) {

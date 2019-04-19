@@ -26,16 +26,52 @@ C3DEngine::C3DEngine()
 
 C3DEngine::~C3DEngine()
 {
-    SAFE_DELETE(m_pMainCamera);
-#ifdef RENDERAPI_DX9
-    SAFE_DELETE(Global::m_pRenderBackend);
-#endif
+    CJobSystem *pJobSystem = Global::m_pJobSystem;
+    if (pJobSystem)
+    {
+        DELETE_TYPE(pJobSystem, CJobSystem);
+    }
+    Global::m_pJobSystem = nullptr;
+
+    if (m_pMainCamera)
+    {
+        DELETE_TYPE(m_pMainCamera, CCamera);
+    }
+    m_pMainCamera = nullptr;
+
 #ifdef INPUTAPI_DINPUT
-    SAFE_DELETE(Global::m_pInputListener);
+    if (Global::m_pInputListener)
+    {
+        CInputListenerDInput *pInputListenerDInput = static_cast<CInputListenerDInput*>(Global::m_pInputListener);
+        DELETE_TYPE(pInputListenerDInput, CInputListenerDInput);
+    }
 #endif
-    SAFE_DELETE(Global::m_pDisplay);
-    SAFE_DELETE(Global::m_pJobSystem);
-    SAFE_DELETE(Global::m_pLog);
+    Global::m_pInputListener = nullptr;
+
+#ifdef RENDERAPI_DX9
+    if (Global::m_pRenderBackend)
+    {
+        CRenderBackendDX9 *pRenderBackendDX9 = static_cast<CRenderBackendDX9*>(Global::m_pRenderBackend);
+        DELETE_TYPE(pRenderBackendDX9, CRenderBackendDX9);
+    }
+#endif
+    Global::m_pRenderBackend = nullptr;
+
+#if TARGET_PLATFORM == PLATFORM_WINDOWS
+    if (Global::m_pDisplay)
+    {
+        CDisplayWindows *pDisplayWindows = static_cast<CDisplayWindows*>(Global::m_pDisplay);
+        DELETE_TYPE(pDisplayWindows, CDisplayWindows);
+    }
+#endif
+    Global::m_pDisplay = nullptr;
+
+    CLog *pLog = Global::m_pLog;
+    if (pLog)
+    {
+        DELETE_TYPE(pLog, CLog);
+    }
+    Global::m_pLog = nullptr;
 
     Global::m_p3DEngine = nullptr;
 }
@@ -43,40 +79,43 @@ C3DEngine::~C3DEngine()
 bool C3DEngine::Initialize(CInputListener *pExternalInputListener /* = nullptr */, 
 	ICameraController *pExternalCameraController /* = nullptr */) 
 {
-    CLog *pLog = new CLog;
+    CLog *pLog = NEW_TYPE(CLog);
     pLog->SetLogToDebugger(true);
     pLog->SetLogToFile(true, "3DApp.log");
     Global::m_pLog = pLog;
 
-    IDisplay *pDisplay = new CDisplayWindows;
+#if TARGET_PLATFORM == PLATFORM_WINDOWS
+    IDisplay *pDisplay = NEW_TYPE(CDisplayWindows);
+    pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create Display Windows");
+#endif
     if (!pDisplay->Initialize())
         return false;
-    pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create Display Windows");
     Global::m_pDisplay = pDisplay;
+    pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize Display");
 
 #ifdef RENDERAPI_DX9
-    CRenderBackendDX9 *pRenderBackendDX9 = new CRenderBackendDX9;
+    IRenderBackend *pRenderBackend = NEW_TYPE(CRenderBackendDX9);
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create RenderBackend D3D9");
-    Global::m_pRenderBackend = pRenderBackendDX9;
 #endif
-
-    if (!Global::m_pRenderBackend->Initialize(pDisplay))
+    if (!pRenderBackend->Initialize(pDisplay))
         return false;
+    Global::m_pRenderBackend = pRenderBackend;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize RenderBackend");
 
-    m_pMainCamera = new CCamera;
-
 #ifdef INPUTAPI_DINPUT
-    CInputListenerDInput *pInputDInput = new CInputListenerDInput;
+    CInputListener *pInputListener = NEW_TYPE(CInputListenerDInput);
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create InputListener DInput8");
-    Global::m_pInputListener = pInputDInput;
 #endif
-    if (!Global::m_pInputListener->Initialize(pDisplay))
+    if (!pInputListener->Initialize(pDisplay))
         return false;
+    Global::m_pInputListener = pInputListener;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize InputListener");
 
-    CJobSystem *pJobSystem = new CJobSystem;
+    m_pMainCamera = NEW_TYPE(CCamera);
+
+    CJobSystem *pJobSystem = NEW_TYPE(CJobSystem);
     pJobSystem->Initialize();
+    Global::m_pJobSystem = pJobSystem;
 
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize 3DEngine");
     return true;

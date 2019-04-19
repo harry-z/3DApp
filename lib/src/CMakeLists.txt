@@ -25,6 +25,7 @@ add_library(${PROJECT_NAME}_lib SHARED
     Log.cpp
     Matrix.cpp
     Memory.cpp
+    PixelFormatUtil.cpp
     Pool.cpp
     Stack.cpp
     Str.cpp

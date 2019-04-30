@@ -1,7 +1,7 @@
 #include "Global.h"
 // #include "AnimationManager.h"
 // #include "GUI.h"
-// #include "InputListener.h"
+#include "InputListener.h"
 #include "JobSystem.h"
 #include "3DEngine.h"
 #include "Display.h"
@@ -10,8 +10,8 @@
 // #include "Mesh.h"
 // #include "Shader.h"
 // //#include "Terrain.h"
-// #include "Texture.h"
-// #include "RenderBackend.h"
+#include "Texture.h"
+#include "RenderBackend.h"
 // #include "TimeOfDay.h"
 
 const Vec2 Vec2::s_ZeroVector;
@@ -38,7 +38,7 @@ CLog* Global::m_pLog = nullptr;
 // CMeshManager* Global::m_pMeshManager = nullptr;
 // CShaderManager* Global::m_pShaderManager = nullptr;
 // //CTerrain* Global::m_pTerrain = nullptr;
-// CTextureManager* Global::m_pTextureManager = nullptr;
+CTextureManager* Global::m_pTextureManager = nullptr;
 // CTimeOfDay* Global::m_pTimeOfDay = nullptr;
 // CTimerManager* Global::m_pTimerManager = nullptr;
 IDisplay* Global::m_pDisplay = nullptr;
@@ -47,9 +47,9 @@ IRenderBackend* Global::m_pRenderBackend = nullptr;
 // ShaderResourcesManager* Global::m_pShaderResourceManager = nullptr;
 
 
-// extern ThreadId g_MainThreadId;
-// bool Global::IsMainThread() {
-    // return g_MainThreadId == GetCurrThread();
-// }
+extern std::thread::id g_MainThreadId;
+bool Global::IsMainThread() {
+    return g_MainThreadId == std::this_thread::get_id();
+}
 
 // String Global::s_WorkingDirectory;

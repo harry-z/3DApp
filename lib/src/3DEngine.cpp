@@ -14,13 +14,14 @@
 #include "Windows/Display_Windows.h"
 #endif
 
+std::thread::id g_MainThreadId;
+
 C3DEngine::C3DEngine()
 : m_pMainCamera(nullptr)
 , m_pSunShadowCamera(nullptr)
 , m_pCameraController(nullptr)
-, m_bUseExternalInputListener(false)
-, m_bUseExternalCameraController(false)
 {
+    g_MainThreadId = std::this_thread::get_id();
     Global::m_p3DEngine = this;
 }
 
@@ -76,8 +77,7 @@ C3DEngine::~C3DEngine()
     Global::m_p3DEngine = nullptr;
 }
 
-bool C3DEngine::Initialize(CInputListener *pExternalInputListener /* = nullptr */, 
-	ICameraController *pExternalCameraController /* = nullptr */) 
+bool C3DEngine::Initialize() 
 {
     CLog *pLog = NEW_TYPE(CLog);
     pLog->SetLogToDebugger(true);

@@ -15,5 +15,4 @@ endif ()
 
 add_subdirectory(lib)
 add_subdirectory(src)
-
-# add_executable(${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/main.cpp)
+add_subdirectory(tools)

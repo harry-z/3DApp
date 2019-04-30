@@ -42,7 +42,7 @@ struct Global {
 									static IRenderBackend *m_pRenderBackend;
 									static ShaderResourcesManager *m_pShaderResourceManager;
 
-    // static bool IsMainThread();
+    DLL_EXPORT static bool IsMainThread();
 
 	// DLL_EXPORT	static String s_WorkingDirectory;
 };

@@ -70,7 +70,7 @@ enum class ETextureUsage : byte {
 	ETextureUsage_DepthStencilFixedSize
 };
 
-enum class ETextureType : byte {
+enum ETextureType : byte {
 	ETextureType_Unknown = 0,
 	ETextureType_1D = 0x01,
 	ETextureType_2D = 0x02,
@@ -79,7 +79,7 @@ enum class ETextureType : byte {
 	ETextureType_SRGB = 0x10
 };
 
-enum class ECubeFace {
+enum ECubeFace {
 	ECubeFace_PosX = 0x01,
 	ECubeFace_NegX = 0x02,
 	ECubeFace_PosY = 0x04,
@@ -90,11 +90,12 @@ enum class ECubeFace {
 };
 
 enum class EShaderType {
+	EShaderType_Unknown = -1,
 	EShaderType_Vertex,
 	EShaderType_Pixel
 };
 
-enum class EClearFlag {
+enum EClearFlag {
 	EClearFlag_Color = 0x01,
 	EClearFlag_Depth = 0x02,
 	EClearFlag_Stencil = 0x04

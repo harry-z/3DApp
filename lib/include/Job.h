@@ -54,9 +54,9 @@ struct JobFactories {
 };
 
 
-#define REGISTER_JOB_CTOR_DTOR_DECL(type, ctor, dtor) \
+#define REGISTER_JOB_CTOR_DTOR_DECL(type, typeenum, ctor, dtor) \
 	struct type##_FACTORY { \
-		type##_FACTORY() { JobFactories::Add(type, ctor, dtor); } \
+		type##_FACTORY() { JobFactories::Add(typeenum, ctor, dtor); } \
 	};
 
 #define REGISTER_JOB_CTOR_DTOR_IMPL(type) \

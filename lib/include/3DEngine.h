@@ -17,8 +17,7 @@ public:
 	C3DEngine();
 	~C3DEngine();
 
-	bool Initialize(CInputListener *pExternalInputListener = nullptr, 
-		ICameraController *pExternalCameraController = nullptr);
+	bool Initialize();
 
 	// IRenderNode* CreateRenderNode(ERNType eNodeType);
 	// void DestroyRenderNode(IRenderNode *pNode);
@@ -82,7 +81,4 @@ private:
 	//CPool m_NodePool;
 	//CPool m_MeshDataPool;
 	//CPool m_GeomDataPool;
-
-	bool m_bUseExternalInputListener;
-	bool m_bUseExternalCameraController;
 };

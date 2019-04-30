@@ -128,7 +128,7 @@ void CRenderBackendDX9::BeginRendering() {
 	m_pD3DDevice9->SetSamplerState(MTL_MAX_TEXLAYER_COUNT, D3DSAMP_BORDERCOLOR, D3DCOLOR_XRGB(255, 255, 255));
 
 	RestoreTarget();
-	ClearTarget((int)EClearFlag::EClearFlag_Color | (int)EClearFlag::EClearFlag_Depth | (int)EClearFlag::EClearFlag_Stencil, 
+	ClearTarget(EClearFlag::EClearFlag_Color | EClearFlag::EClearFlag_Depth | EClearFlag::EClearFlag_Stencil, 
 		D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0);
 }
 

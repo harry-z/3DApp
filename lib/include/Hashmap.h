@@ -6,7 +6,7 @@
 #include "Str.h"
 
 dword GetPrime(dword nSlotCount);
-void MurmurHash3_x86_32(const void * key, const int len, dword seed, void * out);
+DLL_EXPORT void MurmurHash3_x86_32(const void * key, const int len, dword seed, void * out);
 
 template <class T, class Traits = TypeTraits<T>>
 struct Hash {

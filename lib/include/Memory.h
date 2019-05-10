@@ -19,7 +19,7 @@ inline T* ConstructNObj(T *p, dword n) {
 #ifdef TRACE_MEMORY_ALLOCATION
 	#define NEW_TYPE(T) new (MemAllocWithTrace(sizeof(T), __FILE__, __LINE__)) T
 	#define DELETE_TYPE(ptr, T) if (ptr) { (ptr)->~T(); MemFree(ptr); }
-	#define NEW_TYPE_ARRAY(T, n) ConstructNObj<T>((T *)MemAllocWithTrace(sizeof(T) * n, __FILE__, __LINE__), n)
+	#define NEW_TYPE_ARRAY(T, n) ConstructNObj<T>((T *)MemAllocWithTrace(ALIGN_SIZE((sizeof(T) * n)), __FILE__, __LINE__), n)
 	#define DELETE_TYPE_ARRAY(ptr, T, n) if (ptr) { for (dword i=0; i<n; ++i) { (ptr)[i].~T(); } MemFree(ptr); }
 	#define MEMALLOC(sz) MemAllocWithTrace(sz, __FILE__, __LINE__)
 	#define MEMFREE(ptr) MemFree(ptr)

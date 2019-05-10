@@ -47,62 +47,99 @@ char* FindFirstCharOrNumber(char *pStart)
     return c != 0 ? pStart : nullptr;
 }
 
-bool ReadAllFile(const char *pszPath, OUT CHashmap<String, char*> &Files)
+void ConcatenatePath(const String &szPath1, const String &szPath2, OUT String &szFullPath)
 {
-    if (pszPath == nullptr)
-        return false;
+    if (szPath1.empty())
+        szFullPath = szPath2;
+    else
+        szFullPath = szPath1 + "/" + szPath2;
+}
 
+bool ReadAllFile(const String &szGlobalPath, const String &szCurrentPath, OUT CHashmap<String, char*> &Files)
+{
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
     WIN32_FIND_DATA FindFileData;
-    String szPath = pszPath;
+    String szOriginalPath;
+    ConcatenatePath(szGlobalPath, szCurrentPath, szOriginalPath);
+    String szPath(szOriginalPath);
     szPath += "/*";
     HANDLE hFind = FindFirstFile(szPath.c_str(), &FindFileData);
     if (hFind == INVALID_HANDLE_VALUE)
         return false;
     else
     {
-        if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE)
+        if ((FindFileData.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) != 0)
         {
+            String szFullPath;
+            ConcatenatePath(szOriginalPath, FindFileData.cFileName, szFullPath);
+            FILE *pFile = fopen(szFullPath.c_str(), "r+");
+            if (pFile)
+            {
+                fseek(pFile, 0, SEEK_END);
+                long len = ftell(pFile);
+                fseek(pFile, 0, SEEK_SET);
+                char *pShaderCodeBuffer = (char *)MEMALLOC(len);
+                fread(pShaderCodeBuffer, 1, len, pFile);
+                fclose(pFile);
 
+                String szEntry;
+                ConcatenatePath(szCurrentPath, FindFileData.cFileName, szEntry);
+                Files.Insert(szEntry, pShaderCodeBuffer);
+            }
         }
-        else if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && 
+        else if ((FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0 && 
                 strcmp(FindFileData.cFileName, ".") != 0 &&
                 strcmp(FindFileData.cFileName, "..") != 0)
         {
-            String szSubPath(szPath);
-            szSubPath += "/";
-            szSubPath += FindFileData.cFileName;
-            ReadAllFile(szSubPath.c_str(), Files);
+            String szSubPath;
+            ConcatenatePath(szCurrentPath, FindFileData.cFileName, szSubPath);
+            ReadAllFile(szGlobalPath.c_str(), szSubPath.c_str(), Files);
         }
 
         while (FindNextFile(hFind, &FindFileData) != 0)
         {
-            if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE)
+            if ((FindFileData.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) != 0)
             {
+                String szFullPath;
+                ConcatenatePath(szOriginalPath, FindFileData.cFileName, szFullPath);
+                FILE *pFile = fopen(szFullPath.c_str(), "r+");
+                if (pFile)
+                {
+                    fseek(pFile, 0, SEEK_END);
+                    long len = ftell(pFile);
+                    fseek(pFile, 0, SEEK_SET);
+                    char *pShaderCodeBuffer = (char *)MEMALLOC(len);
+                    fread(pShaderCodeBuffer, 1, len, pFile);
+                    fclose(pFile);
 
+                    String szEntry;
+                    ConcatenatePath(szCurrentPath, FindFileData.cFileName, szEntry);
+                    Files.Insert(szEntry, pShaderCodeBuffer);
+                }
             }
-            else if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && 
+            else if ((FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0 && 
                     strcmp(FindFileData.cFileName, ".") != 0 &&
                     strcmp(FindFileData.cFileName, "..") != 0)
             {
-                String szSubPath(szPath);
-                szSubPath += "/";
-                szSubPath += FindFileData.cFileName;
-                ReadAllFile(szSubPath.c_str(), Files);
+                String szSubPath;
+                ConcatenatePath(szCurrentPath, FindFileData.cFileName, szSubPath);
+                ReadAllFile(szGlobalPath.c_str(), szSubPath.c_str(), Files);
             }
         }
 
         return true;
     }
+#else
+    return false;
 #endif
 }
 
 bool CShaderPrecacher::Precache()
 {
     // 查找目录下所有文件，并读取其内容
-    CHashmap<String, char*> ShaderFiles;
+    CHashmap<String, char*> ShaderFiles(32);
 #ifdef RENDERAPI_DX9
-    ReadAllFile("ShaderSource/D3D9", ShaderFiles);
+    ReadAllFile("ShaderSource/D3D9", "", ShaderFiles);
 #endif
 
     return true;

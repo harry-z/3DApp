@@ -5,7 +5,7 @@
 #include "LinkList.h"
 #include "Str.h"
 
-dword GetPrime(dword nSlotCount);
+DLL_EXPORT dword GetPrime(dword nSlotCount);
 DLL_EXPORT void MurmurHash3_x86_32(const void * key, const int len, dword seed, void * out);
 
 template <class T, class Traits = TypeTraits<T>>
@@ -66,6 +66,8 @@ public:
 	typedef typename ValueTraits::_ValueType _ValueType;
 	typedef typename ValueTraits::_RefType _ValueRefType;
 	typedef typename ValueTraits::_ConstRefType _ValueConstRefType;
+	typedef typename ValueTraits::_PointerType _ValuePointerType;
+	typedef typename ValueTraits::_ConstPointerType _ValueConstPointerType;
 
 	
 	CHashmap() : m_pSlots(nullptr), m_nSlotCount(0) {}
@@ -76,8 +78,8 @@ public:
 	bool Insert(_KeyConstRefType key, _ValueConstRefType value);
 	bool Remove(_KeyConstRefType key);
 	bool Has(_KeyConstRefType key) const;
-	_ValueRefType Find(_KeyConstRefType key);
-	_ValueConstRefType Find(_KeyConstRefType key) const;
+	_ValuePointerType Find(_KeyConstRefType key);
+	_ValueConstPointerType Find(_KeyConstRefType key) const;
 	void Clear();
 	void Reset();
 
@@ -99,6 +101,8 @@ public:
 			}
 		}
 	};
+
+	typedef typename _MyType::Slot _MySlot;
 
 	template <class HashmapType>
 	class MyIterator {
@@ -277,8 +281,7 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 	CHashmap<Key, Value, KeyTraits, ValueTraits>::CHashmap(dword nSlotCount)
 {
 	m_nSlotCount = GetPrime(nSlotCount);
-	m_pSlots = NEW_TYPE_ARRAY(Slot, m_nSlotCount);
-	// m_pSlots = new Slot[m_nSlotCount];
+	m_pSlots = NEW_TYPE_ARRAY(_MySlot, m_nSlotCount);
 }
 
 template <class Key, class Value,
@@ -286,7 +289,7 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 	CHashmap<Key, Value, KeyTraits, ValueTraits>::~CHashmap() 
 {
 	if (m_pSlots) {
-		DELETE_TYPE_ARRAY(m_pSlots, Slot, m_nSlotCount);
+		DELETE_TYPE_ARRAY(m_pSlots, _MySlot, m_nSlotCount);
 		// delete[] m_pSlots;
 		m_pSlots = nullptr;
 	}
@@ -369,7 +372,7 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 
 template <class Key, class Value,
 class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/>
-	typename CHashmap<Key, Value, KeyTraits, ValueTraits>::_ValueRefType 
+	typename CHashmap<Key, Value, KeyTraits, ValueTraits>::_ValuePointerType 
 	CHashmap<Key, Value, KeyTraits, ValueTraits>::Find(_KeyConstRefType key)
 {
 	if (m_pSlots) {
@@ -379,16 +382,16 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 		while (p) {
 			Pair *pair = p->m_pOwner;
 			if (pair->first == key)
-				return pair->second;
+				return &pair->second;
 			p = p->m_pNext;
 		}
 	}
-	return _ValueType();
+	return nullptr;
 }
 
 template <class Key, class Value,
 class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/>
-	typename CHashmap<Key, Value, KeyTraits, ValueTraits>::_ValueConstRefType
+	typename CHashmap<Key, Value, KeyTraits, ValueTraits>::_ValueConstPointerType
 	CHashmap<Key, Value, KeyTraits, ValueTraits>::Find(_KeyConstRefType key) const
 {
 	if (m_pSlots) {
@@ -398,12 +401,12 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 		while (p) {
 			Pair *pair = p->m_pOwner;
 			if (pair->first == key)
-				return pair->second;
+				return &pair->second;
 			p = p->m_pNext;
 		}
 	}
 
-	return _ValueType();
+	return nullptr;
 }
 
 template <class Key, class Value,

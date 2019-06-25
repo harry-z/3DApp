@@ -50,40 +50,42 @@ CTexture* CTextureManager::CreateTexture(const String& szName, word width, word 
 	assert((textureType == ETextureType_1D && height == 1) || textureType == ETextureType_2D);
 
 	IdString idStr(szName);
-	CTexture *pTexture;
+	TextureMap::_ValuePointerType pTexture;
 
+	CTexture *pNewTexture = nullptr;
 	{
 		std::lock_guard<std::mutex> l(m_TextureMapLock);
 		pTexture = m_TextureMap.Find(idStr);
 		if (pTexture != nullptr)
-			return pTexture;
+			return *pTexture;
 
-		pTexture = CreateInstance(); //new (m_TexturePool.Allocate_mt()) CTexture;
-		pTexture->m_IdStr = idStr;
-		pTexture->m_nID = m_TextureId++;
-		m_TextureMap.Insert(idStr, pTexture);
+		pNewTexture = CreateInstance(); //new (m_TexturePool.Allocate_mt()) CTexture;
+		pNewTexture->m_IdStr = idStr;
+		pNewTexture->m_nID = m_TextureId++;
+		m_TextureMap.Insert(idStr, pNewTexture);
 	}
 	
-	pTexture->Create(szName, width, height, textureType, pixelFormat, eUsage);
-	return pTexture;
+	pNewTexture->Create(szName, width, height, textureType, pixelFormat, eUsage);
+	return pNewTexture;
 }
 
 CTexture* CTextureManager::LoadTexture(const String &filePath, 
 									   EAutoGenmip bAutoGenMipmap /* = EAutoGenmip_AUTO */, bool bGamma /* = false */, bool bBackground /* = false */)
 {
 	IdString idStr(filePath);
-	CTexture *pTexture;
+	TextureMap::_ValuePointerType pTexture;
 
+	CTexture *pNewTexture = nullptr;
 	{
 		std::lock_guard<std::mutex> l(m_TextureMapLock);
 		pTexture = m_TextureMap.Find(idStr);
 		if (pTexture != nullptr)
-			return pTexture;
+			return *pTexture;
 
-		pTexture = CreateInstance(); //new (m_TexturePool.Allocate_mt()) CTexture;
-		pTexture->m_IdStr = idStr;
-		pTexture->m_nID = m_TextureId++;
-		m_TextureMap.Insert(idStr, pTexture);
+		pNewTexture = CreateInstance(); //new (m_TexturePool.Allocate_mt()) CTexture;
+		pNewTexture->m_IdStr = idStr;
+		pNewTexture->m_nID = m_TextureId++;
+		m_TextureMap.Insert(idStr, pNewTexture);
 	}
 
 	if (bBackground || !Global::IsMainThread()) {
@@ -93,22 +95,22 @@ CTexture* CTextureManager::LoadTexture(const String &filePath,
 		pJobData->szFileName = filePath;
 		pJobData->bAutoGenMipmap = bAutoGenMipmap;
 		pJobData->bGamma = bGamma;
-		pJobData->pTexture = pTexture;
+		pJobData->pTexture = pNewTexture;
 
 		Job *pJob = pJobSystem->CreateJob(EJobType::JobType_Texture);
 		pJob->m_pData = (byte *)pJobData;
 		pJobSystem->QueueJob(pJob);
 
-		pTexture->m_pJob = pJob;
+		pNewTexture->m_pJob = pJob;
 		
 	}
 	else {
 		TEXTURE_FILE_DESC texture_desc;
-		if (pTexture->Streaming(filePath, bAutoGenMipmap, &texture_desc))
-			pTexture->Load(&texture_desc, bGamma);
+		if (pNewTexture->Streaming(filePath, bAutoGenMipmap, &texture_desc))
+			pNewTexture->Load(&texture_desc, bGamma);
 		texture_desc.Release();
 	}
-	return pTexture;
+	return pNewTexture;
 }
 
 void CTextureManager::DestroyTexture(CTexture *pTexture) {
@@ -133,10 +135,12 @@ void CTextureManager::DestroyTexture(CTexture *pTexture) {
 CTexture* CTextureManager::FindTexture(const String &szName) {
 	IdString idStr(szName);
 	std::lock_guard<std::mutex> l(m_TextureMapLock);
-	return m_TextureMap.Find(idStr);
+	TextureMap::_ValuePointerType pTexture = m_TextureMap.Find(idStr);
+	return pTexture != nullptr ? *pTexture : nullptr;
 }
 
 CTexture* CTextureManager::FindTexture(const IdString &idStr) {
 	std::lock_guard<std::mutex> l(m_TextureMapLock);
-	return m_TextureMap.Find(idStr);
+	TextureMap::_ValuePointerType pTexture = m_TextureMap.Find(idStr);
+	return pTexture != nullptr ? *pTexture : nullptr;
 }

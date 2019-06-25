@@ -114,9 +114,19 @@ public:
 		_PointerType p = AddIndex(1);
 		*p = obj;
 	}
+	template <class ... ArgsType>
+	void Emplace(ArgsType &&... Args) {
+		_PointerType p = AddIndex(1);
+		new (p) T(std::forward<ArgsType>(Args)...);
+	}
 	void Set(dword nIndex, _RefType obj) {
 		assert(nIndex < m_nCount);
 		m_pElements[nIndex] = obj;
+	}
+	template <class ... ArgsType>
+	void SetRValue(dword nIndex, ArgsType &&... Args) {
+		assert(nIndex < m_nCount);
+		m_pElements[nIndex] = T(std::forward<ArgsType>(Args)...);
 	}
 
 private:

@@ -89,6 +89,7 @@
 #include <atomic>
 #include <functional>
 #include <thread>
+#include <initializer_list>
 
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
 	#include <Windows.h>
@@ -105,32 +106,26 @@ template <class T>
 struct GetValueType {
 	typedef T ValType;
 };
-template <class T> struct GetValueType < T* > { typedef T* ValType; };
 
 template <class T>
 struct GetPtrType {
 	typedef T* PtrType;
 };
-template <class T> struct GetPtrType < T* > { typedef T** PtrType; };
 
 template <class T>
 struct GetCPtrType {
 	typedef const T* CPtrType;
 };
-template <class T> struct GetCPtrType < T* > { typedef const T** CPtrType; };
 
 template <class T>
 struct GetReferenceType {
 	typedef T& RType;
 };
-template <class T> struct GetReferenceType < T* > { typedef T* RType; };
-
 
 template <class T>
 struct GetConstRefType {
 	typedef const T& RType;
 };
-template <class T> struct GetConstRefType < T* > { typedef const T* RType; };
 
 template <class T>
 struct TypeTraits {

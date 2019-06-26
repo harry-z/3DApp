@@ -4,7 +4,6 @@
 #include "Array.h"
 #include "Hashmap.h"
 #include "Memory.h"
-// #include <stdio>
 
 #ifdef RENDERAPI_DX9
 #include <d3dcompiler.h>
@@ -38,22 +37,36 @@ struct ShaderEntry {
     String m_EntryPoint;
     String m_ShaderFile;
     CArray<String> m_ShaderMacros;
-    EShaderType m_ShaderType;
+    EShaderType m_ShaderType = EShaderType::EShaderType_Unknown;
 };
 
 char* FindFirstCharOrNumber(char *pStart)
 {
     char c = *pStart;
-    do
-    {
+    while (c != 0) {
         if ((c >= 'a' && c <= 'z') ||
             (c >= 'A' && c <= 'Z') ||
             (c >= '0' && c <= '9'))
             break;
         ++pStart;
-    } while (c != 0);
+        c = *pStart;
+    }
     
     return c != 0 ? pStart : nullptr;
+}
+
+void RemoveEnter(char *p)
+{
+    char c = *p;
+    while (c != 0) {
+        if (c == '\n')
+        {
+            *p = 0;
+            return;
+        }
+        ++p;
+        c = *p;
+    }
 }
 
 void ConcatenatePath(const String &szPath1, const String &szPath2, OUT String &szFullPath)
@@ -158,32 +171,52 @@ bool ReadShaderIndexFile(const String &szShaderIndexFile, OUT CArray<ShaderEntry
                     char *pszMatchedBrace = strchr(szLine + 1, ']');
                     if (pszMatchedBrace == nullptr)
                         continue;
+                    *pszMatchedBrace = 0;
+                    ShaderEntries[nIndex].m_ShaderName = szLine + 1;
                 }
                 else if (p = strstr(szLine, "Type")) {
                     p = FindFirstCharOrNumber(p + strlen("Type"));
-                    if (strcmp(p, "Vertex") == 0)
-                        ShaderEntries[nIndex].m_ShaderType = EShaderType::EShaderType_Vertex;
-                    else if (strcmp(p, "Pixel") == 0)
-                        ShaderEntries[nIndex].m_ShaderType = EShaderType::EShaderType_Pixel;
+                    if (p != nullptr)
+                    {
+                        RemoveEnter(p);
+                        if (strcmp(p, "Vertex") == 0)
+                            ShaderEntries[nIndex].m_ShaderType = EShaderType::EShaderType_Vertex;
+                        else if (strcmp(p, "Pixel") == 0)
+                            ShaderEntries[nIndex].m_ShaderType = EShaderType::EShaderType_Pixel;
+                    }
                 }
                 else if (p = strstr(szLine, "EntryPoint")) {
                     p = FindFirstCharOrNumber(p + strlen("EntryPoint"));
-                    ShaderEntries[nIndex].m_EntryPoint = p;
+                    if (p != nullptr)
+                    {
+                        RemoveEnter(p);
+                        ShaderEntries[nIndex].m_EntryPoint = p;
+                    }
                 }
                 else if (p = strstr(szLine, "Macros")) {
                     p = FindFirstCharOrNumber(p + strlen("Macros"));
-                    char *pComma = nullptr;
-                    while (*p != '/0' && (pComma = strchr(p, ','))) {
-                        *pComma = '/0';
-                        ShaderEntries[nIndex].m_ShaderMacros.Emplace(p);
-                        p = ++pComma;
+                    if (p != nullptr)
+                    {
+                        char *pComma = nullptr;
+                        while (*p != 0 && (pComma = strchr(p, ','))) {
+                            *pComma = 0;
+                            ShaderEntries[nIndex].m_ShaderMacros.Emplace(p);
+                            p = ++pComma;
+                        }
+                        if (*p != 0)
+                        {
+                            RemoveEnter(p);
+                            ShaderEntries[nIndex].m_ShaderMacros.Emplace(p);
+                        }
                     }
-                    if (*p != '/0')
-                        ShaderEntries[nIndex].m_ShaderMacros.Emplace(p);
                 }
                 else if (p = strstr(szLine, "File")) {
                     p = FindFirstCharOrNumber(p + strlen("File"));
-                    ShaderEntries[nIndex].m_ShaderFile = p;
+                    if (p != nullptr)
+                    {
+                        RemoveEnter(p);
+                        ShaderEntries[nIndex].m_ShaderFile = p;
+                    }
                 }
             }
         }
@@ -193,14 +226,35 @@ bool ReadShaderIndexFile(const String &szShaderIndexFile, OUT CArray<ShaderEntry
         return false;
 }
 
+void CompileAllShaders(const CHashmap<String, char*> &arrShaderFiles, const CArray<ShaderEntry> &arrShaderEntries)
+{
+#ifdef RENDERAPI_DX9
+    ID3DBlob *pByteCode = nullptr, *pByteError = nullptr;
+    dword 
+    D3DCompile()
+#endif
+}
+
 bool CShaderPrecacher::Precache()
 {
     // 查找目录下所有文件，并读取其内容
     CHashmap<String, char*> ShaderFiles(100);
     CArray<ShaderEntry> ShaderEntries;
 #ifdef RENDERAPI_DX9
-    ReadAllFile("ShaderSource/D3D9", "", ShaderFiles);
-    ReadShaderIndexFile("ShaderSource/D3D9/Shaders.idx", ShaderEntries);
+    std::cout << "Start reading all shader files..." << std::endl;
+    if (!ReadAllFile("ShaderSource/D3D9", "", ShaderFiles))
+    {
+        std::cout << "Failed to read shader files." << std::endl;
+        return false;
+    }
+    std::cout << "Finish reading all shader files." << std::endl;
+    std::cout << "Start reading shader index file..." << std::endl;
+    if (!ReadShaderIndexFile("ShaderSource/D3D9/Shaders.idx", ShaderEntries))
+    {
+        std::cout << "Failed to read shader index file." << std::endl;
+        return false;
+    }
+    std::cout << "Finish reading shader index file." << std::endl;
 #endif
 
     return true;

@@ -13,7 +13,7 @@ template <class T>
 inline T* ConstructNObj(void *p, dword size, dword n) {
 	byte *pbytes = (byte *)p;
 	for (dword i = 0; i < n; ++i)
-		new ((void *)(pbytes + size)) T();
+		new ((void *)(pbytes + size * i)) T();
 	return (T *)pbytes;
 }
 

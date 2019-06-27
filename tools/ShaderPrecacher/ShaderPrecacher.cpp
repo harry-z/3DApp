@@ -2,35 +2,10 @@
 #include "RendererTypes.h"
 #include "Str.h"
 #include "Array.h"
+#include "File.h"
 #include "Hashmap.h"
 #include "Memory.h"
-
-#ifdef RENDERAPI_DX9
-#include <d3dcompiler.h>
-// class CD3DIncludeHandler final : public ID3DInclude
-// {
-// public:
-//     STDMETHOD(Open)(THIS_ D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID *ppData, UINT *pBytes) {
-// 		FILE *pFile = fopen(pFileName, "r+");
-//         if (pFile)
-//         {
-//             fseek(pFile, 0, SEEK_END);
-//             long len = ftell(pFile);
-//             char *pShaderCodeBuffer = (char *)MEMALLOC(len);
-//             size_t bytesRead = fread(pFile, 1, len, pFile);
-//             fclose(pFile);
-//             if (bytesRead) {
-
-//             }
-//         }
-// 		return S_OK;
-// 	}
-// 	STDMETHOD(Close)(THIS_ LPCVOID pData) {
-// 		(void)pData;
-// 		return S_OK;
-// 	}
-// };
-#endif
+#include "Buffer.h"
 
 struct ShaderEntry {
     String m_ShaderName;
@@ -226,13 +201,123 @@ bool ReadShaderIndexFile(const String &szShaderIndexFile, OUT CArray<ShaderEntry
         return false;
 }
 
-void CompileAllShaders(const CHashmap<String, char*> &arrShaderFiles, const CArray<ShaderEntry> &arrShaderEntries)
-{
 #ifdef RENDERAPI_DX9
-    ID3DBlob *pByteCode = nullptr, *pByteError = nullptr;
-    dword 
-    D3DCompile()
+#include <d3dcompiler.h>
+class CD3DIncludeHandler final : public ID3DInclude
+{
+public:
+    CD3DIncludeHandler(const CHashmap<String, char*> *pHashmapShaderFiles) 
+    : m_pHashmapShaderFiles(const_cast<CHashmap<String, char*>*>(pHashmapShaderFiles)) {}
+    STDMETHOD(Open)(THIS_ D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID *ppData, UINT *pBytes) {
+		if (m_pHashmapShaderFiles != nullptr) {
+            CHashmap<String, char*>::_ValuePointerType ppFileContent = m_pHashmapShaderFiles->Find(String(pFileName));
+            if (ppFileContent != nullptr)
+            {
+                *ppData = *ppFileContent;
+                *pBytes = strlen(*ppFileContent);
+                return S_OK;
+            }
+        }
+		return S_FALSE;
+	}
+	STDMETHOD(Close)(THIS_ LPCVOID pData) {
+		(void)pData;
+		return S_OK;
+	}
+    CHashmap<String, char*> *m_pHashmapShaderFiles = nullptr;
+};
 #endif
+
+bool CompileAndCacheAllShaders(const CHashmap<String, char*> &arrShaderFiles, const CArray<ShaderEntry> &arrShaderEntries)
+{
+    DelFile("./Shader.bundle");
+    NewFile("./Shader.bundle");
+
+    CFile file;
+    if (!file.Open("./Shader.bundle", "wb"))
+        return false;
+
+#ifdef RENDERAPI_DX9
+    DWORD dwFlag = 0;
+#ifdef SHADER_DEBUGGING
+    BIT_ADD(dwFlag, (D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION));
+#endif
+
+    CD3DIncludeHandler IncludeHandler(&arrShaderFiles);
+    ID3DBlob *pByteCode = nullptr, *pByteError = nullptr;
+
+    for (const auto &ShaderEntry : arrShaderEntries) {
+        // 准备 Macro
+        CArray<D3D_SHADER_MACRO> D3DMacros;
+        D3D_SHADER_MACRO D3DMacro;
+        for (const auto &ShaderMacro : ShaderEntry.m_ShaderMacros) {
+            String::size_type pos = ShaderMacro.find_first_of("=");
+            if (pos != String::npos)
+                D3DMacro.Name = ShaderMacro.substr(0, pos).c_str();
+            else
+                D3DMacro.Name = ShaderMacro.c_str();
+            D3DMacro.Definition = "1";
+            D3DMacros.Emplace(std::move(D3DMacro));
+        }
+        D3DMacro.Name = 0;
+        D3DMacro.Definition = 0;
+        D3DMacros.Emplace(std::move(D3DMacro));
+
+        bool bShaderCached = false;
+        if (ShaderEntry.m_ShaderType != EShaderType::EShaderType_Unknown) {
+            String szProfile;
+            if (ShaderEntry.m_ShaderType == EShaderType::EShaderType_Vertex)
+                szProfile = "vs_3_0";
+            else if (ShaderEntry.m_ShaderType == EShaderType::EShaderType_Pixel)
+                szProfile = "ps_3_0";
+
+            // 找到相应的Shader文件
+            CHashmap<String, char*>::_ValueConstPointerType ppShaderCode = arrShaderFiles.Find(ShaderEntry.m_ShaderFile);
+            if (ppShaderCode != nullptr) {
+                HRESULT hr = D3DCompile(*ppShaderCode, 
+                    strlen(*ppShaderCode), 
+                    nullptr, 
+                    D3DMacros.Data(), 
+                    &IncludeHandler, 
+                    ShaderEntry.m_EntryPoint.c_str(), 
+                    szProfile.c_str(), 
+                    dwFlag, 0, 
+                    &pByteCode, 
+                    &pByteError);
+                if (SUCCEEDED(hr))
+                {
+                    // 编译成功，写入缓存文件
+                    dword nSize = ShaderEntry.m_ShaderName.length() + 1 + pByteCode->GetBufferSize() + sizeof(dword);
+                    byte *pBuffer = (byte*)malloc(nSize);
+
+                    AddString(pBuffer, ShaderEntry.m_ShaderName);
+                    dword nByteCodeSize = (dword)pByteCode->GetBufferSize();
+                    AddDwords(pBuffer, &nByteCodeSize, 1);
+                    AddBytes(pBuffer, (byte *)pByteCode->GetBufferPointer(), pByteCode->GetBufferSize());
+                    file.Write(pBuffer, nSize);
+
+                    free(pBuffer);
+                    SAFE_RELEASE(pByteCode);
+
+                    bShaderCached = true;
+                }
+                else
+                {
+                    std::cout << "Shader " << ShaderEntry.m_ShaderName.c_str() << " compile error: " << (char *)pByteError->GetBufferPointer() << std::endl;
+                }
+            }
+        }
+
+        if (bShaderCached)
+            std::cout << "Shader cached: " << ShaderEntry.m_ShaderName.c_str() << std::endl;
+        else
+            std::cout << "Shader not cached: " << ShaderEntry.m_ShaderName.c_str() << std::endl;
+    }
+    
+#endif
+    file.Close();
+
+    return true;
 }
 
 bool CShaderPrecacher::Precache()
@@ -240,117 +325,32 @@ bool CShaderPrecacher::Precache()
     // 查找目录下所有文件，并读取其内容
     CHashmap<String, char*> ShaderFiles(100);
     CArray<ShaderEntry> ShaderEntries;
+
+    String ShaderFilePath, ShaderIndexFilePath;
 #ifdef RENDERAPI_DX9
+    ShaderFilePath = "ShaderSource/D3D9";
+    ShaderIndexFilePath = "ShaderSource/D3D9/Shaders.idx";
+#endif
+
     std::cout << "Start reading all shader files..." << std::endl;
-    if (!ReadAllFile("ShaderSource/D3D9", "", ShaderFiles))
+    if (!ReadAllFile(ShaderFilePath, "", ShaderFiles))
     {
         std::cout << "Failed to read shader files." << std::endl;
         return false;
     }
     std::cout << "Finish reading all shader files." << std::endl;
     std::cout << "Start reading shader index file..." << std::endl;
-    if (!ReadShaderIndexFile("ShaderSource/D3D9/Shaders.idx", ShaderEntries))
+    if (!ReadShaderIndexFile(ShaderIndexFilePath, ShaderEntries))
     {
         std::cout << "Failed to read shader index file." << std::endl;
         return false;
     }
     std::cout << "Finish reading shader index file." << std::endl;
-#endif
+    if (!CompileAndCacheAllShaders(ShaderFiles, ShaderEntries))
+    {
+        std::cout << "Failed to cache shaders." << std::endl;
+    }
+    std::cout << "Finish caching shaders." << std::endl;
 
     return true;
-
-    // FILE *pFile = fopen("Shader.config", "r+");
-    // if (pFile != nullptr)
-    // {
-    //     struct Shader {
-    //         EShaderType m_ShaderType;
-    //         FString m_ShaderName;
-    //         CArray<FString> m_ShaderMacros;
-    //         FString m_ShaderFile;
-
-    //         Shader() : m_ShaderType(EShaderType::EShaderType_Unknown) {}
-    //     };
-    //     CArray<Shader*> Shaders;
-
-    //     Shader *pShader = nullptr;
-    //     char line[MAX_PATH];
-    //     while (!feof(pFile))
-    //     {
-    //         if (fgets(line, MAX_PATH, pFile))
-    //         {
-    //             if (line[0] == '[')
-    //             {
-    //                 pShader = NEW_TYPE(Shader);
-    //                 Shaders.Add(pShader);
-    //             }
-    //             else if (char *p = strstr(line, "type"))
-    //             {
-    //                 p = FindFirstCharOrNumber(p + strlen("type"));
-    //                 if (strcmp(p, "vertex") == 0)
-    //                     pShader->m_ShaderType = EShaderType::EShaderType_Vertex;
-    //                 else if (strcmp(p, "pixel") == 0)
-    //                     pShader->m_ShaderType = EShaderType::EShaderType_Pixel;
-    //             }
-    //             else if (char *p = strstr(line, "macro"))
-    //             {
-    //                 p = FindFirstCharOrNumber(p + strlen("macro"));
-    //                 pShader->m_ShaderMacros.Add(String(p));
-    //             }
-    //             else if (char *p = strstr(line, "file"))
-    //             {
-    //                 p = FindFirstCharOrNumber(p + strlen("file"));
-    //                 pShader->m_ShaderFile = p;
-    //             }
-    //         }
-    //     }
-    //     fclose(pFile);
-
-    //     for (const auto & Shader : Shaders)
-    //     {
-    //         FILE *pShaderFile = fopen(Shader->m_ShaderFile.c_str());
-    //         if (pShaderFile)
-    //         {
-    //             long len = fseek(pShaderFile, 0, SEEK_END);
-    //             fseek(pShaderFile, 0, SEEK_SET);
-    //             char *pShaderCodeBuffer = (char *)MEMALLOC(len);
-    //             size_t bytesRead = fread(pShaderCodeBuffer, 1, len, pShaderFile)
-    //             fclose(pShaderFile);
-    //             if (bytesRead == len)
-    //             {
-    //             #ifdef RENDERAPI_DX9
-    //                 DWORD dwFlag = 0;
-    //             #ifdef _DEBUG
-    //                 dwFlag = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-    //             #endif
-    //                 String szEntryPoint, szProfile;
-    //                 switch (Shader->m_ShaderType)
-    //                 {
-    //                     case EShaderType::EShaderType_Vertex:
-    //                         szEntryPoint = "VSMain";
-    //                         szProfile = "vs_3_0";
-    //                         break;
-    //                     case EShaderType::EShaderType_Pixel:
-    //                         szEntryPoint = "PSMain";
-    //                         szProfile = "ps_3_0";
-    //                         break;
-    //                 }
-
-    //                 CArray<D3D_SHADER_MACRO> D3DMacros;
-    //                 for (const auto & Macro : Shader->m_ShaderMacros)
-    //                 {
-    //                     D3D_SHADER_MACRO D3DMacro;
-    //                     D3DMacro.Name = Macro.c_str();
-    //                     D3DMacro.Definition = "1";
-    //                 }
-    //                 D3DMacro EndMacro;
-    //                 EndMacro.Name = 0;
-    //                 EndMacro.Definition = 0;
-
-    //                 ID3DBlob *pByteCode, *pErrorMsg;
-    //                 HRESULT hr = D3DCompile(pShaderCodeBuffer, len, D3DMacros.Data(), nullptr, nullptr, szEntryPoint.c_str(), szProfile.c_str(), dwFlag, &pByteCode, &pErrorMsg);
-    //             #endif
-    //             }
-    //         }
-    //     }
-    // }
 }

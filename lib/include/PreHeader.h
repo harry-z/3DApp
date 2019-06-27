@@ -81,6 +81,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
 #include <exception>
 #include <new>
 #include <mutex>
@@ -90,7 +91,7 @@
 #include <functional>
 #include <thread>
 #include <initializer_list>
-#include <istream>
+#include <iostream>
 
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
 	#include <Windows.h>

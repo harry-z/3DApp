@@ -1,5 +1,5 @@
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    add_definitions("-DTRACE_MEMORY_ALLOCATION")
+    add_definitions("-DTRACE_MEMORY_ALLOCATION" "-DSHADER_DEBUGGING")
 endif ()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src)
 add_executable(ShaderPrecacher main.cpp ShaderPrecacher.cpp)

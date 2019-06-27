@@ -25,3 +25,6 @@ public:
 private:
 	FILE *m_pFile;
 };
+
+DLL_EXPORT void NewFile(const char *pszFileName);
+DLL_EXPORT void DelFile(const char *pszFileName);

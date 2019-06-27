@@ -83,6 +83,7 @@ public:
 	void Clear() {
 		memset(m_pElements, 0, sizeof(_ValueType)*m_nAllocCount);
 	}
+	_PointerType Data() { return m_pElements; }
 	_ConstPointerType Data() const { return m_pElements; }
 	_RefType operator[] (dword nIndex) { assert(nIndex < m_nCount); return m_pElements[nIndex]; }
 	_ConstRefType operator[] (dword nIndex) const { assert(nIndex < m_nCount); return m_pElements[nIndex]; }
@@ -128,6 +129,11 @@ public:
 		assert(nIndex < m_nCount);
 		m_pElements[nIndex] = T(std::forward<ArgsType>(Args)...);
 	}
+
+	friend _PointerType begin(CArray &array) { return array.Data(); }
+	friend _ConstPointerType begin(const CArray &array) { return array.Data(); }
+	friend _PointerType end(CArray &array) { return array.Data() + array.Num(); }
+	friend _ConstPointerType end(const CArray &array) { return array.Data() + array.Num(); }
 
 private:
 	_PointerType m_pElements;

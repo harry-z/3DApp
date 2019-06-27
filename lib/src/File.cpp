@@ -60,3 +60,15 @@ void CFile::Flush() {
 	assert(m_pFile);
 	fflush(m_pFile);
 }
+
+void NewFile(const char *pszFileName) {
+#if TARGET_PLATFORM == PLATFORM_WINDOWS
+	CreateFile(pszFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+#endif
+}
+
+void DelFile(const char *pszFileName) {
+#if TARGET_PLATFORM == PLATFORM_WINDOWS
+	DeleteFile(pszFileName);
+#endif
+}

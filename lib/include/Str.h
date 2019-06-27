@@ -167,7 +167,7 @@ inline String String::substr(size_type nOff /* = 0 */, size_type nCount /* = npo
 	memcpy(str.m_pData, m_pData + nOff, nSize);
 	str.m_pData[nSize] = 0;
 	str.m_nLen = nSize;
-	return str;
+	return std::move(str);
 }
 
 inline String String::Left(size_type nLength) const {

@@ -63,7 +63,7 @@ void CFile::Flush() {
 
 void NewFile(const char *pszFileName) {
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
-	CreateFile(pszFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+	CreateFile(pszFileName, GENERIC_WRITE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 #endif
 }
 

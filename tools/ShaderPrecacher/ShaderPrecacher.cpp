@@ -7,6 +7,8 @@
 #include "Memory.h"
 #include "Buffer.h"
 
+#include <errno.h>
+
 struct ShaderEntry {
     String m_ShaderName;
     String m_EntryPoint;
@@ -48,6 +50,8 @@ void ConcatenatePath(const String &szPath1, const String &szPath2, OUT String &s
 {
     if (szPath1.empty())
         szFullPath = szPath2;
+    else if (szPath2.empty())
+        szFullPath = szPath1;
     else
         szFullPath = szPath1 + "/" + szPath2;
 }
@@ -69,14 +73,15 @@ bool ReadAllFile(const String &szGlobalPath, const String &szCurrentPath, OUT CH
         {
             String szFullPath;
             ConcatenatePath(szOriginalPath, FindFileData.cFileName, szFullPath);
-            FILE *pFile = fopen(szFullPath.c_str(), "r+");
+            FILE *pFile = fopen(szFullPath.c_str(), "rb");
             if (pFile)
             {
                 fseek(pFile, 0, SEEK_END);
                 long len = ftell(pFile);
                 fseek(pFile, 0, SEEK_SET);
-                char *pShaderCodeBuffer = (char *)MEMALLOC(len);
+                char *pShaderCodeBuffer = (char *)malloc(len + 1);
                 fread(pShaderCodeBuffer, 1, len, pFile);
+                pShaderCodeBuffer[len] = 0;
                 fclose(pFile);
 
                 String szEntry;
@@ -99,14 +104,15 @@ bool ReadAllFile(const String &szGlobalPath, const String &szCurrentPath, OUT CH
             {
                 String szFullPath;
                 ConcatenatePath(szOriginalPath, FindFileData.cFileName, szFullPath);
-                FILE *pFile = fopen(szFullPath.c_str(), "r+");
+                FILE *pFile = fopen(szFullPath.c_str(), "rb");
                 if (pFile)
                 {
                     fseek(pFile, 0, SEEK_END);
                     long len = ftell(pFile);
                     fseek(pFile, 0, SEEK_SET);
-                    char *pShaderCodeBuffer = (char *)MEMALLOC(len);
+                    char *pShaderCodeBuffer = (char *)MEMALLOC(len + 1);
                     fread(pShaderCodeBuffer, 1, len, pFile);
+                    pShaderCodeBuffer[len] = 0;
                     fclose(pFile);
 
                     String szEntry;
@@ -230,11 +236,11 @@ public:
 
 bool CompileAndCacheAllShaders(const CHashmap<String, char*> &arrShaderFiles, const CArray<ShaderEntry> &arrShaderEntries)
 {
-    DelFile("./Shader.bundle");
-    NewFile("./Shader.bundle");
+    // DelFile("./Shader.bundle");
+    // NewFile("./Shader.bundle");
 
     CFile file;
-    if (!file.Open("./Shader.bundle", "wb"))
+    if (!file.Open("./Shader.bundle", "w+"))
         return false;
 
 #ifdef RENDERAPI_DX9
@@ -289,14 +295,15 @@ bool CompileAndCacheAllShaders(const CHashmap<String, char*> &arrShaderFiles, co
                     // 编译成功，写入缓存文件
                     dword nSize = ShaderEntry.m_ShaderName.length() + 1 + pByteCode->GetBufferSize() + sizeof(dword);
                     byte *pBuffer = (byte*)malloc(nSize);
+                    byte *pBufferStart = pBuffer;
 
                     AddString(pBuffer, ShaderEntry.m_ShaderName);
                     dword nByteCodeSize = (dword)pByteCode->GetBufferSize();
                     AddDwords(pBuffer, &nByteCodeSize, 1);
                     AddBytes(pBuffer, (byte *)pByteCode->GetBufferPointer(), pByteCode->GetBufferSize());
-                    file.Write(pBuffer, nSize);
+                    file.Write(pBufferStart, nSize);
 
-                    free(pBuffer);
+                    free(pBufferStart);
                     SAFE_RELEASE(pByteCode);
 
                     bShaderCached = true;
@@ -351,6 +358,11 @@ bool CShaderPrecacher::Precache()
         std::cout << "Failed to cache shaders." << std::endl;
     }
     std::cout << "Finish caching shaders." << std::endl;
+
+    CHashmap<String, char*>::Iterator Iter = ShaderFiles.Begin();
+    for (; Iter != ShaderFiles.End(); ++Iter) {
+        free(Iter.Value());
+    }
 
     return true;
 }

@@ -45,6 +45,7 @@
         "xfunctional": "cpp",
         "xmemory": "cpp",
         "atomic": "cpp",
-        "xxatomic": "cpp"
+        "xxatomic": "cpp",
+        "cerrno": "cpp"
     }
 }

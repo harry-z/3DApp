@@ -4,6 +4,7 @@
 
 #ifdef RENDERAPI_DX9
 #include "Backend/D3D9/RenderBackendDX9.h"
+#include "Backend/D3D9/ShaderDX9.h"
 #endif
 
 #ifdef INPUTAPI_DINPUT
@@ -50,6 +51,11 @@ C3DEngine::~C3DEngine()
     Global::m_pInputListener = nullptr;
 
 #ifdef RENDERAPI_DX9
+    if (Global::m_pShaderManager)
+    {
+        CShaderManagerDX9 *pShaderManagerDX9 = static_cast<CShaderManagerDX9*>(Global::m_pShaderManager);
+        DELETE_TYPE(pShaderManagerDX9, CShaderManagerDX9);
+    }
     if (Global::m_pRenderBackend)
     {
         CRenderBackendDX9 *pRenderBackendDX9 = static_cast<CRenderBackendDX9*>(Global::m_pRenderBackend);
@@ -101,6 +107,12 @@ bool C3DEngine::Initialize()
         return false;
     Global::m_pRenderBackend = pRenderBackend;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize RenderBackend");
+
+    CShaderManager *pShaderManager = NEW_TYPE(CShaderManagerDX9);
+    if (!pShaderManager->LoadShaders())
+        return false;
+    Global::m_pShaderManager = pShaderManager;
+    pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Load Shaders");
 
 #ifdef INPUTAPI_DINPUT
     CInputListener *pInputListener = NEW_TYPE(CInputListenerDInput);

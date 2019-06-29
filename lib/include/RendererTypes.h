@@ -89,10 +89,10 @@ enum ECubeFace {
 	ECubeFace_All = ECubeFace_PosX | ECubeFace_NegX | ECubeFace_PosY | ECubeFace_NegY | ECubeFace_PosZ | ECubeFace_NegZ
 };
 
-enum class EShaderType {
-	EShaderType_Unknown = -1,
-	EShaderType_Vertex,
-	EShaderType_Pixel
+enum class EShaderType : byte {
+	EShaderType_Vertex = 0,
+	EShaderType_Pixel = 1,
+	EShaderType_Unknown = 0xFF
 };
 
 enum EClearFlag {

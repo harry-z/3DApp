@@ -85,6 +85,7 @@ public:
 	}
 	_PointerType Data() { return m_pElements; }
 	_ConstPointerType Data() const { return m_pElements; }
+	bool IsValidIndex(dword nIndex) const { return nIndex < m_nCount; }
 	_RefType operator[] (dword nIndex) { assert(nIndex < m_nCount); return m_pElements[nIndex]; }
 	_ConstRefType operator[] (dword nIndex) const { assert(nIndex < m_nCount); return m_pElements[nIndex]; }
 	_RefType Get(dword nIndex) {

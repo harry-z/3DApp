@@ -8,7 +8,7 @@
 // #include "HardwareBuffer.h"
 // #include "Material.h"
 // #include "Mesh.h"
-// #include "Shader.h"
+#include "Shader.h"
 // //#include "Terrain.h"
 #include "Texture.h"
 #include "RenderBackend.h"
@@ -36,7 +36,7 @@ CJobSystem* Global::m_pJobSystem = nullptr;
 CLog* Global::m_pLog = nullptr;
 // CMaterialManager* Global::m_pMaterialManager = nullptr;
 // CMeshManager* Global::m_pMeshManager = nullptr;
-// CShaderManager* Global::m_pShaderManager = nullptr;
+CShaderManager* Global::m_pShaderManager = nullptr;
 // //CTerrain* Global::m_pTerrain = nullptr;
 CTextureManager* Global::m_pTextureManager = nullptr;
 // CTimeOfDay* Global::m_pTimeOfDay = nullptr;

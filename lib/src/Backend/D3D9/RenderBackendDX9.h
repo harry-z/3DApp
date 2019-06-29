@@ -1,5 +1,4 @@
-#ifndef _RENDERERDX9_H_
-#define _RENDERERDX9_H_
+#pragma once
 
 #include "..\..\RendererStableHeader.h"
 //#include "RendererDX9CVars.h"
@@ -151,5 +150,3 @@ public:
 //	ITexture2D *m_pShadowDepthDepth;
 //	ITexture2D *m_pShadowMask;
 };
-
-#endif

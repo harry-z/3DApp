@@ -73,6 +73,6 @@ inline void GetFloats(INOUT byte *&pBuffer, INOUT float *floats, dword n) {
 inline String GetString(INOUT byte *&pBuffer) {
 	assert(pBuffer != nullptr);
 	String str((char*)pBuffer);
-	pBuffer += (str.length() + 1 + 1);
+	pBuffer += (str.length() + 1);
 	return str;
 }

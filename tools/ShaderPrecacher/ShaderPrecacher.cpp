@@ -236,15 +236,24 @@ public:
 
 bool CompileAndCacheAllShaders(const CHashmap<String, char*> &arrShaderFiles, const CArray<ShaderEntry> &arrShaderEntries)
 {
-    // DelFile("./Shader.bundle");
-    // NewFile("./Shader.bundle");
-
     CFile file;
     if (!file.Open("./Shader.bundle", "w+"))
         return false;
 
+    struct ShaderBuffer {
+        void *buffer;
+        dword size;
+        ShaderBuffer(void *buf, dword nz) : buffer(buf), size(nz) {}
+        ~ShaderBuffer() {
+            if (buffer != nullptr)
+                free(buffer);
+        }
+    };
+    CArray<ShaderBuffer> arrShaderBuffer;
+
 #ifdef RENDERAPI_DX9
     DWORD dwFlag = 0;
+
 #ifdef SHADER_DEBUGGING
     BIT_ADD(dwFlag, (D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION));
 #endif
@@ -293,17 +302,23 @@ bool CompileAndCacheAllShaders(const CHashmap<String, char*> &arrShaderFiles, co
                 if (SUCCEEDED(hr))
                 {
                     // 编译成功，写入缓存文件
-                    dword nSize = ShaderEntry.m_ShaderName.length() + 1 + pByteCode->GetBufferSize() + sizeof(dword);
+                    dword nSize = ShaderEntry.m_ShaderName.length() + 1 + sizeof(byte) + pByteCode->GetBufferSize() + sizeof(dword);
                     byte *pBuffer = (byte*)malloc(nSize);
                     byte *pBufferStart = pBuffer;
 
+                    // 写入Shader名称
                     AddString(pBuffer, ShaderEntry.m_ShaderName);
+                    // 写入Shader类型
+                    byte nShaderType = (byte)ShaderEntry.m_ShaderType;
+                    AddBytes(pBuffer, &nShaderType, 1);
+                    // 写入ShaderByteCode长度
                     dword nByteCodeSize = (dword)pByteCode->GetBufferSize();
                     AddDwords(pBuffer, &nByteCodeSize, 1);
+                    // 写入ShaderByteCode
                     AddBytes(pBuffer, (byte *)pByteCode->GetBufferPointer(), pByteCode->GetBufferSize());
-                    file.Write(pBufferStart, nSize);
 
-                    free(pBufferStart);
+                    arrShaderBuffer.Emplace(pBufferStart, nSize);
+
                     SAFE_RELEASE(pByteCode);
 
                     bShaderCached = true;
@@ -322,7 +337,15 @@ bool CompileAndCacheAllShaders(const CHashmap<String, char*> &arrShaderFiles, co
     }
     
 #endif
+
+    dword nNumCachedShader = arrShaderBuffer.Num();
+    file.Write(&nNumCachedShader, sizeof(dword));
+    for (const auto &ShaderBuffer : arrShaderBuffer) {
+        file.Write(ShaderBuffer.buffer, ShaderBuffer.size);
+    }
     file.Close();
+
+    arrShaderBuffer.Empty();
 
     return true;
 }

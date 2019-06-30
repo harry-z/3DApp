@@ -8,10 +8,6 @@
 	#endif
 	#include <d3d9.h>
 	#include <d3dcompiler.h>
-	// #pragma comment(lib, "d3d9.lib")
-	// #pragma comment(lib, "d3dcompiler.lib")
-	// #pragma comment(lib, "dxguid.lib")
-	// #pragma comment(lib, "dinput8.lib")
 
 	extern IDirect3DDevice9 *g_pDevice9;
 	extern D3DCAPS9 *g_pCaps9;

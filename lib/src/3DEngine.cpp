@@ -5,6 +5,7 @@
 #ifdef RENDERAPI_DX9
 #include "Backend/D3D9/RenderBackendDX9.h"
 #include "Backend/D3D9/ShaderDX9.h"
+#include "Backend/D3D9/TextureDX9.h"
 #endif
 
 #ifdef INPUTAPI_DINPUT
@@ -103,16 +104,26 @@ bool C3DEngine::Initialize()
     IRenderBackend *pRenderBackend = NEW_TYPE(CRenderBackendDX9);
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create RenderBackend D3D9");
 #endif
+    Global::m_pRenderBackend = pRenderBackend;
     if (!pRenderBackend->Initialize(pDisplay))
         return false;
-    Global::m_pRenderBackend = pRenderBackend;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize RenderBackend");
 
+#ifdef RENDERAPI_DX9
     CShaderManager *pShaderManager = NEW_TYPE(CShaderManagerDX9);
+#endif
+    Global::m_pShaderManager = pShaderManager;
     if (!pShaderManager->LoadShaders())
         return false;
-    Global::m_pShaderManager = pShaderManager;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Load Shaders");
+
+#ifdef RENDERAPI_DX9
+    CTextureManager *pTextureManager = NEW_TYPE(CTextureManagerDX9);
+#endif
+    Global::m_pTextureManager = pTextureManager;
+    if (!pTextureManager->Init())
+        return false;
+    pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize Textures");
 
 #ifdef INPUTAPI_DINPUT
     CInputListener *pInputListener = NEW_TYPE(CInputListenerDInput);

@@ -42,9 +42,9 @@ CTextureManager::CTextureManager()
 }
 
 CTexture* CTextureManager::CreateTexture(const String& szName, word width, word height, 
-										 ETextureType textureType /* = ETextureType_2D */, 
-										 EPixelFormat pixelFormat /* = EPixelFormat_X8R8G8B8 */, 
-										 ETextureUsage eUsage /* = ETextureUsage_Dynamic */) 
+	ETextureType textureType /* = ETextureType_2D */, 
+	EPixelFormat pixelFormat /* = EPixelFormat_X8R8G8B8 */, 
+	ETextureUsage eUsage /* = ETextureUsage_Dynamic */) 
 {
 	assert(Global::IsMainThread() && eUsage != ETextureUsage::ETextureUsage_Default);
 	assert((textureType == ETextureType_1D && height == 1) || textureType == ETextureType_2D);
@@ -70,7 +70,7 @@ CTexture* CTextureManager::CreateTexture(const String& szName, word width, word 
 }
 
 CTexture* CTextureManager::LoadTexture(const String &filePath, 
-									   EAutoGenmip bAutoGenMipmap /* = EAutoGenmip_AUTO */, bool bGamma /* = false */, bool bBackground /* = false */)
+	EAutoGenmip bAutoGenMipmap /* = EAutoGenmip_AUTO */, bool bGamma /* = false */, bool bBackground /* = false */)
 {
 	IdString idStr(filePath);
 	TextureMap::_ValuePointerType pTexture;

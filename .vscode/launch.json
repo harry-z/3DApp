@@ -59,5 +59,16 @@
             "environment": [],
             "externalConsole": true
         },
+        {
+            "name": "ShaderPrecacher VS2017 Win32 Debug",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/BuildVS2017/src/Debug/ShaderPrecacher.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/BuildVS2017/src/Debug",
+            "environment": [],
+            "externalConsole": true
+        }
     ]
 }

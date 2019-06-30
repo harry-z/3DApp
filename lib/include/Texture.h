@@ -16,6 +16,7 @@ public:
 	inline byte GetMipLevel() const { return m_nMipLevel; }
 	inline EPixelFormat GetPixelFormat() const { return m_Format; }
 	inline ETextureType GetTextureType() const { return (ETextureType)(m_TexType & (~ETextureType_SRGB)); }
+	inline ETextureUsage GetTextureUsage() const { return (ETextureUsage)m_Usage; }
 	inline bool NeedGammaCorrection() const { return BIT_CHECK(m_TexType, ((byte)ETextureType_SRGB)); }
 	inline const IdString& GetIdString() const { return m_IdStr; }
 	inline dword GetID() const { return m_nID; }
@@ -36,6 +37,7 @@ protected:
 		m_Format(EPixelFormat::EPixelFormat_Unknown),
 		m_Usage((byte)ETextureUsage::ETextureUsage_Unknown),
 		m_pJob(nullptr) {}
+	virtual ~CTexture() {}
 
 	virtual void Create(const String &sName, word nWidth, word nHeight,
 		ETextureType eTextureType,

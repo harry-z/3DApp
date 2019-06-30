@@ -4,14 +4,16 @@
 
 class CShader {
 public:
-	virtual ~CShader() {}
 	virtual bool Load(EShaderType eType, const byte *pszShaderByteCode) = 0;
     inline word GetId() const { return m_nId; } 
     inline EShaderType GetShaderType() const { return m_Type; }
 
-	word m_nId;
+protected:
+    CShader() {}
+	virtual ~CShader() {}
 
 protected:
+	word m_nId;
     EShaderType m_Type = EShaderType::EShaderType_Unknown;
 };
 

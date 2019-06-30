@@ -1,5 +1,9 @@
 #include "ShaderDX9.h"
 
+CShaderDX9::CShaderDX9() {
+    m_Shader.m_pVertexShader = nullptr;
+}
+
 CShaderDX9::~CShaderDX9() {
     switch (m_Type) {
         case EShaderType::EShaderType_Vertex:

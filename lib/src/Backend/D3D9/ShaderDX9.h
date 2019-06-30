@@ -4,6 +4,9 @@
 
 class CShaderDX9 final : public CShader {
 public:
+    friend class CShaderManagerDX9;
+
+    CShaderDX9();
     virtual ~CShaderDX9();
     virtual bool Load(EShaderType eType, const byte *pszShaderByteCode) override;
 

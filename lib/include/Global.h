@@ -1,5 +1,4 @@
-#ifndef _GLOBAL_H_
-#define _GLOBAL_H_
+#pragma once
 
 #include "Prereq.h"
 
@@ -46,4 +45,3 @@ struct Global {
 
 	// DLL_EXPORT	static String s_WorkingDirectory;
 };
-#endif

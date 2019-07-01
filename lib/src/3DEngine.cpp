@@ -6,6 +6,7 @@
 #include "Backend/D3D9/RenderBackendDX9.h"
 #include "Backend/D3D9/ShaderDX9.h"
 #include "Backend/D3D9/TextureDX9.h"
+#include "Backend/D3D9/HardwareBufferDX9.h"
 #endif
 
 #ifdef INPUTAPI_DINPUT
@@ -52,6 +53,16 @@ C3DEngine::~C3DEngine()
     Global::m_pInputListener = nullptr;
 
 #ifdef RENDERAPI_DX9
+    if (Global::m_pHwBufferManager)
+    {
+        CHardwareBufferManagerDX9 *pHwBufferManagerDX9 = static_cast<CHardwareBufferManagerDX9*>(Global::m_pHwBufferManager);
+        DELETE_TYPE(pHwBufferManagerDX9, CHardwareBufferManagerDX9);
+    }
+    if (Global::m_pTextureManager)
+    {
+        CTextureManagerDX9 *pTextureManagerDX9 = static_cast<CTextureManagerDX9*>(Global::m_pTextureManager);
+        DELETE_TYPE(pTextureManagerDX9, CTextureManagerDX9);
+    }
     if (Global::m_pShaderManager)
     {
         CShaderManagerDX9 *pShaderManagerDX9 = static_cast<CShaderManagerDX9*>(Global::m_pShaderManager);
@@ -63,6 +74,9 @@ C3DEngine::~C3DEngine()
         DELETE_TYPE(pRenderBackendDX9, CRenderBackendDX9);
     }
 #endif
+    Global::m_pHwBufferManager = nullptr;
+    Global::m_pTextureManager = nullptr;
+    Global::m_pShaderManager = nullptr;
     Global::m_pRenderBackend = nullptr;
 
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
@@ -103,24 +117,23 @@ bool C3DEngine::Initialize()
 #ifdef RENDERAPI_DX9
     IRenderBackend *pRenderBackend = NEW_TYPE(CRenderBackendDX9);
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create RenderBackend D3D9");
+    CShaderManager *pShaderManager = NEW_TYPE(CShaderManagerDX9);
+    CTextureManager *pTextureManager = NEW_TYPE(CTextureManagerDX9);
+    CHardwareBufferManager * pHwBufferManager = NEW_TYPE(CHardwareBufferManagerDX9);
 #endif
     Global::m_pRenderBackend = pRenderBackend;
+    Global::m_pShaderManager = pShaderManager;
+    Global::m_pTextureManager = pTextureManager;
+    Global::m_pHwBufferManager = pHwBufferManager;
+
     if (!pRenderBackend->Initialize(pDisplay))
         return false;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize RenderBackend");
 
-#ifdef RENDERAPI_DX9
-    CShaderManager *pShaderManager = NEW_TYPE(CShaderManagerDX9);
-#endif
-    Global::m_pShaderManager = pShaderManager;
     if (!pShaderManager->LoadShaders())
         return false;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Load Shaders");
 
-#ifdef RENDERAPI_DX9
-    CTextureManager *pTextureManager = NEW_TYPE(CTextureManagerDX9);
-#endif
-    Global::m_pTextureManager = pTextureManager;
     if (!pTextureManager->Init())
         return false;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize Textures");

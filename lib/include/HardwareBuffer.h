@@ -17,3 +17,14 @@ protected:
 	dword m_nCount;
 	dword m_nLockedLength;
 };
+
+class CHardwareBufferManager {
+public:
+	virtual ~CHardwareBufferManager() {}
+
+	virtual IHardwareBuffer* CreateVertexBuffer(bool bDynamic, const byte *pData, dword nLength, dword nCount) = 0;
+	virtual IHardwareBuffer* CreateIndexBuffer(bool bDynamic, const byte *pData, dword nLength, dword nCount) = 0;
+	virtual void DestroyVertexBuffer(IHardwareBuffer *pVertexBuffer) = 0;
+	virtual void DestroyIndexBuffer(IHardwareBuffer *pIndexBuffer) = 0;
+
+};

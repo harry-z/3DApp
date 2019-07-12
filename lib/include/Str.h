@@ -87,6 +87,8 @@ public:
 	void LeftSelf(size_type nLength);
 	void RightSelf(size_type nLength);
 
+	void Reserve(size_type nLength) { EnsureAllocated(nLength); }
+
 private:
 	void Init();
 	void EnsureAllocated(size_type nSize);

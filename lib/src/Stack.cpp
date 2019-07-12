@@ -1,27 +1,27 @@
 #include "Memory.h"
 #include "Stack.h"
 
-CStack::CStack()
+CStackAllocator::CStackAllocator()
 	: m_nSize(0),
 	m_nOffset(0),
 	m_pBuffer(nullptr) {
 	
 }
 
-CStack::~CStack() {
+CStackAllocator::~CStackAllocator() {
 	if (m_pBuffer) {
 		MEMFREE(m_pBuffer);
 	}
 }
 
-bool CStack::Initialize(dword nSize) {
+bool CStackAllocator::Initialize(dword nSize) {
 	m_pBuffer = (byte *)MEMALLOC(nSize);
 	assert(m_pBuffer != nullptr);
 	m_nSize = nSize;
 	return m_pBuffer != nullptr;
 }
 
-void* CStack::Allocate(dword nBytes) {
+void* CStackAllocator::Allocate(dword nBytes) {
 	assert(m_pBuffer != nullptr);
 	dword nAlignedSize = ALIGN_SIZE(nBytes);
 	if (NotEnoughMemory(nAlignedSize))

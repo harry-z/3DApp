@@ -32,6 +32,7 @@ add_library(${PROJECT_NAME}_lib SHARED
     Memory.cpp
     PixelFormatUtil.cpp
     Pool.cpp
+    ScriptParser.cpp
     Shader.cpp
     Stack.cpp
     Str.cpp

@@ -1,11 +1,12 @@
 #pragma once
 
 #include "PreHeader.h"
+#include "Array.h"
 
 class CStackAllocator {
 public:
-	CStack();
-	~CStack();
+	CStackAllocator();
+	~CStackAllocator();
 
 	bool Initialize(dword nSize);
 	void* Allocate(dword nBytes);
@@ -37,13 +38,14 @@ public:
 		m_Storage.Emplace(std::forward<ArgsType>(Args)...);
 	}
 	_ConstPointerType Last() const { return m_Storage.Num() > 0 ? &m_Storage[m_Storage.Num() - 1] : nullptr; }
-	_ValueType Pop() const { 
+	_ValueType Pop() { 
 		_ValueType obj = m_Storage[m_Storage.Num() - 1];
 		m_Storage.Remove(m_Storage.Num() - 1);
 		return std::move(obj);
 	}
 	dword Num() const { return m_Storage.Num(); }
+	bool IsEmpty() const { return m_Storage.Num() == 0; }
 
 private:
-	CArray<T> m_Storage;
+	CArray<T, Traits> m_Storage;
 };

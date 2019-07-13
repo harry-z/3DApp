@@ -3,20 +3,20 @@
 
 struct IScriptParserListener
 {
-    void OnProcessChunkTitle(const char *pszChunkType, const char *pszChunkParam) {}
-    void OnProcessParam(const char *pszParamType, const char *pszParam1, const char *pszParam2) {}
+    virtual ~IScriptParserListener() {}
+    void OnProcessChunkTitle(const String &szChunkType, const String &szChunkParam) {}
+    void OnProcessParam(const String &szParamType, const String &szParam1, const String &szParam2) {}
+    LinklistNode<IScriptParserListener*> m_Node;
 };
 
 class DLL_EXPORT CScriptParser
 {
 public:
-    bool Parse(const String &szScriptContent);
-    bool Parse(const char *pszScriptFile);
+    bool Parse(const char *pszScriptContent);
+    bool ParseFromFile(const char *pszScriptFile);
+    void AddScriptParserListener(IScriptParserListener *pListener);
+    void RemoveScriptParserListener(IScriptParserListener *pListener);
 
 private:
-    void NotifyProcessChunkTitle(const char *pszChunkType, const char *pszChunkParam);
-    void NotifyProcessParam(const char *pszParamType, const char *pszParam1, const char *pszParam2);
-
-private:
-    CArray<IScriptParserListener> m_Listeners;
+    Linklist<IScriptParserListener*> m_Listeners;
 };

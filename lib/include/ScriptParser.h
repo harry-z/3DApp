@@ -6,7 +6,7 @@ struct IScriptParserListener
     virtual ~IScriptParserListener() {}
     void OnProcessChunkTitle(const String &szChunkType, const String &szChunkParam) {}
     void OnProcessParam(const String &szParamType, const String &szParam1, const String &szParam2) {}
-    LinklistNode<IScriptParserListener*> m_Node;
+    LinklistNode<IScriptParserListener> m_Node;
 };
 
 class DLL_EXPORT CScriptParser
@@ -18,5 +18,5 @@ public:
     void RemoveScriptParserListener(IScriptParserListener *pListener);
 
 private:
-    Linklist<IScriptParserListener*> m_Listeners;
+    Linklist<IScriptParserListener> m_Listeners;
 };

@@ -2,7 +2,6 @@
 
 constexpr char c_ChunkTokenStart = '{';
 constexpr char c_ChunkTokenEnd = '}';
-constexpr char c_StringSplit = ' ';
 
 struct ParserParamNode {
     String m_szType;
@@ -41,18 +40,6 @@ bool IsAvailableChar(const char c)
             (c >= 'A' && c <= 'Z') ||
             (c >= '0' && c <= '9') ||
             (c == '-' || c == '.');
-}
-
-const char *SkipToNextLine(const char *&pszContent)
-{
-    char c = *pszContent;
-    while (c != 0) {
-        if (c == '\n')
-            return ++pszContent;
-        else
-            c = *(++pszContent);
-    }
-    return nullptr;
 }
 
 const char* FindFirstAvailableChar(const char *&pszContent)
@@ -107,7 +94,7 @@ String ExtractString(const char *&pszContent)
     return std::move(str);
 }
 
-void NotifyListner(const ParserChunkNode &Node, IScriptParserListener *pListener)
+void NotifyListener(const ParserChunkNode &Node, IScriptParserListener *pListener)
 {
     pListener->OnProcessChunkTitle(Node.m_szType, Node.m_szParam);
     if (!Node.m_ParamNodes.Empty())
@@ -122,7 +109,7 @@ void NotifyListner(const ParserChunkNode &Node, IScriptParserListener *pListener
     {
         for (const auto &ChildNode : Node.m_ChildChunkNodes)
         {
-            NotifyListner(ChildNode, pListener);
+            NotifyListener(ChildNode, pListener);
         }
     }
 }
@@ -235,7 +222,7 @@ bool CScriptParser::Parse(const char *pszScriptContent)
     bSucceeded = bSucceeded && ChunkNodeStack.IsEmpty() && pRootChunkNode != nullptr;
 
     if (bSucceeded) {
-        LinklistNode<IScriptParserListener*> *pTemp = m_Listeners.m_pRoot;
+        Linklist<IScriptParserListener>::_NodeType *pTemp = m_Listeners.m_pRoot;
         while (pTemp != nullptr)
         {
             NotifyListener(*pRootChunkNode, pTemp->m_pOwner);
@@ -272,7 +259,7 @@ bool CScriptParser::ParseFromFile(const char *pszScriptFile)
 
 void CScriptParser::AddScriptParserListener(IScriptParserListener *pListener)
 {
-    pListener->m_Node->m_pOwner = pListener;
+    pListener->m_Node.m_pOwner = pListener;
     m_Listeners.PushBack(&pListener->m_Node);
 }
 

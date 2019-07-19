@@ -73,12 +73,11 @@ CTexture* CTextureManager::LoadTexture(const String &filePath,
 	EAutoGenmip bAutoGenMipmap /* = EAutoGenmip_AUTO */, bool bGamma /* = false */, bool bBackground /* = false */)
 {
 	IdString idStr(filePath);
-	TextureMap::_ValuePointerType pTexture;
 
 	CTexture *pNewTexture = nullptr;
 	{
 		std::lock_guard<std::mutex> l(m_TextureMapLock);
-		pTexture = m_TextureMap.Find(idStr);
+		TextureMap::_ValuePointerType pTexture = m_TextureMap.Find(idStr);
 		if (pTexture != nullptr)
 			return *pTexture;
 

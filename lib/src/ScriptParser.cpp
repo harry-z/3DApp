@@ -42,11 +42,16 @@ bool IsAvailableChar(const char c)
             (c == '-' || c == '.');
 }
 
+bool IsTokenChar(const char c)
+{
+    return (c == c_ChunkTokenStart || c == c_ChunkTokenEnd);
+}
+
 const char* FindFirstAvailableChar(const char *&pszContent)
 {
     char c = *pszContent;
     while (c != 0) {
-        if (IsAvailableChar(c))
+        if (IsAvailableChar(c) || IsTokenChar(c))
             return pszContent;
         else
             c = *(++pszContent);
@@ -82,15 +87,15 @@ String ExtractString(const char *&pszContent)
 {
     const char *pszBegin = pszContent;
     char c = *pszContent;
-    while (!IsAvailableChar(c)) {
-        ++pszContent;
+    while (IsAvailableChar(c)) {
+        c = *(++pszContent);
     }
     ptrdiff_t nSize = (ptrdiff_t)(pszContent) - (ptrdiff_t)(pszBegin);
     if (nSize == 0)
         return String();
     String str; str.Reserve((String::size_type)nSize);
     for (int i = 0; i < (int)nSize; ++i)
-        str[i] = *pszBegin++;
+        str.push_back(*pszBegin++);
     return std::move(str);
 }
 

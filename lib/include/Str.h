@@ -55,8 +55,14 @@ public:
 		return s;
 	}
 
-	char& operator[] (size_type index) { assert(index < m_nLen); return m_pData[index]; }
-	char operator[] (size_type index) const { assert(index < m_nLen); return m_pData[index]; }
+	char& operator[] (size_type index) { 
+		assert(index < m_nLen); 
+		return m_pData[index]; 
+	}
+	char operator[] (size_type index) const { 
+		assert(index < m_nLen); 
+		return m_pData[index]; 
+	}
 
 	
 
@@ -81,6 +87,7 @@ public:
 
 	String substr(size_type nOff = 0, size_type nCount = npos) const;
 
+	void push_back(char elem);
 
 	String Left(size_type nLength) const;
 	String Right(size_type nLength) const;
@@ -170,6 +177,14 @@ inline String String::substr(size_type nOff /* = 0 */, size_type nCount /* = npo
 	str.m_pData[nSize] = 0;
 	str.m_nLen = nSize;
 	return std::move(str);
+}
+
+inline void String::push_back(char elem) {
+	// 1 for new char, 1 for nul terminate
+	EnsureAllocated(m_nLen + 1 + 1);
+	m_pData[m_nLen] = elem;
+	m_pData[m_nLen + 1] = 0;
+	++m_nLen;
 }
 
 inline String String::Left(size_type nLength) const {

@@ -1,6 +1,7 @@
 #include "3DEngine.h"
 #include "Camera.h"
 #include "JobSystem.h"
+#include "Material.h"
 
 #ifdef RENDERAPI_DX9
 #include "Backend/D3D9/RenderBackendDX9.h"
@@ -42,6 +43,13 @@ C3DEngine::~C3DEngine()
         DELETE_TYPE(m_pMainCamera, CCamera);
     }
     m_pMainCamera = nullptr;
+
+    if (Global::m_pMaterialManager)
+    {
+        CMaterialManager *pMtlMgr = Global::m_pMaterialManager;
+        DELETE_TYPE(pMtlMgr, CMaterialManager);
+    }
+    Global::m_pMaterialManager = nullptr;
 
 #ifdef INPUTAPI_DINPUT
     if (Global::m_pInputListener)
@@ -146,6 +154,8 @@ bool C3DEngine::Initialize()
         return false;
     Global::m_pInputListener = pInputListener;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize InputListener");
+
+    Global::m_pMaterialManager = NEW_TYPE(CMaterialManager);
 
     m_pMainCamera = NEW_TYPE(CCamera);
 

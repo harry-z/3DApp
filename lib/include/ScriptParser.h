@@ -4,8 +4,8 @@
 struct IScriptParserListener
 {
     virtual ~IScriptParserListener() {}
-    void OnProcessChunkTitle(const String &szChunkType, const String &szChunkParam) {}
-    void OnProcessParam(const String &szParamType, const String &szParam1, const String &szParam2) {}
+    virtual void OnProcessChunkTitle(const String &szChunkType, const String &szChunkParam) = 0;
+    virtual void OnProcessParam(const String &szParamType, const String &szParam1, const String &szParam2) = 0;
     LinklistNode<IScriptParserListener> m_Node;
 };
 

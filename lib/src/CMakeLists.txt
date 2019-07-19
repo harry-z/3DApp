@@ -28,6 +28,7 @@ add_library(${PROJECT_NAME}_lib SHARED
     InputListener.cpp
     JobSystem.cpp
     Log.cpp
+    Material.cpp
     Matrix.cpp
     Memory.cpp
     PixelFormatUtil.cpp

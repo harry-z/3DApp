@@ -6,7 +6,7 @@
 #include "3DEngine.h"
 #include "Display.h"
 // #include "HardwareBuffer.h"
-// #include "Material.h"
+#include "Material.h"
 // #include "Mesh.h"
 #include "Shader.h"
 // //#include "Terrain.h"
@@ -34,7 +34,7 @@ CHardwareBufferManager* Global::m_pHwBufferManager = nullptr;
 CInputListener* Global::m_pInputListener = nullptr;
 CJobSystem* Global::m_pJobSystem = nullptr;
 CLog* Global::m_pLog = nullptr;
-// CMaterialManager* Global::m_pMaterialManager = nullptr;
+CMaterialManager* Global::m_pMaterialManager = nullptr;
 // CMeshManager* Global::m_pMeshManager = nullptr;
 CShaderManager* Global::m_pShaderManager = nullptr;
 // //CTerrain* Global::m_pTerrain = nullptr;

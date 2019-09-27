@@ -4,14 +4,15 @@
             "name": "Win32 Debug",
             "includePath": [
                 "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
+                "C:/Program Files (x86)/Windows Kits/10/Include/10.0.10240.0/ucrt",
                 "${workspaceFolder}/lib/include",
+                "${workspaceFolder}/lib/dependencies/d3d",
                 "${workspaceFolder}/src"
             ],
             "defines": [
                 "_DEBUG",
                 "PLATFORM_WIN",
                 "TRACE_MEMORY_ALLOCATION",
-                "ARCH_64",
                 "RENDERAPI_DX9",
                 "INPUTAPI_DINPUT"
             ],

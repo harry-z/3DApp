@@ -5,7 +5,7 @@
 // #include "Threading.h"
 
 
-class CPool {
+class DLL_EXPORT CPool {
 public:
 	CPool() : m_nItemSize(0), m_nItemPerBlock(0), m_nBlockCount(0) {}
 	~CPool();

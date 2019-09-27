@@ -6,6 +6,7 @@
 #include "Hashmap.h"
 #include "Memory.h"
 #include "Buffer.h"
+#include "ScriptParser.h"
 
 #include <errno.h>
 
@@ -56,7 +57,7 @@ void ConcatenatePath(const String &szPath1, const String &szPath2, OUT String &s
         szFullPath = szPath1 + "/" + szPath2;
 }
 
-bool ReadAllFile(const String &szGlobalPath, const String &szCurrentPath, OUT CHashmap<String, char*> &Files)
+bool ReadAllFile(const String &szGlobalPath, const String &szCurrentPath, OUT CMap<String, char*> &Files)
 {
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
     WIN32_FIND_DATA FindFileData;
@@ -137,104 +138,85 @@ bool ReadAllFile(const String &szGlobalPath, const String &szCurrentPath, OUT CH
 #endif
 }
 
-bool ReadShaderIndexFile(const String &szShaderIndexFile, OUT CArray<ShaderEntry> &ShaderEntries)
+class CShaderIndexFileListener final : public IScriptParserListener
 {
-    FILE *pFile = fopen(szShaderIndexFile.c_str(), "r+");
-    if (pFile != nullptr) {
-        char szLine[1024];
-        dword nIndex = 0;
-        char *p = nullptr;
-        while (!feof(pFile)) {
-            if (fgets(szLine, 1024, pFile)) {
-                if (szLine[0] == '[') {
-                    nIndex = ShaderEntries.Num();
-                    ShaderEntries.Emplace(ShaderEntry());
-                    char *pszMatchedBrace = strchr(szLine + 1, ']');
-                    if (pszMatchedBrace == nullptr)
-                        continue;
-                    *pszMatchedBrace = 0;
-                    ShaderEntries[nIndex].m_ShaderName = szLine + 1;
-                }
-                else if (p = strstr(szLine, "Type")) {
-                    p = FindFirstCharOrNumber(p + strlen("Type"));
-                    if (p != nullptr)
-                    {
-                        RemoveEnter(p);
-                        if (strcmp(p, "Vertex") == 0)
-                            ShaderEntries[nIndex].m_ShaderType = EShaderType::EShaderType_Vertex;
-                        else if (strcmp(p, "Pixel") == 0)
-                            ShaderEntries[nIndex].m_ShaderType = EShaderType::EShaderType_Pixel;
-                    }
-                }
-                else if (p = strstr(szLine, "EntryPoint")) {
-                    p = FindFirstCharOrNumber(p + strlen("EntryPoint"));
-                    if (p != nullptr)
-                    {
-                        RemoveEnter(p);
-                        ShaderEntries[nIndex].m_EntryPoint = p;
-                    }
-                }
-                else if (p = strstr(szLine, "Macros")) {
-                    p = FindFirstCharOrNumber(p + strlen("Macros"));
-                    if (p != nullptr)
-                    {
-                        char *pComma = nullptr;
-                        while (*p != 0 && (pComma = strchr(p, ','))) {
-                            *pComma = 0;
-                            ShaderEntries[nIndex].m_ShaderMacros.Emplace(p);
-                            p = ++pComma;
-                        }
-                        if (*p != 0)
-                        {
-                            RemoveEnter(p);
-                            ShaderEntries[nIndex].m_ShaderMacros.Emplace(p);
-                        }
-                    }
-                }
-                else if (p = strstr(szLine, "File")) {
-                    p = FindFirstCharOrNumber(p + strlen("File"));
-                    if (p != nullptr)
-                    {
-                        RemoveEnter(p);
-                        ShaderEntries[nIndex].m_ShaderFile = p;
-                    }
-                }
+public:
+    virtual void OnProcessNode(const String &szParamType, const CArray<String> &arrParam) override
+    {
+        if (szParamType == "Shader" && arrParam.Num() > 0) 
+        {
+            m_nIndex = m_pShaderEntries->Num();
+            m_pShaderEntries->Emplace(ShaderEntry());
+            m_pShaderEntries->operator[](m_nIndex).m_ShaderName = arrParam[0];
+        }
+        else if (szParamType == "Type" && arrParam.Num() > 0)
+        {
+            if (arrParam[0] == "Vertex")
+                m_pShaderEntries->operator[](m_nIndex).m_ShaderType = EShaderType::EShaderType_Vertex;
+            else if (arrParam[0] == "Pixel")
+                m_pShaderEntries->operator[](m_nIndex).m_ShaderType = EShaderType::EShaderType_Pixel;
+        }
+        else if (szParamType == "EntryPoint" && arrParam.Num() > 0)
+        {
+            m_pShaderEntries->operator[](m_nIndex).m_EntryPoint = arrParam[0];
+        }
+        else if (szParamType == "Macros")
+        {
+            for (const auto &Param : arrParam)
+            {
+                m_pShaderEntries->operator[](m_nIndex).m_ShaderMacros.Emplace(Param);
             }
         }
-        return true;
+        else if (szParamType == "File" && arrParam.Num() > 0)
+        {
+            m_pShaderEntries->operator[](m_nIndex).m_ShaderFile = arrParam[0];
+        }
     }
-    else
-        return false;
+
+    CArray<ShaderEntry> *m_pShaderEntries;
+    dword m_nIndex = 0;
+};
+
+bool ReadShaderIndexFile(const String &szShaderIndexFile, OUT CArray<ShaderEntry> &ShaderEntries)
+{
+    CShaderIndexFileListener Listener;
+    Listener.m_pShaderEntries = &ShaderEntries;
+
+    CScriptParser Parser;
+    Parser.AddScriptParserListener(&Listener);
+    return Parser.ParseFromFile(szShaderIndexFile.c_str());
 }
 
 #ifdef RENDERAPI_DX9
-#include <d3dcompiler.h>
-class CD3DIncludeHandler final : public ID3DInclude
+#include "d3dx9shader.h"
+class CD3DIncludeHandler final : public ID3DXInclude
 {
 public:
-    CD3DIncludeHandler(const CHashmap<String, char*> *pHashmapShaderFiles) 
-    : m_pHashmapShaderFiles(const_cast<CHashmap<String, char*>*>(pHashmapShaderFiles)) {}
-    STDMETHOD(Open)(THIS_ D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID *ppData, UINT *pBytes) {
-		if (m_pHashmapShaderFiles != nullptr) {
-            CHashmap<String, char*>::_ValuePointerType ppFileContent = m_pHashmapShaderFiles->Find(String(pFileName));
-            if (ppFileContent != nullptr)
+    CD3DIncludeHandler(const CMap<String, char*> *pMapShaderFiles) 
+    : m_pMapShaderFiles(const_cast<CMap<String, char*>*>(pMapShaderFiles)) {}
+
+    STDMETHOD(Open)(THIS_ D3DXINCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID *ppData, UINT *pBytes) {
+		if (m_pMapShaderFiles != nullptr) {
+            CMap<String, char*>::_MyIterType FileContentConstIter = m_pMapShaderFiles->Find(String(pFileName));
+            if (FileContentConstIter)
             {
-                *ppData = *ppFileContent;
-                *pBytes = strlen(*ppFileContent);
+                *ppData = FileContentConstIter.Value();
+                *pBytes = strlen(FileContentConstIter.Value());
                 return S_OK;
             }
         }
 		return S_FALSE;
 	}
+
 	STDMETHOD(Close)(THIS_ LPCVOID pData) {
 		(void)pData;
 		return S_OK;
 	}
-    CHashmap<String, char*> *m_pHashmapShaderFiles = nullptr;
+    CMap<String, char*> *m_pMapShaderFiles = nullptr;
 };
 #endif
 
-bool CompileAndCacheAllShaders(const CHashmap<String, char*> &arrShaderFiles, const CArray<ShaderEntry> &arrShaderEntries)
+bool CompileAndCacheAllShaders(const CMap<String, char*> &arrShaderFiles, const CArray<ShaderEntry> &arrShaderEntries)
 {
     CFile file;
     if (!file.Open("./Shader.bundle", "w+"))
@@ -255,16 +237,16 @@ bool CompileAndCacheAllShaders(const CHashmap<String, char*> &arrShaderFiles, co
     DWORD dwFlag = 0;
 
 #ifdef SHADER_DEBUGGING
-    BIT_ADD(dwFlag, (D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION));
+    BIT_ADD(dwFlag, (D3DXSHADER_DEBUG | D3DXSHADER_OPTIMIZATION_LEVEL0));
 #endif
 
     CD3DIncludeHandler IncludeHandler(&arrShaderFiles);
-    ID3DBlob *pByteCode = nullptr, *pByteError = nullptr;
+    ID3DXBuffer *pByteCode = nullptr, *pByteError = nullptr;
 
     for (const auto &ShaderEntry : arrShaderEntries) {
         // 准备 Macro
-        CArray<D3D_SHADER_MACRO> D3DMacros;
-        D3D_SHADER_MACRO D3DMacro;
+        CArray<D3DXMACRO> D3DMacros;
+        D3DXMACRO D3DMacro;
         for (const auto &ShaderMacro : ShaderEntry.m_ShaderMacros) {
             String::size_type pos = ShaderMacro.find_first_of("=");
             if (pos != String::npos)
@@ -287,18 +269,18 @@ bool CompileAndCacheAllShaders(const CHashmap<String, char*> &arrShaderFiles, co
                 szProfile = "ps_3_0";
 
             // 找到相应的Shader文件
-            CHashmap<String, char*>::_ValueConstPointerType ppShaderCode = arrShaderFiles.Find(ShaderEntry.m_ShaderFile);
-            if (ppShaderCode != nullptr) {
-                HRESULT hr = D3DCompile(*ppShaderCode, 
-                    strlen(*ppShaderCode), 
-                    nullptr, 
+            CMap<String, char*>::_MyConstIterType ShaderCodeConstIter = arrShaderFiles.Find(ShaderEntry.m_ShaderFile);
+            if (ShaderCodeConstIter) {
+                HRESULT hr = D3DXCompileShader(ShaderCodeConstIter.Value(), 
+                    strlen(ShaderCodeConstIter.Value()), 
                     D3DMacros.Data(), 
                     &IncludeHandler, 
                     ShaderEntry.m_EntryPoint.c_str(), 
                     szProfile.c_str(), 
-                    dwFlag, 0, 
+                    dwFlag,  
                     &pByteCode, 
-                    &pByteError);
+                    &pByteError,
+                    nullptr);
                 if (SUCCEEDED(hr))
                 {
                     // 编译成功，写入缓存文件
@@ -353,7 +335,7 @@ bool CompileAndCacheAllShaders(const CHashmap<String, char*> &arrShaderFiles, co
 bool CShaderPrecacher::Precache()
 {
     // 查找目录下所有文件，并读取其内容
-    CHashmap<String, char*> ShaderFiles(100);
+    CMap<String, char*> ShaderFiles;
     CArray<ShaderEntry> ShaderEntries;
 
     String ShaderFilePath, ShaderIndexFilePath;
@@ -382,8 +364,8 @@ bool CShaderPrecacher::Precache()
     }
     std::cout << "Finish caching shaders." << std::endl;
 
-    CHashmap<String, char*>::Iterator Iter = ShaderFiles.Begin();
-    for (; Iter != ShaderFiles.End(); ++Iter) {
+    CMap<String, char*>::_MyIterType Iter = ShaderFiles.CreateIterator();
+    for (; Iter; ++Iter) {
         free(Iter.Value());
     }
 

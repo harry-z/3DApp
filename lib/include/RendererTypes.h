@@ -95,6 +95,18 @@ enum class EShaderType : byte {
 	EShaderType_Unknown = 0xFF
 };
 
+enum class EShaderConstantType : byte {
+	EShaderConstantType_Float = 0,
+	EShaderConstantType_Float2,
+	EShaderConstantType_Float3,
+	EShaderConstantType_Float4,
+	EShaderConstantType_Int,
+	EShaderConstantType_Int2,
+	EShaderConstantType_Int3,
+	EShaderConstantType_Int4,
+	EShaderConstantType_Unknown = 0xFF
+};
+
 enum EClearFlag {
 	EClearFlag_Color = 0x01,
 	EClearFlag_Depth = 0x02,

@@ -64,7 +64,17 @@ public:
 		return m_pData[index]; 
 	}
 
-	
+	bool operator < (const String &other) const {
+		dword nMyLen = length();
+		dword nOtherLen = other.length();
+		dword n = min(nMyLen, nOtherLen);
+		for (dword i = 0; i < n; ++i)
+		{
+			if (at(i) < other.at(i))
+				return true;
+		}
+		return nMyLen < nOtherLen;
+	}
 
 	// STL compatible functions
 	inline const char* c_str() const { return m_pData; }

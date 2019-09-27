@@ -2,36 +2,36 @@
 
 constexpr char c_ChunkTokenStart = '{';
 constexpr char c_ChunkTokenEnd = '}';
+constexpr char c_Newline = '\n';
 
-struct ParserParamNode {
+struct ParserNode {
+    dword m_nDepth = 0;
     String m_szType;
-    String m_szParam1;
-    String m_szParam2;
-    ParserParamNode(const String &szType, const String &szParam1, const String &szParam2)
-    : m_szType(szType), m_szParam1(szParam1), m_szParam2(szParam2) {}
+    CArray<String> m_arrParam;
+    CArray<ParserNode> m_ChildNodes;
+    ParserNode(dword nDepth, const String &szType, const CArray<String> &arrParam)
+    : m_nDepth(nDepth), m_szType(szType), m_arrParam(arrParam) {}
 };
 
-struct ParserChunkNode {
-    String m_szType;
-    String m_szParam;
-    CArray<ParserChunkNode> m_ChildChunkNodes;
-    CArray<ParserParamNode> m_ParamNodes;
-    ParserChunkNode(const String &szType, const String &szParam)
-    : m_szType(szType), m_szParam(szParam) {}
-};
-
-ParserChunkNode* MakeChunkNode(ParserChunkNode *pParentNode, const String &szType, const String &szParam)
+ParserNode* MakeNode(ParserNode *pParentNode, dword nDepth, const String &szType, const CArray<String> &arrParam)
 {
     if (pParentNode == nullptr)
     {
-        ParserChunkNode *pNewNode = NEW_TYPE(ParserChunkNode)(szType, szParam);
+        ParserNode *pNewNode = NEW_TYPE(ParserNode)(nDepth, szType, arrParam);
         return pNewNode;
     }
     else
     {
-        pParentNode->m_ChildChunkNodes.Emplace(szType, szParam);
-        return &(pParentNode->m_ChildChunkNodes[pParentNode->m_ChildChunkNodes.Num() - 1]);
+        pParentNode->m_ChildNodes.Emplace(nDepth, szType, arrParam);
+        return &(pParentNode->m_ChildNodes[pParentNode->m_ChildNodes.Num() - 1]);
     }
+}
+
+ParserNode* BuildNode(dword nDepth, const String &szType, const CArray<String> &arrParam, ParserNode *pParentNode)
+{
+    if (szType.length() == 0)
+        return nullptr;
+    return MakeNode(pParentNode, nDepth, szType, arrParam);
 }
 
 bool IsAvailableChar(const char c)
@@ -42,41 +42,27 @@ bool IsAvailableChar(const char c)
             (c == '-' || c == '.');
 }
 
-bool IsTokenChar(const char c)
+bool IsTokenStart(const char c)
 {
-    return (c == c_ChunkTokenStart || c == c_ChunkTokenEnd);
+    return c == c_ChunkTokenStart;
+}
+
+bool IsTokenEnd(const char c)
+{
+    return c == c_ChunkTokenEnd;
+}
+
+bool IsNewline(const char c)
+{
+    return c == c_Newline;
 }
 
 const char* FindFirstAvailableChar(const char *&pszContent)
 {
     char c = *pszContent;
     while (c != 0) {
-        if (IsAvailableChar(c) || IsTokenChar(c))
+        if (IsAvailableChar(c) || IsTokenStart(c) || IsTokenEnd(c) || IsNewline(c))
             return pszContent;
-        else
-            c = *(++pszContent);
-    }
-    return nullptr;
-}
-
-const char* FindChunkToken(const char *&pszContent)
-{
-    char c = *pszContent;
-    while (c != 0) {
-        if (c == c_ChunkTokenStart)
-            return ++pszContent;
-        else
-            c = *(++pszContent);
-    }
-    return nullptr;
-}
-
-const char* FindChunkCloseToken(const char *pszContent)
-{
-    char c = *pszContent;
-    while (c != 0) {
-        if (c == c_ChunkTokenEnd)
-            return ++pszContent;
         else
             c = *(++pszContent);
     }
@@ -99,20 +85,13 @@ String ExtractString(const char *&pszContent)
     return std::move(str);
 }
 
-void NotifyListener(const ParserChunkNode &Node, IScriptParserListener *pListener)
+void NotifyListener(const ParserNode &Node, IScriptParserListener *pListener)
 {
-    pListener->OnProcessChunkTitle(Node.m_szType, Node.m_szParam);
-    if (!Node.m_ParamNodes.Empty())
-    {
-        for (const auto &ParamNode : Node.m_ParamNodes)
-        {
-            pListener->OnProcessParam(ParamNode.m_szType, ParamNode.m_szParam1, ParamNode.m_szParam2);
-        }
-    }
+    pListener->OnProcessNode(Node.m_szType, Node.m_arrParam);
 
-    if (!Node.m_ChildChunkNodes.Empty())
+    if (!Node.m_ChildNodes.Empty())
     {
-        for (const auto &ChildNode : Node.m_ChildChunkNodes)
+        for (const auto &ChildNode : Node.m_ChildNodes)
         {
             NotifyListener(ChildNode, pListener);
         }
@@ -121,123 +100,152 @@ void NotifyListener(const ParserChunkNode &Node, IScriptParserListener *pListene
 
 bool CScriptParser::Parse(const char *pszScriptContent)
 {
-    enum class EState {
-        EState_None,
-        EState_FoundChunk,
-        EState_FoundName,
-        EState_FoundParam1,
-        EState_FoundParam2,
-        EState_Idle
+    enum EState : dword {
+        EState_None = 0,
+        EState_FoundChunkStart,
+        EState_FoundChunkEnd,
+        EState_FoundType,
+        EState_FoundParam,
+        EState_FoundNewline = 0x80000000
     };
 
     bool bSucceeded = true;
+    dword nDepth = 0;
 
-    CStack<ParserChunkNode*> ChunkNodeStack;
-    ParserChunkNode *pRootChunkNode = nullptr;
-    ParserChunkNode *pCurrentChunkNode = nullptr;
+    CStack<ParserNode*> ChunkNodeStack;
+    ParserNode *pRootChunkNode = MakeNode(nullptr, nDepth++, String(), CArray<String>());
+    ParserNode *pCurrentChunkNode = pRootChunkNode;
+    ChunkNodeStack.Emplace(pCurrentChunkNode);
 
-    EState eCurrentState = EState::EState_None;
-    String szType, szParam1, szParam2;
+    dword eCurrentState = EState_None;
+    String szType;
+    CArray<String> arrParam;
 
     char c = *pszScriptContent;
     const char *pszSentinel = pszScriptContent;
-    while (c != 0) {
-        if (FindFirstAvailableChar(pszSentinel) != nullptr) // Found available char
+    while ((*pszSentinel) != 0 && FindFirstAvailableChar(pszSentinel) != nullptr) 
+    {
+        if (IsAvailableChar(*pszSentinel))
         {
-            switch (eCurrentState)
+            switch (eCurrentState & 0x7FFFFFFF) 
             {
-                case EState::EState_None:
-                case EState::EState_FoundChunk:
-                case EState::EState_Idle:
+                case EState_None:
+                case EState_FoundChunkStart:
+                case EState_FoundChunkEnd:
                 {
                     szType = ExtractString(pszSentinel);
-                    eCurrentState = EState::EState_FoundName;
+                    arrParam.Clear();
+                    arrParam.SetNum(0);
+                    eCurrentState = EState_FoundType;
                     break;
                 }
-                case EState::EState_FoundName:
+                case EState_FoundType:
+                case EState_FoundParam:
                 {
-                    szParam1 = ExtractString(pszSentinel);
-                    eCurrentState = EState::EState_FoundParam1;
-                    break;
-                }
-                case EState::EState_FoundParam1:
-                {
-                    szParam2 = ExtractString(pszSentinel);
-                    eCurrentState = EState::EState_FoundParam2;
-                    break;
-                }
-                case EState::EState_FoundParam2:
-                {
-                    // 在FoundParam2后马上又遇到了有效字符，上一次解析的是一行参数
-                    pCurrentChunkNode->m_ParamNodes.Emplace(szType, szParam1, szParam2);
-                    szType = ExtractString(pszSentinel);
-                    eCurrentState = EState::EState_FoundName;
+                    if (BIT_CHECK(eCurrentState, EState_FoundNewline))
+                    {
+                        BuildNode(nDepth, szType, arrParam, pCurrentChunkNode);
+                        szType = ExtractString(pszSentinel);
+                        arrParam.Clear();
+                        arrParam.SetNum(0);
+                        eCurrentState = EState_FoundType;
+                    }
+                    else
+                    {
+                        arrParam.Emplace(ExtractString(pszSentinel));
+                        eCurrentState = EState_FoundParam;
+                    }
                     break;
                 }
             }
         }
-        else if (FindChunkToken(pszSentinel) != nullptr) { // Found {
-            if (eCurrentState == EState::EState_FoundChunk) // Skip duplicated {
-                continue;
-            else if (eCurrentState == EState::EState_FoundName)
+        else if (IsTokenStart(*pszSentinel)) 
+        {
+            switch (eCurrentState & 0x7FFFFFFF)
             {
-                // 在解析完类型后直接遇到了{，是没有参数的Type
-                szParam1.clear();
-                szParam2.clear();
-            }
-            else if (eCurrentState == EState::EState_FoundParam2 || eCurrentState == EState::EState_None)
-            {
-                // 解析完第二个参数后又遇到了{，属于格式错误
-                // 没有遇到任何有效字符就先遇到了{，属于格式错误
-                bSucceeded = false;
-                break;
-            }
-            
-            if (ChunkNodeStack.Num() == 0) // Creating root node
-            {
-                pRootChunkNode = pCurrentChunkNode = MakeChunkNode(nullptr, szType, szParam1);
-                ChunkNodeStack.Emplace(pRootChunkNode);
-            }
-            else // Creating child node
-            {
-                CStack<ParserChunkNode*>::_ConstPointerType pParentChunkNode = ChunkNodeStack.Last();
-                pCurrentChunkNode = MakeChunkNode(const_cast<ParserChunkNode*>(*pParentChunkNode), szType, szParam1);
-                ChunkNodeStack.Emplace(pCurrentChunkNode);
+                case EState_None:
+                case EState_FoundChunkEnd:
+                    bSucceeded = false;
+                    break;
+                case EState_FoundType:
+                case EState_FoundParam:
+                {
+                    ParserNode *pNewNode = BuildNode(nDepth, szType, arrParam, pCurrentChunkNode);
+                    if (pNewNode != nullptr)
+                    {
+                        ChunkNodeStack.Emplace(pCurrentChunkNode);
+                        pCurrentChunkNode = pNewNode;
+                    }
+                    break;
+                }
             }
 
-            eCurrentState = EState::EState_FoundChunk;
+            ++pszSentinel;
+            ++nDepth;
+            eCurrentState = EState_FoundChunkStart;
         }
-        else if (pszSentinel = FindChunkCloseToken(pszSentinel)) { // Found }
-            if (eCurrentState == EState::EState_FoundParam2)
-                pCurrentChunkNode->m_ParamNodes.Emplace(szType, szParam1, szParam2);
-            else if (eCurrentState == EState::EState_None || 
-                eCurrentState == EState::EState_Idle ||
-                eCurrentState == EState::EState_FoundName || 
-                eCurrentState == EState::EState_FoundParam1)
+        else if (IsTokenEnd(*pszSentinel)) 
+        {
+            switch (eCurrentState & 0x7FFFFFFF)
             {
-                bSucceeded = false;
-                break;
+                case EState_None:
+                    bSucceeded = false;
+                    break;
+                case EState_FoundType:
+                case EState_FoundParam:
+                {
+                    BuildNode(nDepth, szType, arrParam, pCurrentChunkNode);
+                    break;
+                }
             }
 
-            ChunkNodeStack.Pop();
-            eCurrentState = EState::EState_Idle;
+            ++pszSentinel;
+            --nDepth;
+            ParserNode *TempNode = *(ChunkNodeStack.Last());
+            if (TempNode->m_nDepth == nDepth - 1)
+            {
+                pCurrentChunkNode = *(ChunkNodeStack.Last());
+                ChunkNodeStack.Pop();
+            }
+
+            eCurrentState = EState_FoundChunkEnd;
         }
+        else if (IsNewline(*pszSentinel))
+        {
+            switch (eCurrentState & 0x7FFFFFFF)
+            {
+                case EState_FoundType:
+                case EState_FoundParam:
+                {
+                    BIT_ADD(eCurrentState, EState_FoundNewline);
+                    break;
+                }
+            }
+
+            ++pszSentinel;
+        }
+
+        if (!bSucceeded)
+            break;
     }
 
-    bSucceeded = bSucceeded && ChunkNodeStack.IsEmpty() && pRootChunkNode != nullptr;
+    bSucceeded = bSucceeded && nDepth == 1 && pRootChunkNode != nullptr;
 
     if (bSucceeded) {
         Linklist<IScriptParserListener>::_NodeType *pTemp = m_Listeners.m_pRoot;
         while (pTemp != nullptr)
         {
-            NotifyListener(*pRootChunkNode, pTemp->m_pOwner);
+            for (const auto &ChildNode : pRootChunkNode->m_ChildNodes)
+            {
+                NotifyListener(ChildNode, pTemp->m_pOwner);
+            }
             pTemp = pTemp->m_pNext;
         }
     }
 
     if (pRootChunkNode != nullptr)
     {
-        DELETE_TYPE(pRootChunkNode, ParserChunkNode);
+        DELETE_TYPE(pRootChunkNode, ParserNode);
     }
 
     return bSucceeded;

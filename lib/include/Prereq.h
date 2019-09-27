@@ -10,6 +10,7 @@
 // #include "IdPool.h"
 #include "LinkList.h"
 #include "Log.h"
+#include "Map.h"
 #include "Matrix.h"
 #include "Memory.h"
 #include "Plane.h"

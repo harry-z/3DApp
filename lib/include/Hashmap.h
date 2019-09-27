@@ -34,6 +34,7 @@ struct DLL_EXPORT IdString {
 
 	bool operator== (const IdString &other) const { return hash == other.hash; }
 	bool operator!= (const IdString &other) const { return hash != other.hash; }
+	bool operator < (const IdString &other) const { return hash < other.hash; }
 
 	inline dword HashValue() const { return hash; }
 #if defined (_DEBUG) || defined(DEBUG)

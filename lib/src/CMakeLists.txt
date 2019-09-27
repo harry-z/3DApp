@@ -6,6 +6,11 @@ if (${RENDER_API} STREQUAL "D3D9")
     add_definitions("-DRENDERAPI_DX9")
     aux_source_directory(${PROJECT_SOURCE_DIR}/lib/src/Backend/D3D9 RENDER_API_SRC)
     link_libraries(d3d9 d3dcompiler dxguid)
+    if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+        link_libraries(${PROJECT_SOURCE_DIR}/lib/dependencies/d3d/d3dx9d.lib)
+    else ()
+        link_libraries(${PROJECT_SOURCE_DIR}/lib/dependencies/d3d/d3dx9.lib)
+    endif ()
 endif ()
 
 if (WIN32)
@@ -29,6 +34,7 @@ add_library(${PROJECT_NAME}_lib SHARED
     JobSystem.cpp
     Log.cpp
     Material.cpp
+    MaterialParser.cpp
     Matrix.cpp
     Memory.cpp
     PixelFormatUtil.cpp
@@ -44,4 +50,5 @@ add_library(${PROJECT_NAME}_lib SHARED
     3DEngine.cpp
     ${RENDER_API_SRC}
     ${INPUT_API_SRC}
-    ${DISPLAY_SRC})
+    ${DISPLAY_SRC}
+)

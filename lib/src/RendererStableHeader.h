@@ -7,7 +7,7 @@
 		#define D3D_DEBUG_INFO
 	#endif
 	#include <d3d9.h>
-	#include <d3dcompiler.h>
+	#include "d3d/d3dx9.h"
 
 	extern IDirect3DDevice9 *g_pDevice9;
 	extern D3DCAPS9 *g_pCaps9;

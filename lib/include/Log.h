@@ -54,8 +54,14 @@ public:
 		return BIT_CHECK(m_nLogMode, LOGMODE_DEBUGGER);
 	}
 	void Log(ELogType eLogType, ELogFlag eLogFlag, const char *pszLogString);
+
 private:
 	ELogLevel m_eLogLv;
 	dword m_nLogMode;
 	CFile m_LogFile;
 };
+
+#define LOG_ARGS(LogObj, LogType, LogFlag, Fmt, ...) \
+	char szMsg[260]; \
+	sprintf(szMsg, Fmt, ##__VA_ARGS__); \
+	LogObj->Log(LogType, LogFlag, szMsg);

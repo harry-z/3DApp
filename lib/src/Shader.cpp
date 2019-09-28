@@ -12,8 +12,8 @@
 #define INIT_CONSTANT_INFO(InfoName, ValueType, ValueCount, ConstantType, ConstantCount) \
     ValueType *pData##InfoName = (ValueType*)MEMALLOC(sizeof(ValueType) * ValueCount); \
     memset(pData##InfoName, 0, sizeof(ValueType) * ValueCount); \
-    ShaderConstantInfo ConstantInfo##InfoName(#InfoName, ConstantType, ConstantCount, (byte*)pData##InfoName); \
-    m_AutoShaderConstMap.Insert(IdString(#InfoName), ConstantInfo##InfoName);
+    ShaderConstantInfo ConstantInfo##InfoName(InfoName, ConstantType, ConstantCount, (byte*)pData##InfoName); \
+    m_AutoShaderConstMap.Insert(IdString(InfoName), ConstantInfo##InfoName);
 
 void CShaderManager::InitializeAutoShaderConstantMap()
 {

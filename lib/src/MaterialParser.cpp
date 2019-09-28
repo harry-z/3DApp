@@ -17,7 +17,7 @@ void CMaterialParser::OnProcessNode(const String &szParamType, const CArray<Stri
 	{
 		if (arrParam.Num() > 0)
 			m_pCurrentMaterial->SetName(arrParam[0]);
-		else // 材质必须有名称
+		else
 			Error();
 	}
 	else if (szParamType == TOKEN_TECHNIQUE && m_pCurrentMaterial != nullptr)
@@ -37,25 +37,25 @@ void CMaterialParser::OnProcessNode(const String &szParamType, const CArray<Stri
 	else if (szParamType == TOKEN_VS && m_pCurrentPass != nullptr && arrParam.Num() > 0)
 	{
 		m_pCurrentShaderRef = m_pCurrentPass->CreateShaderRef(EShaderType::EShaderType_Vertex, arrParam[0]);
-		if (m_pCurrentShaderRef == nullptr) // 找不到对应的Shader
+		if (m_pCurrentShaderRef == nullptr)
 			Error();
 	}
 	else if (szParamType == TOKEN_PS && m_pCurrentPass != nullptr && arrParam.Num() > 0)
 	{
 		m_pCurrentShaderRef = m_pCurrentPass->CreateShaderRef(EShaderType::EShaderType_Pixel, arrParam[0]);
-		if (m_pCurrentShaderRef == nullptr) // 找不到对应的Shader
+		if (m_pCurrentShaderRef == nullptr)
 			Error();
 	}
 	else if (szParamType == TOKEN_SHADER_PARAM && m_pCurrentShaderRef != nullptr)
 	{
 		if (!m_pCurrentShaderRef->AddShaderConstantInfo(arrParam))
-			Error(); // 添加Shader常量失败
+			Error();
 	}
 	else if (szParamType == TOKEN_AUTO_SHADER_PARAM && m_pCurrentShaderRef != nullptr && arrParam.Num() > 0)
 	{
 		if (!m_pCurrentShaderRef->AddAutoShaderConstantInfo(arrParam[0]))
 			Error();
 	}
-	else // 出现了不应该出现的类型
+	else
 		Error();
 }

@@ -80,7 +80,7 @@ bool ReadAllFile(const String &szGlobalPath, const String &szCurrentPath, OUT CM
                 fseek(pFile, 0, SEEK_END);
                 long len = ftell(pFile);
                 fseek(pFile, 0, SEEK_SET);
-                char *pShaderCodeBuffer = (char *)malloc(len + 1);
+                char *pShaderCodeBuffer = (char *)MEMALLOC(len + 1);
                 fread(pShaderCodeBuffer, 1, len, pFile);
                 pShaderCodeBuffer[len] = 0;
                 fclose(pFile);
@@ -228,7 +228,7 @@ bool CompileAndCacheAllShaders(const CMap<String, char*> &arrShaderFiles, const 
         ShaderBuffer(void *buf, dword nz) : buffer(buf), size(nz) {}
         ~ShaderBuffer() {
             if (buffer != nullptr)
-                free(buffer);
+                MEMFREE(buffer);
         }
     };
     CArray<ShaderBuffer> arrShaderBuffer;
@@ -285,7 +285,7 @@ bool CompileAndCacheAllShaders(const CMap<String, char*> &arrShaderFiles, const 
                 {
                     // 编译成功，写入缓存文件
                     dword nSize = ShaderEntry.m_ShaderName.length() + 1 + sizeof(byte) + pByteCode->GetBufferSize() + sizeof(dword);
-                    byte *pBuffer = (byte*)malloc(nSize);
+                    byte *pBuffer = (byte*)MEMALLOC(nSize);
                     byte *pBufferStart = pBuffer;
 
                     // 写入Shader名称
@@ -366,7 +366,7 @@ bool CShaderPrecacher::Precache()
 
     CMap<String, char*>::_MyIterType Iter = ShaderFiles.CreateIterator();
     for (; Iter; ++Iter) {
-        free(Iter.Value());
+        MEMFREE(Iter.Value());
     }
 
     return true;

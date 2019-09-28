@@ -68,12 +68,23 @@ public:
 		dword nMyLen = length();
 		dword nOtherLen = other.length();
 		dword n = min(nMyLen, nOtherLen);
+		int ret = 0;
 		for (dword i = 0; i < n; ++i)
 		{
-			if (at(i) < other.at(i))
-				return true;
+			if (m_pData[i] != other.m_pData[i])
+			{
+				ret = (m_pData[i] < other.m_pData[i] ? -1 : +1);
+				break;
+			}
 		}
-		return nMyLen < nOtherLen;
+
+		if (ret == 0)
+		{
+			if (nMyLen < nOtherLen) ret = -1;
+			else if (nMyLen > nOtherLen) ret = 1;
+		}
+
+		return ret < 0;
 	}
 
 	// STL compatible functions

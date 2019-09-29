@@ -197,7 +197,20 @@ CHardwareBufferManagerDX9::CHardwareBufferManagerDX9()
 
 CHardwareBufferManagerDX9::~CHardwareBufferManagerDX9()
 {
+	for (auto &PredefinedLayout : m_arrPredefinedVertexLayout)
+	{
+		CVertexLayoutDX9 *pVertexLayoutDx9 = (CVertexLayoutDX9*)PredefinedLayout;
+		DELETE_TYPE(pVertexLayoutDx9, CVertexLayoutDX9);
+	}
+	m_arrPredefinedVertexLayout.Clear();
 
+	VertexLayoutMap::_MyIterType Iter = m_VertexLayoutMap.CreateIterator();
+	for (; Iter; ++Iter)
+	{
+		CVertexLayoutDX9 *pVertexLayoutDX9 = (CVertexLayoutDX9*)Iter.Value();
+		DELETE_TYPE(pVertexLayoutDX9, CVertexLayoutDX9);
+	}
+	m_VertexLayoutMap.Clear();
 }
 
 bool CHardwareBufferManagerDX9::Initialize()
@@ -208,6 +221,76 @@ bool CHardwareBufferManagerDX9::Initialize()
 	BEGIN_VERTEX_ELEM_DECL(1)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
 	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_P, 1)
+
+	BEGIN_VERTEX_ELEM_DECL(2)
+	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
+	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PT, 2)
+
+	BEGIN_VERTEX_ELEM_DECL(3)
+	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
+	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
+	ADD_VERTEX_ELEM(2, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 5, EVertexType::EVertexType_Color, EVertexSemantic::EVertexSemantic_Color, 0)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PTC, 3)
+
+	BEGIN_VERTEX_ELEM_DECL(2)
+	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
+	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Normal, 0)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PN, 2)
+
+	BEGIN_VERTEX_ELEM_DECL(3)
+	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
+	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Normal, 0)
+	ADD_VERTEX_ELEM(2, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 6, EVertexType::EVertexType_Color, EVertexSemantic::EVertexSemantic_Color, 0)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNC, 3)
+
+	BEGIN_VERTEX_ELEM_DECL(3)
+	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
+	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Normal, 0)
+	ADD_VERTEX_ELEM(2, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 6, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNT, 3)
+
+	BEGIN_VERTEX_ELEM_DECL(4)
+	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
+	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Normal, 0)
+	ADD_VERTEX_ELEM(2, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 6, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Tangent, 0)
+	ADD_VERTEX_ELEM(3, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 9, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNTANT, 4)
+
+	BEGIN_VERTEX_ELEM_DECL(5)
+	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
+	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Normal, 0)
+	ADD_VERTEX_ELEM(2, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 6, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
+	ADD_VERTEX_ELEM(3, EVertexUsage::EVertexUsage_PerVertex_Skinning, 0, EVertexType::EVertexType_UByte4, EVertexSemantic::EVertexSemantic_BlendIndices, 0)
+	ADD_VERTEX_ELEM(4, EVertexUsage::EVertexUsage_PerVertex_Skinning, sizeof(byte) * 4, EVertexType::EVertexType_Float4, EVertexSemantic::EVertexSemantic_BlendWeight, 0)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNT_IDX_WEIGHT, 5)
+
+	BEGIN_VERTEX_ELEM_DECL(6)
+	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
+	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Normal, 0)
+	ADD_VERTEX_ELEM(2, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 6, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Tangent, 0)
+	ADD_VERTEX_ELEM(3, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 9, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
+	ADD_VERTEX_ELEM(4, EVertexUsage::EVertexUsage_PerVertex_Skinning, 0, EVertexType::EVertexType_UByte4, EVertexSemantic::EVertexSemantic_BlendIndices, 0)
+	ADD_VERTEX_ELEM(5, EVertexUsage::EVertexUsage_PerVertex_Skinning, sizeof(byte) * 4, EVertexType::EVertexType_Float4, EVertexSemantic::EVertexSemantic_BlendWeight, 0)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNTANT_IDX_WEIGHT, 6)
+
+	BEGIN_VERTEX_ELEM_DECL(2)
+	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float4, EVertexSemantic::EVertexSemantic_PositionT, 0)
+	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 4, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PTransformT, 2)
+
+	BEGIN_VERTEX_ELEM_DECL(5)
+	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
+	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Normal, 0)
+	ADD_VERTEX_ELEM(2, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 6, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Tangent, 0)
+	ADD_VERTEX_ELEM(3, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 9, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
+	ADD_VERTEX_ELEM(4, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 11, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 1)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNTANT1T2, 5)
+
+	BEGIN_VERTEX_ELEM_DECL(2)
+	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Short2, EVertexSemantic::EVertexSemantic_Position, 0)
+	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(short) * 2, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PSHORT2T, 2)
 
 	return true;
 }
@@ -304,7 +387,18 @@ void CHardwareBufferManagerDX9::DestroyIndexBuffer(IHardwareBuffer *pIndexBuffer
 
 IVertexLayout* CHardwareBufferManagerDX9::CreateVertexLayout(const String &szName, const CArray<VertexElement> &arrElem)
 {
-	return nullptr;
+	IdString idStr(szName);
+	VertexLayoutMap::_MyIterType Iter = m_VertexLayoutMap.Find(idStr);
+	if (Iter)
+		return Iter.Value();
+	CVertexLayoutDX9 *pVertexLayoutDX9 = NEW_TYPE(CVertexLayoutDX9);
+	if (pVertexLayoutDX9->Build(arrElem.Data(), arrElem.Num()))
+	{
+		m_VertexLayoutMap.Insert(idStr, pVertexLayoutDX9);
+		return pVertexLayoutDX9;
+	}
+	else
+		return nullptr;
 }
 
 D3DFORMAT CHardwareBufferManagerDX9::GetIndexFormat(dword nStride) const

@@ -6,11 +6,9 @@
 class CVertexBufferDX9 final : public IHardwareBuffer, public IGpuResource {
 public:
 	friend class CHardwareBufferManagerD3D9;
-	CVertexBufferDX9(dword nLength, dword nCount) 
-		: m_pVertexBuffer(nullptr), m_pSysmemBuffer(nullptr) {
+	CVertexBufferDX9(dword nStride, dword nLength) 
+		: IHardwareBuffer(nStride, nLength) {
 		m_Type = EHardwareBufferType::EHardwareBuffer_Vertex;
-		m_nLockedLength = nLength;
-		m_nCount = nCount;
 	}
 	virtual ~CVertexBufferDX9();
 
@@ -20,18 +18,16 @@ public:
 
 	bool CopyData(const byte *pData, dword nSize);
 
-	LPDIRECT3DVERTEXBUFFER9 m_pVertexBuffer;
-	byte *m_pSysmemBuffer;
+	LPDIRECT3DVERTEXBUFFER9 m_pVertexBuffer = nullptr;
+	byte *m_pSysmemBuffer = nullptr;
 };
 
 class CIndexBufferDX9 final : public IHardwareBuffer, public IGpuResource {
 public:
 	friend class CHardwareBufferManagerD3D9;
-	CIndexBufferDX9(dword nLength, dword nCount)
-		: m_pIndexBuffer(0), m_pSysmemBuffer(0) {
+	CIndexBufferDX9(dword nStride, dword nLength)
+		: IHardwareBuffer(nStride, nLength) {
 		m_Type = EHardwareBufferType::EHardwareBuffer_Index;
-		m_nLockedLength = nLength;
-		m_nCount = nCount;
 	}
 	virtual ~CIndexBufferDX9();
 
@@ -41,18 +37,34 @@ public:
 
 	bool CopyData(const byte *pData, dword nSize);
 
-	LPDIRECT3DINDEXBUFFER9 m_pIndexBuffer;
-	byte *m_pSysmemBuffer;
+	LPDIRECT3DINDEXBUFFER9 m_pIndexBuffer = nullptr;
+	byte *m_pSysmemBuffer = nullptr;
+};
+
+class CVertexLayoutDX9 final : public IVertexLayout
+{
+public:
+	virtual ~CVertexLayoutDX9();
+	bool Build(const VertexElement *pArrElem, dword nElemCount);
+
+	LPDIRECT3DVERTEXDECLARATION9 m_pVertexDecl = nullptr;
 };
 
 class CHardwareBufferManagerDX9 final : public CHardwareBufferManager {
 public:
 	CHardwareBufferManagerDX9();
+	virtual ~CHardwareBufferManagerDX9();
+
+	virtual bool Initialize() override;
 	
-	virtual IHardwareBuffer* CreateVertexBuffer(bool bDynamic, const byte *pData, dword nLength, dword nCount) override;
-	virtual IHardwareBuffer* CreateIndexBuffer(bool bDynamic, const byte *pData, dword nLength, dword nCount) override;
+	virtual IHardwareBuffer* CreateVertexBuffer(bool bDynamic, dword nStride, dword nLength, const byte *pData = nullptr) override;
+	virtual IHardwareBuffer* CreateIndexBuffer(bool bDynamic, dword nStride, dword nLength, const byte *pData = nullptr) override;
 	virtual void DestroyVertexBuffer(IHardwareBuffer *pVertexBuffer) override;
 	virtual void DestroyIndexBuffer(IHardwareBuffer *pIndexBuffer) override;
+
+	virtual IVertexLayout* CreateVertexLayout(const String &szName, const CArray<VertexElement> &arrElem) override;
+
+	D3DFORMAT GetIndexFormat(dword nStride) const;
 
 private:
 	CPool m_HardwareBufferPool;

@@ -106,7 +106,7 @@ public:
 public:
 	D3DPRESENT_PARAMETERS m_dpparams;
 	//RendererDX9CVars m_cvars;
-	CRendererStateCache m_Cache;
+	// CRendererStateCache m_Cache;
 
 	IDirect3D9 *m_pD3D9;
 	IDirect3DDevice9 *m_pD3DDevice9;

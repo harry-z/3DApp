@@ -33,7 +33,7 @@ class CTextureManagerDX9 final : public CTextureManager {
 public:
     CTextureManagerDX9();
     virtual ~CTextureManagerDX9();
-    virtual bool Init() override;
+    virtual bool Initialize() override;
 
 protected:
 	virtual CTexture* CreateInstance() override;

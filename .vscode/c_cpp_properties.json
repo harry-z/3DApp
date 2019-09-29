@@ -7,7 +7,10 @@
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.10240.0/ucrt",
                 "${workspaceFolder}/lib/include",
                 "${workspaceFolder}/lib/dependencies/d3d",
-                "${workspaceFolder}/src"
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/lib/src/Backend/D3D9",
+                "${workspaceFolder}/lib/src/Backend/DInput",
+                "${workspaceFolder}/lib/src/Windows"
             ],
             "defines": [
                 "_DEBUG",

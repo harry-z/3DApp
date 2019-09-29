@@ -111,7 +111,7 @@ void CRenderBackendDX9::Shutdown() {
 }
 
 void CRenderBackendDX9::BeginRendering() {
-	m_Cache.Reset();
+	// m_Cache.Reset();
 	m_pD3DDevice9->BeginScene();
 
 	for (dword i = 0; i < MTL_MAX_TEXLAYER_COUNT; ++i) {

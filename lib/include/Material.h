@@ -55,6 +55,7 @@ public:
     friend class CTechnique;
 
     CShaderRef* CreateShaderRef(EShaderType eShaderType, const String &szShaderName);
+    void AddTextureSlot(const String &szTextureName);
 
 private:
     CPass();
@@ -64,6 +65,7 @@ private:
 private:
     CShaderRef *m_pVertexShaderRef = nullptr;
     CShaderRef *m_pPixelShaderRef = nullptr;
+    CArray<IdString> m_arrTexture;
     IdString m_IdStr;
 };
 

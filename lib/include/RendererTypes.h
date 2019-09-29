@@ -33,11 +33,11 @@ enum class EVertexSemantic : byte {
 	EVertexSemantic_BlendWeight,
 	EVertexSemantic_BlendIndices,
 	EVertexSemantic_Normal,
-	EVertexSemantic_Texcoord = 5,
+	EVertexSemantic_Texcoord,
 	EVertexSemantic_Tangent,
 	EVertexSemantic_Binormal,
-	EVertexSemantic_PositionT = 9,
-	EVertexSemantic_Color = 10
+	EVertexSemantic_PositionT,
+	EVertexSemantic_Color
 };
 
 enum class EPredefinedVertexLayout : byte {

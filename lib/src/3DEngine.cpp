@@ -142,9 +142,13 @@ bool C3DEngine::Initialize()
         return false;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Load Shaders");
 
-    if (!pTextureManager->Init())
+    if (!pTextureManager->Initialize())
         return false;
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize Textures");
+
+    if (!pHwBufferManager->Initialize())
+        return false;
+    pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize Predefined Vertex Layout");
 
 #ifdef INPUTAPI_DINPUT
     CInputListener *pInputListener = NEW_TYPE(CInputListenerDInput);

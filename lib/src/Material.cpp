@@ -161,6 +161,11 @@ CShaderRef* CPass::CreateShaderRef(EShaderType eShaderType, const String &szShad
 	}
 }
 
+void CPass::AddTextureSlot(const String &szTextureName)
+{
+	m_arrTexture.Emplace(szTextureName);
+}
+
 CPass* CTechnique::CreatePass()
 {
 	CPass *NewPass = NEW_TYPE(CPass);

@@ -100,7 +100,7 @@ public:
 	CTextureManager();
 	virtual ~CTextureManager() {}
 
-	virtual bool Init() = 0;
+	virtual bool Initialize() = 0;
 
 	CTexture* CreateTexture(const String& szName, word width, word height,
 		ETextureType textureType = ETextureType_2D,

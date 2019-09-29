@@ -163,7 +163,7 @@ bool CShaderManagerDX9::LoadShaders() {
         file.Close();
 
         
-        word nShaderId = 0;
+        word nShaderId = 1;
 
         byte *pBuffer = static_cast<byte*>(p);
         byte *pBufferStart = pBuffer;

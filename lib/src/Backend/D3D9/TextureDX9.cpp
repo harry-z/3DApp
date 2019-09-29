@@ -366,7 +366,7 @@ CTextureManagerDX9::~CTextureManagerDX9() {
 
 }
 
-bool CTextureManagerDX9::Init() {
+bool CTextureManagerDX9::Initialize() {
 	return true;
 }
 

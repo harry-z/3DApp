@@ -30,6 +30,7 @@ add_library(${PROJECT_NAME}_lib SHARED
     FreelistAlloc.cpp
     Global.cpp 
     Hashmap.cpp
+    HardwareBuffer.cpp
     InputListener.cpp
     JobSystem.cpp
     Log.cpp

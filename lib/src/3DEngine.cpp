@@ -1,7 +1,5 @@
 #include "3DEngine.h"
-#include "Camera.h"
 #include "JobSystem.h"
-#include "Material.h"
 
 #ifdef RENDERAPI_DX9
 #include "Backend/D3D9/RenderBackendDX9.h"
@@ -24,6 +22,7 @@ C3DEngine::C3DEngine()
 : m_pMainCamera(nullptr)
 , m_pSunShadowCamera(nullptr)
 , m_pCameraController(nullptr)
+, m_pSceneClipping(nullptr)
 {
     g_MainThreadId = std::this_thread::get_id();
     Global::m_p3DEngine = this;
@@ -31,6 +30,8 @@ C3DEngine::C3DEngine()
 
 C3DEngine::~C3DEngine()
 {
+    DestroySceneClippingStrategy(m_pSceneClipping);
+
     CJobSystem *pJobSystem = Global::m_pJobSystem;
     if (pJobSystem)
     {
@@ -171,6 +172,18 @@ bool C3DEngine::Initialize()
     return true;
 }
 
+void C3DEngine::SetSceneClipping(const char *pszName)
+{
+    DestroySceneClippingStrategy(m_pSceneClipping);
+    m_pSceneClipping = CreateSceneClippingStrategy(pszName);
+}
+
+void C3DEngine::SetExternalSceneClipping(ISceneClippingStrategy *pSceneClipping)
+{
+    DestroySceneClippingStrategy(m_pSceneClipping);
+    m_pSceneClipping = pSceneClipping;
+}
+
 void C3DEngine::Run()
 {
     IDisplay * __restrict pDisplay = Global::m_pDisplay;
@@ -216,7 +229,42 @@ void C3DEngine::RunOneFrame(dword nFrameId)
 
 void C3DEngine::Frame(dword nFrameId)
 {
+    for (dword i = 0; i < ENodeListType_Count; ++i)
+    {
+        Linklist<IRenderNode>::_NodeType *pTemp = m_SceneNodelist[i].m_pRoot;
+        while (pTemp != nullptr)
+        {
+            IRenderNode *pNode = pTemp->m_pOwner;
+            pNode->UpdateWSBoundingBox();
+        }
+
+        if (m_pSceneClipping != nullptr)
+            m_pSceneClipping->SceneClipping(m_pMainCamera, m_SceneNodelist[i]);
+    }
+    
     IRenderBackend * __restrict pRenderBackend = Global::m_pRenderBackend;
     pRenderBackend->BeginRendering();
     pRenderBackend->EndRendering();
+}
+
+ISceneClippingStrategy* C3DEngine::CreateSceneClippingStrategy(const char *pszName)
+{
+    if (strcmp(pszName, SCENE_CLIPPING_DEFAULT) == 0)
+        return NEW_TYPE(CDefaultSceneClippingStrategy);
+    // else if (strcmp(pszName, SCENE_CLIPPING_OCTREE) == 0)
+        // return NEW_TYPE()
+    else
+        return nullptr;
+}
+
+void C3DEngine::DestroySceneClippingStrategy(ISceneClippingStrategy *pClippingStrategy)
+{
+    if (pClippingStrategy != nullptr)
+    {
+        if (strcmp(pClippingStrategy->Name(), SCENE_CLIPPING_DEFAULT))
+        {
+            CDefaultSceneClippingStrategy *pDefaultClippingStrategy = (CDefaultSceneClippingStrategy *)pClippingStrategy;
+            DELETE_TYPE(pDefaultClippingStrategy, CDefaultSceneClippingStrategy);
+        }
+    }
 }

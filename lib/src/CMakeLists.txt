@@ -40,6 +40,8 @@ add_library(${PROJECT_NAME}_lib SHARED
     Memory.cpp
     PixelFormatUtil.cpp
     Pool.cpp
+    RenderNode.cpp
+    SceneClipping.cpp
     ScriptParser.cpp
     Shader.cpp
     Stack.cpp
@@ -49,6 +51,7 @@ add_library(${PROJECT_NAME}_lib SHARED
     Timer.cpp
     Worker.cpp
     3DEngine.cpp
+    3DEngineNode.cpp
     ${RENDER_API_SRC}
     ${INPUT_API_SRC}
     ${DISPLAY_SRC}

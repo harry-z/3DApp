@@ -128,4 +128,7 @@ enum class EDeviceState {
 	EDevState_InternalError
 };
 
-#define MTL_MAX_TEXLAYER_COUNT 7
+#define MTL_MAX_TEXLAYER_COUNT 8
+
+#define RENDER_PATH_FORWARD_SHADING 1
+#define CURRENT_RENDER_PATH RENDER_PATH_FORWARD_SHADING

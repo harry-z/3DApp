@@ -98,6 +98,8 @@ public:
 
     const String& GetName() const { return m_szReadableName; }
 
+    ldword Compile
+
 private:
     CMaterial() {}
     virtual ~CMaterial();

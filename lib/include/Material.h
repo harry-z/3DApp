@@ -52,7 +52,7 @@ private:
 class DLL_EXPORT CPass
 {
 public:
-    friend class CTechnique;
+    friend class CMaterial;
 
     CShaderRef* CreateShaderRef(EShaderType eShaderType, const String &szShaderName);
     void AddTextureSlot(const String &szTextureName);
@@ -62,28 +62,12 @@ private:
     CPass(const String &szName);
     ~CPass();
 
+    ldword Compile();
+
 private:
     CShaderRef *m_pVertexShaderRef = nullptr;
     CShaderRef *m_pPixelShaderRef = nullptr;
     CArray<IdString> m_arrTexture;
-    IdString m_IdStr;
-};
-
-class DLL_EXPORT CTechnique
-{
-public:
-    friend class CMaterial;
-
-    CPass* CreatePass();
-    CPass* CreatePass(const String &szName);
-
-private:
-    CTechnique();
-    CTechnique(const String &szName);
-    ~CTechnique();
-
-private:
-    CArray<CPass*> m_Passes;
     IdString m_IdStr;
 };
 
@@ -93,19 +77,19 @@ public:
     friend class CMaterialManager;
     friend class CMaterialParser;
 
-    CTechnique* CreateTechnique();
-    CTechnique* CreateTechnique(const String &szName);
+    CPass* CreatePass();
+    CPass* CreatePass(const String &szName);
 
     const String& GetName() const { return m_szReadableName; }
 
-    ldword Compile
+    bool Compile();
 
 private:
     CMaterial() {}
     virtual ~CMaterial();
 
     void Load(const String &szFilePath);
-    virtual void Destroy() override {}
+    virtual void Destroy() override;
     inline void SetName(const String &szName) { m_szReadableName = szName; }
 
 protected:
@@ -113,7 +97,7 @@ protected:
     IdString m_IdStr;
     String m_szReadableName;
 
-    CArray<CTechnique*> m_Techniques;
+    CArray<CPass*> m_Passes;
 };
 
 class CMaterialParser final : public IScriptParserListener
@@ -123,7 +107,6 @@ public:
     inline void Error() { m_bIsError = true; }
     inline bool IsError() const { return m_bIsError; }
     CMaterial *m_pCurrentMaterial = nullptr;
-    CTechnique *m_pCurrentTechnique = nullptr;
     CPass *m_pCurrentPass = nullptr;
     CShaderRef *m_pCurrentShaderRef = nullptr;
     bool m_bIsError = false;

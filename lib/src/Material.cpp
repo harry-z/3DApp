@@ -138,6 +138,16 @@ CPass::~CPass()
 	}
 }
 
+ldword CPass::Compile()
+{
+	if (m_pVertexShaderRef == nullptr)
+	{
+		m_pVertexShaderRef = CreateShaderRef(EShaderType::EShaderType_Vertex, "DefaultVS");
+		m_pVertexShaderRef->AddAutoShaderConstantInfo()
+	}
+		return 0;
+}
+
 CShaderRef* CPass::CreateShaderRef(EShaderType eShaderType, const String &szShaderName)
 {
 	CShader *pShader = Global::m_pShaderManager->FindShaderByName(szShaderName);
@@ -166,53 +176,35 @@ void CPass::AddTextureSlot(const String &szTextureName)
 	m_arrTexture.Emplace(szTextureName);
 }
 
-CPass* CTechnique::CreatePass()
+CPass* CMaterial::CreatePass()
 {
 	CPass *NewPass = NEW_TYPE(CPass);
 	m_Passes.Add(NewPass);
 	return NewPass;	
 }
 
-CPass* CTechnique::CreatePass(const String &szName)
+CPass* CMaterial::CreatePass(const String &szName)
 {
 	CPass *NewPass = NEW_TYPE(CPass)(szName);
 	m_Passes.Add(NewPass);
 	return NewPass;
 }
 
-CTechnique::CTechnique() {}
-
-CTechnique::CTechnique(const String &szName)
-: m_IdStr(szName)
-{}
-
-CTechnique::~CTechnique()
+bool CMaterial::Compile()
 {
 	for (auto &Pass : m_Passes)
 	{
-		DELETE_TYPE(Pass, CPass);
+		if (Pass->Compile() == 0)
+			return false;
 	}
-}
-
-CTechnique* CMaterial::CreateTechnique()
-{
-	CTechnique *NewTechnique = NEW_TYPE(CTechnique);
-	m_Techniques.Add(NewTechnique);
-	return NewTechnique;	
-}
-
-CTechnique* CMaterial::CreateTechnique(const String &szName)
-{
-	CTechnique *NewTechnique = NEW_TYPE(CTechnique)(szName);
-	m_Techniques.Add(NewTechnique);
-	return NewTechnique;
+	return true;
 }
 
 CMaterial::~CMaterial()
 {
-	for (auto &Technique : m_Techniques)
+	for (auto &Pass : m_Passes)
 	{
-		DELETE_TYPE(Technique, CTechnique);
+		DELETE_TYPE(Pass, CPass);
 	}
 }
 
@@ -226,6 +218,10 @@ void CMaterial::Load(const String &szFilePath)
 	m_CreatedOrLoaded = bParseSucceeded && (!MtlParser.IsError());
 }
 
+void CMaterial::Destroy()
+{
+
+}
 
 
 CMaterialManager::CMaterialManager()

@@ -1,5 +1,6 @@
 #include "3DEngine.h"
 #include "JobSystem.h"
+#include "RenderItem.h"
 
 #ifdef RENDERAPI_DX9
 #include "Backend/D3D9/RenderBackendDX9.h"
@@ -16,7 +17,7 @@
 #include "Windows/Display_Windows.h"
 #endif
 
-std::thread::id g_MainThreadId;
+extern std::thread::id g_MainThreadId;
 
 C3DEngine::C3DEngine()
 : m_pMainCamera(nullptr)
@@ -31,6 +32,10 @@ C3DEngine::C3DEngine()
 C3DEngine::~C3DEngine()
 {
     DestroySceneClippingStrategy(m_pSceneClipping);
+
+    RenderObject::Uninitialize();
+    ShaderObject::Uninitialize();
+    RenderItem::Uninitialize();
 
     CJobSystem *pJobSystem = Global::m_pJobSystem;
     if (pJobSystem)
@@ -167,6 +172,10 @@ bool C3DEngine::Initialize()
     CJobSystem *pJobSystem = NEW_TYPE(CJobSystem);
     pJobSystem->Initialize();
     Global::m_pJobSystem = pJobSystem;
+
+    RenderObject::Initialize();
+    ShaderObject::Initialize();
+    RenderItem::Initialize();
 
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize 3DEngine");
     return true;

@@ -57,6 +57,38 @@ struct RenderObject
 	}
 };
 
+struct ShaderVariable
+{
+	EShaderConstantType m_Type;
+	word m_nStartRegister;
+	word m_nUsedRegister;
+	void *m_pData = nullptr;
+};
+
+struct ShaderObject
+{
+	CArray<ShaderVariable> m_arrShaderVar;
+
+	static CPool m_ShaderObjectPool;
+	static void Initialize() 
+	{ 
+		m_ShaderObjectPool.Initialize(sizeof(ShaderObject)); 
+	}
+	static void Uninitialize() 
+	{ 
+		m_ShaderObjectPool.Uninitialize(); 
+	}
+	static ShaderObject* CreateShaderObject() 
+	{
+		return new (m_ShaderObjectPool.Allocate()) ShaderObject;
+	}
+	static void DestroyShaderObject(ShaderObject *pShaderObject) 
+	{
+		pShaderObject->~ShaderObject();
+		m_ShaderObjectPool.Free(pShaderObject);
+	}
+};
+
 struct RenderItem
 {
 	union {
@@ -65,6 +97,8 @@ struct RenderItem
 	};
 
 	RenderObject *m_pRenderObj = nullptr;
+	ShaderObject *m_pVSShaderObj = nullptr;
+	ShaderObject *m_pPSShaderObj = nullptr;
 
 	using RenderItems = CArray<RenderItem>;
 #if CURRENT_RENDER_PATH == RENDER_PATH_FORWARD_SHADING

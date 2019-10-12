@@ -6,6 +6,6 @@ void IRenderNode::UpdateWSBoundingBox()
     {
         assert(m_pBoundingBox != nullptr);
         m_pBoundingBox->Transform(*m_pTransform);
-        BoundingBoxUpdated();
+        RemoveInternalFlag(RN_FLAG_INTERNAL_TRANSFORM_DIRTY);
     }
 }

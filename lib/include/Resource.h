@@ -5,7 +5,8 @@
 class CBaseResource : public CReferencedObject {
 public:
 	CBaseResource() { m_CreatedOrLoaded = false; }
-	bool IsCreatedOrLoaded() { return m_CreatedOrLoaded; }
+	inline void CreatedOrLoaded() { m_CreatedOrLoaded = true; }
+	inline bool IsCreatedOrLoaded() { return m_CreatedOrLoaded; }
 protected:
 	std::atomic_bool m_CreatedOrLoaded;
 };

@@ -6,7 +6,8 @@
 #define RN_FLAG_SHADOWRECEIVER					0x0004
 #define RN_FLAG_ALWAYSVISIBLE					0x0008
 
-#define RN_FLAG_INTERNAL_BBOX_DIRTY             0x0001
+#define RN_FLAG_INTERNAL_TRANSFORM_DIRTY        0x0001
+#define RN_FLAG_INTERNAL_GEOMETRY_DIRTY         0x0002
 
 enum class ERNType : byte
 {
@@ -25,15 +26,15 @@ public:
 
     inline void SetTransform(const Matrix4 &transform) {
 		*m_pTransform = transform;
-		NeedUpdateBoundingBox();
+		AddInternalFlag(RN_FLAG_INTERNAL_TRANSFORM_DIRTY);
 	}
 	inline const Matrix4& GetTransform() const { return *m_pTransform; }
 	inline const AxisAlignedBox& GetWSBox() const { return *m_pBoundingBox; }
 
-    inline void SetRenderFlag(word nFlag) { m_nFlag = nFlag; }
-	inline void AddRenderFlag(word nFlag) { BIT_ADD(m_nFlag, nFlag); }
-	inline void RemoveRenderFlag(word nFlag) { BIT_REMOVE(m_nFlag, nFlag); }
-	inline bool CheckRenderFlag(word nFlag) { return BIT_CHECK(m_nFlag, nFlag); }
+    inline void SetFlag(word nFlag) { m_nFlag = nFlag; }
+	inline void AddFlag(word nFlag) { BIT_ADD(m_nFlag, nFlag); }
+	inline void RemoveFlag(word nFlag) { BIT_REMOVE(m_nFlag, nFlag); }
+	inline bool CheckFlag(word nFlag) { return BIT_CHECK(m_nFlag, nFlag); }
 
     
 
@@ -56,8 +57,11 @@ protected:
     }
     virtual ~IRenderNode() {}
 
-    inline void NeedUpdateBoundingBox() { BIT_ADD(m_nInternalFlag, RN_FLAG_INTERNAL_BBOX_DIRTY); }
-    inline void BoundingBoxUpdated() { BIT_REMOVE(m_nInternalFlag, RN_FLAG_INTERNAL_BBOX_DIRTY); }
+    inline void SetInternalFlag(word nFlag) { m_nInternalFlag = nFlag; }
+    inline void AddFlag(word nFlag) { BIT_ADD(m_nInternalFlag, nFlag); }
+    inline void RemoveFlag(word nFlag) { BIT_REMOVE(m_nInternalFlag, nFlag); }
+    inline bool CheckFlag(word nFlag) { return BIT_CHECK(m_nInternalFlag, nFlag); }
+
     void UpdateWSBoundingBox();
 
 protected:

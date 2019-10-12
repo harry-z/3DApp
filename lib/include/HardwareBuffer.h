@@ -6,9 +6,10 @@ class IHardwareBuffer {
 public:
 	virtual bool UpdateData(const byte *pData, dword nSize) = 0;
 
-	EHardwareBufferType Type() const { return m_Type; }
-	dword Stride() const { return m_nStride; }
-	dword LockedLength() const { return m_nLockedLength; }
+	inline EHardwareBufferType Type() const { return m_Type; }
+	inline dword Stride() const { return m_nStride; }
+	inline dword LockedLength() const { return m_nLockedLength; }
+	inline dword Count() const { return m_nLockedLength / m_nStride; }
 
 protected:
 	IHardwareBuffer(dword nStride, dword nLength)

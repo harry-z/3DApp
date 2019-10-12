@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "ScriptParser.h"
 
+struct ShaderObject;
 class DLL_EXPORT CShaderRef
 {
 public:
@@ -13,9 +14,13 @@ public:
     inline const CArray<ShaderConstantInfo>& GetShaderConstantInfo() const { return m_arrShaderConstInfo; }
 
     bool AddAutoShaderConstantInfo(const String &szParamName);
+    inline const CArray<IdString>& GetAutoShaderConstantInfo() const { return m_arrAutoShaderConstInfo; }
+
+    ldword Compile();
 
 private:
-    CShaderRef(word Id) : m_RefId(Id) {}
+    CShaderRef(EShaderType Type, word Id) : m_ShaderType(Type), m_RefId(Id) {}
+    ~CShaderRef();
     bool CheckParamIsValid(const CArray<String> &arrParam) const;
     template <class T>
     void AddShaderConstantInfo(const String &szName, EShaderConstantType ConstType, dword nCount, T *pOriginData)
@@ -45,6 +50,8 @@ private:
     dword GetShaderConstantElementCount(EShaderConstantType ConstType) const;
 
     word m_RefId = 0xFFFF;
+    EShaderType m_ShaderType;
+    ShaderObject *m_pShaderObj = nullptr;
     CArray<ShaderConstantInfo> m_arrShaderConstInfo;
     CArray<IdString> m_arrAutoShaderConstInfo;
 };
@@ -57,18 +64,24 @@ public:
     CShaderRef* CreateShaderRef(EShaderType eShaderType, const String &szShaderName);
     void AddTextureSlot(const String &szTextureName);
 
+    inline ldword GetHashId() const { return m_nHashId; }
+
 private:
     CPass();
     CPass(const String &szName);
     ~CPass();
 
     ldword Compile();
+    inline void NeedCompile() { m_Compiled = false; }
+    inline bool IsCompiled() const { return m_Compiled; }
 
 private:
     CShaderRef *m_pVertexShaderRef = nullptr;
     CShaderRef *m_pPixelShaderRef = nullptr;
     CArray<IdString> m_arrTexture;
     IdString m_IdStr;
+    std::atomic_bool m_Compiled;
+    ldword m_nHashId;
 };
 
 class DLL_EXPORT CMaterial final : public CBaseResource 
@@ -118,11 +131,20 @@ public:
     CMaterialManager();
     ~CMaterialManager();
 
+    void Initialize();
+    CMaterial* CreateMaterial(const String &szName);
     CMaterial* LoadMaterial(const String &szFilePath, bool bBackground = false);
+    CMaterial* FindMaterial(const String &szName);
+    CMaterial* FindMaterial(const IdString &idStr);
+    void DestroyMaterial(CMaterial *pMaterial);
+
+private:
+    CMaterial* CreateInstance(const IdString &idStr);
 
 private:
 	typedef CMap<IdString, CMaterial*> MaterialMap;
 	MaterialMap m_MaterialMap;
+    CReferencedPointer<CMaterial> m_DefaultMtlPtr;
     CPool m_MaterialPool;
 	std::mutex m_MaterialMapLock;
 	dword m_MaterialId;

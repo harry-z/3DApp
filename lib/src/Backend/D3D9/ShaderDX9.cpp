@@ -108,12 +108,12 @@ bool CShaderManagerDX9::LoadShaders() {
 		"struct VSOutput {\n" \
 		  "float4 oPosition : POSITION;\n" \
 		"};\n" \
-		"VSOutput VSMain(float4 iPosition : POSITION) {\n" \
+		"VSOutput VS_Default(float4 iPosition : POSITION) {\n" \
 		  "VSOutput output;\n" \
 		  "output.oPosition = mul(WorldViewProj, iPosition);\n" \
 		  "return output;\n" \
 		"}\n" \
-		"float4 PSMain() : COLOR0 {\n" \
+		"float4 PS_Default() : COLOR0 {\n" \
 		  "return float4(1.0f, 1.0f, 1.0f, 1.0f);\n" \
 		"}";
 
@@ -123,13 +123,13 @@ bool CShaderManagerDX9::LoadShaders() {
 #endif
 
     ID3DXBuffer *pVertexByteCode = nullptr, *pPixelByteCode = nullptr, *pByteError = nullptr;
-    HRESULT hr = D3DXCompileShader(szDefaultShader.c_str(), szDefaultShader.length(), nullptr, nullptr, "VSMain", "vs_3_0", dwFlag, &pVertexByteCode, &pByteError, nullptr);
+    HRESULT hr = D3DXCompileShader(szDefaultShader.c_str(), szDefaultShader.length(), nullptr, nullptr, "VS_Default", "vs_3_0", dwFlag, &pVertexByteCode, &pByteError, nullptr);
     if (FAILED(hr))
     {
         SAFE_RELEASE(pByteError);
         return false;
     }
-    hr = D3DXCompileShader(szDefaultShader.c_str(), szDefaultShader.length(), nullptr, nullptr, "PSMain", "ps_3_0", dwFlag, &pPixelByteCode, &pByteError, nullptr); 
+    hr = D3DXCompileShader(szDefaultShader.c_str(), szDefaultShader.length(), nullptr, nullptr, "PS_Default", "ps_3_0", dwFlag, &pPixelByteCode, &pByteError, nullptr); 
     if (FAILED(hr))
     {
         SAFE_RELEASE(pByteError);

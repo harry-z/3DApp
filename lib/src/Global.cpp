@@ -12,6 +12,7 @@
 // //#include "Terrain.h"
 #include "Texture.h"
 #include "RenderBackend.h"
+#include "RenderItem.h"
 // #include "TimeOfDay.h"
 
 const Vec2 Vec2::s_ZeroVector;
@@ -47,9 +48,15 @@ IRenderBackend* Global::m_pRenderBackend = nullptr;
 // ShaderResourcesManager* Global::m_pShaderResourceManager = nullptr;
 
 
-extern std::thread::id g_MainThreadId;
+std::thread::id g_MainThreadId;
 bool Global::IsMainThread() {
     return g_MainThreadId == std::this_thread::get_id();
 }
 
 // String Global::s_WorkingDirectory;
+
+CPool RenderObject::m_RenderObjectPool;
+CPool ShaderObject::m_ShaderObjectPool;
+#if CURRENT_RENDER_PATH == RENDER_PATH_FORWARD_SHADING
+RenderItem::RenderItems RenderItem::m_RenderItems[EForwardShading_ShaderBatch_Count];
+#endif

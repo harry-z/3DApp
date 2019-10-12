@@ -2,21 +2,39 @@
 #include "Prereq.h"
 #include "RendererTypes.h"
 
+#define WORLD_MATRIX "WorldMatrix"
+#define WORLD_VIEW_MATRIX "WorldViewMatrix"
+#define WORLD_VIEW_PROJECTION_MATRIX "WorldViewProjectionMatrix"
+#define INVERSE_WORLD_MATRIX "InverseWorldMatrix"
+#define INVERSE_WORLD_VIEW_MATRIX "InverseWorldViewMatrix"
+#define INVERSE_WORLD_VIEW_PROJECTION_MATRIX "InverseWorldViewProjectionMatrix"
+#define VIEW_MATRIX "ViewMatrix"
+#define VIEW_PROJECTION_MATRIX "ViewProjectionMatrix"
+#define INVERSE_VIEW_MATRIX "InverseViewMatrix"
+#define INVERSE_VIEW_PROJECTION_MATRIX "InverseViewProjectionMatrix"
+#define PROJECTION_MATRIX "ProjectionMatrix"
+#define INVERSE_PROJECTION_MATRIX "InverseProjectionMatrix"
+#define CAMERA_POSITION "CameraPosition"
+#define CAMERA_DIRECTION "CameraDirection"
+
 struct ShaderConstantInfo
 {
     IdString m_Name;
     EShaderConstantType m_Type;
     dword m_RegisterCount;
     byte *m_pData = nullptr;
+
     ShaderConstantInfo()
     : m_Type(EShaderConstantType::EShaderConstantType_Unknown)
     , m_RegisterCount(0)
     , m_pData(nullptr) {}
+
     ShaderConstantInfo(const String &szStr, EShaderConstantType Type, dword nCount, byte *pData)
     : m_Name(szStr)
     , m_Type(Type)
     , m_RegisterCount(nCount)
     , m_pData(pData) {}
+
     ~ShaderConstantInfo()
     {
         if (m_pData)

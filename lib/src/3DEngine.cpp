@@ -166,6 +166,7 @@ bool C3DEngine::Initialize()
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize InputListener");
 
     Global::m_pMaterialManager = NEW_TYPE(CMaterialManager);
+    Global::m_pMaterialManager->Initialize();
 
     m_pMainCamera = NEW_TYPE(CCamera);
 
@@ -238,6 +239,8 @@ void C3DEngine::RunOneFrame(dword nFrameId)
 
 void C3DEngine::Frame(dword nFrameId)
 {
+    RenderItem::ResetItems();
+    
     for (dword i = 0; i < ENodeListType_Count; ++i)
     {
         Linklist<IRenderNode>::_NodeType *pTemp = m_SceneNodelist[i].m_pRoot;

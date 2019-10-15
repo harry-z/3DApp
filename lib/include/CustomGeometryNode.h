@@ -8,7 +8,8 @@ class CCustomGeometryNode final : public IRenderNode
 public:
 	friend class C3DEngine;
 
-	virtual ERNType GetType() const override { return ERNType::ERNType_CustomGeometry; }
+	DECLARE_NODE_TYPE(ERNType::ERNType_CustomGeometry)
+	
 	virtual void PreRender(CCamera *pCamera, EPreRenderMode mode) override;
 
 	void SetPredefinedVertexLayout(EPredefinedVertexLayout PredefinedLayout);
@@ -16,6 +17,8 @@ public:
 	void SetPrimitiveType(EPrimitiveType PrimType);
 	void AddVertexBuffer(IHardwareBuffer *pVertexBuffer);
 	void SetIndexBuffer(IHardwareBuffer *pIndexBuffer);
+
+	void SetMaterial(CMaterial *pMaterial);
 
 protected:
 	virtual ~CCustomGeometryNode();

@@ -18,6 +18,8 @@ public:
 
     ldword Compile();
 
+    inline ShaderObject* GetShaderObject() { return m_pShaderObj; }
+
 private:
     CShaderRef(EShaderType Type, word Id) : m_ShaderType(Type), m_RefId(Id) {}
     ~CShaderRef();
@@ -65,6 +67,8 @@ public:
     void AddTextureSlot(const String &szTextureName);
 
     inline ldword GetHashId() const { return m_nHashId; }
+    inline CShaderRef* GetVertexShaderRef() { return m_pVertexShaderRef; }
+    inline CShaderRef* GetPixelShaderRef() { return m_pPixelShaderRef; }
 
 private:
     CPass();
@@ -72,6 +76,7 @@ private:
     ~CPass();
 
     ldword Compile();
+    inline void Compiled() { m_Compiled = true; }
     inline void NeedCompile() { m_Compiled = false; }
     inline bool IsCompiled() const { return m_Compiled; }
 
@@ -92,10 +97,12 @@ public:
 
     CPass* CreatePass();
     CPass* CreatePass(const String &szName);
+    inline const CArray<CPass*>& GetPasses() const { return m_Passes; }
 
     const String& GetName() const { return m_szReadableName; }
 
     bool Compile();
+    bool IsCompiled() const;
 
 private:
     CMaterial() {}
@@ -137,6 +144,10 @@ public:
     CMaterial* FindMaterial(const String &szName);
     CMaterial* FindMaterial(const IdString &idStr);
     void DestroyMaterial(CMaterial *pMaterial);
+
+    CReferencedPointer<CMaterial> GetDefaultMaterial() const { return m_DefaultMtlPtr; }
+
+    bool IsCompiled() const;
 
 private:
     CMaterial* CreateInstance(const IdString &idStr);

@@ -8,7 +8,7 @@ CCustomGeometryNode::~CCustomGeometryNode()
 
 void CCustomGeometryNode::PreRender(CCamera *pCamera, EPreRenderMode mode)
 {
-	if (CheckRenderFlag(RN_FLAG_VISIBLE))
+	if (CheckFlag(RN_FLAG_VISIBLE))
 	{
 		if (m_pVertexLayout == nullptr)
 			return;
@@ -32,7 +32,7 @@ void CCustomGeometryNode::PreRender(CCamera *pCamera, EPreRenderMode mode)
 		if (CheckInternalFlag(RN_FLAG_INTERNAL_GEOMETRY_DIRTY))
 		{
 			m_pRenderObj->m_arrHwBuffer = m_arrVertexBuffer;
-			m_pRenderObj->m_pIndexBuffer = m_pIndexBuffer;
+			m_pRenderObj->m_pIB = m_pIndexBuffer;
 			m_pRenderObj->m_pVertexLayout = m_pVertexLayout;
 
 			m_pRenderObj->m_nVertexCount = m_arrVertexBuffer[0]->Count();
@@ -60,6 +60,16 @@ void CCustomGeometryNode::PreRender(CCamera *pCamera, EPreRenderMode mode)
 		if (m_MtlPtr.IsValid() && m_MtlPtr->IsCreatedOrLoaded())
 			pUsedMtl = m_MtlPtr.Get();
 		else
-			pUsedMtl = Global::m_pMaterialManager->
+			pUsedMtl = Global::m_pMaterialManager->GetDefaultMaterial().Get();
+
+		if (!pUsedMtl->IsCompiled())
+			pUsedMtl->Compile();
+
+		PreRenderInternal(pCamera, mode, m_pRenderObj, pUsedMtl);
 	}
+}
+
+void CCustomGeometryNode::SetMaterial(CMaterial *pMaterial)
+{
+	m_MtlPtr = pMaterial;
 }

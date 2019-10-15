@@ -29,7 +29,15 @@ public:
 	void SetSceneClipping(const char *pszName);
 	void SetExternalSceneClipping(ISceneClippingStrategy *pSceneClipping);
 
-	IRenderNode* CreateRenderNode(ERNType eNodeType);
+	template <class NodeType>
+	NodeType* CreateRenderNode()
+	{
+		IRenderNode *pNode = CreateRenderNodeInternal(NodeType::GetType());
+		if (pNode != nullptr)
+			return static_cast<NodeType*>(pNode);
+		else
+			return nullptr;
+	}
 	void DestroyRenderNode(IRenderNode *pNode);
 
 	void RegisterNode(IRenderNode *pNode);
@@ -67,6 +75,7 @@ private:
 	ISceneClippingStrategy* CreateSceneClippingStrategy(const char *pszName);
 	void DestroySceneClippingStrategy(ISceneClippingStrategy *pClippingStrategy);
 
+	IRenderNode* CreateRenderNodeInternal(ERNType NodeType);
 	void OnCreateRenderNode(IRenderNode *pNode);
 	void OnDestroyRenderNode(IRenderNode *pNode);
 

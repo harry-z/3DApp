@@ -26,6 +26,7 @@ endif ()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src)
 add_library(${PROJECT_NAME}_lib SHARED 
     Camera.cpp
+    CustomGeometryNode.cpp
     File.cpp
     FreelistAlloc.cpp
     Global.cpp 

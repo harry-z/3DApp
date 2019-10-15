@@ -1,10 +1,13 @@
 #include "3DEngine.h"
+#include "CustomGeometryNode.h"
 
-IRenderNode* C3DEngine::CreateRenderNode(ERNType eNodeType)
+IRenderNode* C3DEngine::CreateRenderNodeInternal(ERNType eNodeType)
 {
     IRenderNode *pNode = nullptr;
     switch (eNodeType)
     {
+        case ERNType::ERNType_CustomGeometry:
+            pNode = NEW_TYPE(CCustomGeometryNode);
         default:
             break;
     }

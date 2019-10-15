@@ -65,12 +65,10 @@ ldword CShaderRef::Compile()
 {
 	CShaderManager * __restrict pShaderMgr = Global::m_pShaderManager;
 	CShader *pShader = nullptr;
-	ldword nId = m_RefId;
-	if (nId != 0xFFFF)
-		pShader = pShaderMgr->FindShaderById(nId);
+	if (m_RefId != 0)
+		pShader = pShaderMgr->FindShaderById(m_RefId);
 	if (pShader == nullptr)
 	{
-		nId = 0;
 		switch (m_ShaderType)
 		{
 			case EShaderType::EShaderType_Vertex:
@@ -110,7 +108,7 @@ ldword CShaderRef::Compile()
 		}
 	}
 
-	return g_ShaderRefMask | nId;
+	return g_ShaderRefMask | m_RefId;
 }
 
 bool CShaderRef::AddAutoShaderConstantInfo(const String &szParamName)
@@ -209,13 +207,10 @@ CPass::~CPass()
 
 ldword CPass::Compile()
 {
-	if (m_pVertexShaderRef == nullptr)
-		m_pVertexShaderRef = CreateShaderRef(EShaderType::EShaderType_Vertex, "VS_Default");
 	ldword nVSCompile = m_pVertexShaderRef->Compile();
-	if (m_pPixelShaderRef == nullptr)
-		m_pPixelShaderRef = CreateShaderRef(EShaderType::EShaderType_Pixel, "PS_Default");
 	ldword nPSCompile = m_pPixelShaderRef->Compile();
 	m_nHashId = nVSCompile << 52 | nPSCompile << 40;
+	Compiled();
 	return m_nHashId;
 }
 
@@ -238,7 +233,17 @@ CShaderRef* CPass::CreateShaderRef(EShaderType eShaderType, const String &szShad
 	}
 	else
 	{
-		return nullptr;
+		switch (eShaderType)
+		{
+			case EShaderType::EShaderType_Vertex:
+				m_pVertexShaderRef = NEW_TYPE(CShaderRef)(EShaderType::EShaderType_Vertex, 0);
+				return m_pVertexShaderRef;
+			case EShaderType::EShaderType_Pixel:
+				m_pPixelShaderRef = NEW_TYPE(CShaderRef)(EShaderType::EShaderType_Pixel, 0);
+				return m_pPixelShaderRef;
+			default:
+				return nullptr;
+		}
 	}
 }
 
@@ -266,6 +271,19 @@ bool CMaterial::Compile()
 	for (auto &Pass : m_Passes)
 	{
 		if (Pass->Compile() == g_InvalidId)
+			return false;
+	}
+	return true;
+}
+
+bool CMaterial::IsCompiled() const
+{
+	if (m_Passes.Num() == 0)
+		return false;
+	
+	for (const auto &Pass : m_Passes)
+	{
+		if (!Pass->IsCompiled())
 			return false;
 	}
 	return true;
@@ -310,14 +328,15 @@ void CMaterialManager::Initialize()
 {
 	m_DefaultMtlPtr = CreateMaterial("DefaultMtl");
 	CPass *pPass = m_DefaultMtlPtr->CreatePass();
-	pPass->CreateShaderRef(EShaderType::EShaderType_Vertex, )
+	pPass->CreateShaderRef(EShaderType::EShaderType_Vertex, "");
+	pPass->CreateShaderRef(EShaderType::EShaderType_Pixel, "");
 }
 
 CMaterial* CMaterialManager::CreateMaterial(const String &szName)
 {
 	CMaterial *pNewMaterial = CreateInstance(szName);
-	pMaterial->CreatedOrLoaded();
-	return pMaterial;
+	pNewMaterial->CreatedOrLoaded();
+	return pNewMaterial;
 }
 
 CMaterial* CMaterialManager::LoadMaterial(const String &szFilePath, bool bBackground)
@@ -347,7 +366,7 @@ void CMaterialManager::DestroyMaterial(CMaterial *pMaterial)
 	bool bHas;
 	{
 		std::lock_guard<std::mutex> l(m_MaterialMapLock);
-		bHas = m_MaterialMap.Find(pMaterial->m_IdStr);
+		bHas = (bool)m_MaterialMap.Find(pMaterial->m_IdStr);
 		if (bHas)
 			m_MaterialMap.Remove(pMaterial->m_IdStr);
 	}

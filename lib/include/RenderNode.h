@@ -9,6 +9,9 @@
 #define RN_FLAG_INTERNAL_TRANSFORM_DIRTY        0x0001
 #define RN_FLAG_INTERNAL_GEOMETRY_DIRTY         0x0002
 
+#define DECLARE_NODE_TYPE(Type) \
+    static ERNType GetType() { return (Type); }
+
 enum class ERNType : byte
 {
     ERNType_Unknown = 0,
@@ -22,7 +25,7 @@ class IRenderNode
 public:
     friend class C3DEngine;
 
-    virtual ERNType GetType() const { return ERNType::ERNType_Unknown; }
+    DECLARE_NODE_TYPE(ERNType::ERNType_Unknown)
 
     inline void SetTransform(const Matrix4 &transform) {
 		*m_pTransform = transform;
@@ -58,11 +61,13 @@ protected:
     virtual ~IRenderNode() {}
 
     inline void SetInternalFlag(word nFlag) { m_nInternalFlag = nFlag; }
-    inline void AddFlag(word nFlag) { BIT_ADD(m_nInternalFlag, nFlag); }
-    inline void RemoveFlag(word nFlag) { BIT_REMOVE(m_nInternalFlag, nFlag); }
-    inline bool CheckFlag(word nFlag) { return BIT_CHECK(m_nInternalFlag, nFlag); }
+    inline void AddInternalFlag(word nFlag) { BIT_ADD(m_nInternalFlag, nFlag); }
+    inline void RemoveInternalFlag(word nFlag) { BIT_REMOVE(m_nInternalFlag, nFlag); }
+    inline bool CheckInternalFlag(word nFlag) { return BIT_CHECK(m_nInternalFlag, nFlag); }
 
     void UpdateWSBoundingBox();
+
+    void PreRenderInternal(CCamera *pCamera, EPreRenderMode mode, struct RenderObject *pRenderObj, CMaterial *pMtl);
 
 protected:
     word m_nFlag;

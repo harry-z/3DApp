@@ -22,7 +22,7 @@ void CDefaultSceneClippingStrategy::SceneClipping(CCamera *pCamera, Linklist<IRe
     			break;
     		}
     	}
-    	bVisible = bVisible || pNode->CheckRenderFlag(RN_FLAG_ALWAYSVISIBLE);
+    	bVisible = bVisible || pNode->CheckFlag(RN_FLAG_ALWAYSVISIBLE);
     	if (bVisible)
     		RenderNode(pCamera, pNode);
     }

@@ -129,7 +129,9 @@ struct RenderItem
 
 	static RenderItem* AddItem(dword nList) 
 	{
-		return m_RenderItems[nList].AddIndex(1);
+		RenderItem *pItem = m_RenderItems[nList].AddIndex(1);
+		new (pItem) RenderItem();
+		return pItem;
 	}
 
 	static void ResetItems() 

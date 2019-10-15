@@ -29,14 +29,12 @@ void CMaterialParser::OnProcessNode(const String &szParamType, const CArray<Stri
 	else if (szParamType == TOKEN_VS && m_pCurrentPass != nullptr && arrParam.Num() > 0)
 	{
 		m_pCurrentShaderRef = m_pCurrentPass->CreateShaderRef(EShaderType::EShaderType_Vertex, arrParam[0]);
-		if (m_pCurrentShaderRef == nullptr)
-			Error();
+		assert(m_pCurrentShaderRef == nullptr);
 	}
 	else if (szParamType == TOKEN_PS && m_pCurrentPass != nullptr && arrParam.Num() > 0)
 	{
 		m_pCurrentShaderRef = m_pCurrentPass->CreateShaderRef(EShaderType::EShaderType_Pixel, arrParam[0]);
-		if (m_pCurrentShaderRef == nullptr)
-			Error();
+		assert(m_pCurrentShaderRef != nullptr);
 	}
 	else if (szParamType == TOKEN_SHADER_PARAM && m_pCurrentShaderRef != nullptr)
 	{

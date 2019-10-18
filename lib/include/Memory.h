@@ -32,3 +32,36 @@ inline T* ConstructNObj(void *p, dword size, dword n) {
 	#define MEMALLOC(sz) MemAlloc(sz)
 	#define MEMFREE(ptr) MemFree(ptr)
 #endif
+
+template <class ObjType, class ... ArgsType>
+inline ObjType* NewObject(ArgsType &&... Args)
+{
+	return NEW_TYPE(ObjType)(std::forward<ArgsType>(Args)...);
+}
+
+template <class ObjType>
+inline void DeleteObject(ObjType *pObj)
+{
+	DELETE_TYPE(pObj, ObjType);
+}
+
+template <class T>
+inline typename TEnableIf<!TIsZeroContructType<T>::Value>::Type ConstructItems(T *pData, dword nCount)
+{
+	
+}
+
+template <class T>
+inline typename TEnableIf<!TIsTriviallyDestructible<T>::Value>::Type DestructItems(T *pData, dword nCount)
+{
+	while (nCount)
+	{
+		pData->T::~();
+		++pData;
+		--nCount;
+	}
+}
+
+template <class T>
+inline typename TEnableIf<TIsTriviallyDestructible<T>::Value>::Type DestructItems(T *pData, dword nCount)
+{}

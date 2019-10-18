@@ -2,6 +2,8 @@
 
 #include "Memory.h"
 
+
+
 template <class T, class Traits = TypeTraits<T>>
 class CArray {
 public:
@@ -39,6 +41,7 @@ public:
 	}
 
 	void Free() {
+		DestructItems<T>(m_pElements, m_nCount);
 		m_nCount = 0;
 		if (m_nAllocCount)
 			MEMFREE(m_pElements);

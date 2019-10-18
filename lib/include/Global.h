@@ -26,7 +26,7 @@ struct Global {
 	DLL_EXPORT	static CAnimationManager *m_pAnimationManager;
 	DLL_EXPORT	static CGUIManager *m_pGUIManager;
 	DLL_EXPORT	static CGUIRenderer *m_pGUIRenderer;
-				static CHardwareBufferManager *m_pHwBufferManager;
+	DLL_EXPORT	static CHardwareBufferManager *m_pHwBufferManager;
 	DLL_EXPORT	static CInputListener *m_pInputListener;
 				static CJobSystem *m_pJobSystem;
 	DLL_EXPORT	static CLog *m_pLog;

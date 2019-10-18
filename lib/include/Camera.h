@@ -6,6 +6,8 @@
 #define CAMERA_PROJ_DIRTY										0x02
 #define CAMERA_FRUSTUM_PLANE_DIRTY			0x04
 #define CAMERA_FRUSTUM_SIZE_DIRTY				0x08
+#define CAMERA_NEED_VIEW_MATRIX_SHADER_CONST_UPDATE		0x10
+#define CAMERA_NEED_PROJ_MATRIX_SHADER_CONST_UPDATE		0x20
 
 enum class EProjectType : char {
 	EProject_Perspective,
@@ -29,26 +31,29 @@ public:
 
 	inline void SetEye(const Vec3 &eye) {
 		m_eye = eye;
-		BIT_ADD(m_dirty, (CAMERA_VIEW_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY));
+		BIT_ADD(m_dirty, (CAMERA_VIEW_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY | CAMERA_NEED_VIEW_MATRIX_SHADER_CONST_UPDATE));
 	}
 	inline const Vec3& GetEye() const { return m_eye; }
 	inline void SetLookat(const Vec3 &lookat) {
 		m_lookat = lookat;
-		BIT_ADD(m_dirty, (CAMERA_VIEW_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY));
+		BIT_ADD(m_dirty, (CAMERA_VIEW_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY | CAMERA_NEED_VIEW_MATRIX_SHADER_CONST_UPDATE));
 	}
 	inline const Vec3& GetLookat() const { return m_lookat; }
 	inline void SetUp(const Vec3 &up) {
 		m_up = up;
-		BIT_ADD(m_dirty, (CAMERA_VIEW_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY));
+		BIT_ADD(m_dirty, (CAMERA_VIEW_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY | CAMERA_NEED_VIEW_MATRIX_SHADER_CONST_UPDATE));
 	}
 	inline const Vec3& GetUp() const { return m_up; }
 	void SetupViewMatrix() const;
 	const Matrix4& GetViewMatrix() const;
 
+	inline bool IsViewMatrixShaderConstNeedUpdate() const { return BIT_CHECK(m_dirty, CAMERA_NEED_VIEW_MATRIX_SHADER_CONST_UPDATE); }
+	inline void ViewMatrixShaderConstUpdated() { BIT_REMOVE(m_dirty, CAMERA_NEED_VIEW_MATRIX_SHADER_CONST_UPDATE); }
+
 	inline void SetPerspectiveData(float fov, float aspect) {
 		m_ProjectionData.perspective.m_fov = fov;
 		m_ProjectionData.perspective.m_aspect = aspect;
-		BIT_ADD(m_dirty, (CAMERA_PROJ_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY | CAMERA_FRUSTUM_SIZE_DIRTY));
+		BIT_ADD(m_dirty, (CAMERA_PROJ_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY | CAMERA_FRUSTUM_SIZE_DIRTY | CAMERA_NEED_PROJ_MATRIX_SHADER_CONST_UPDATE));
 		m_type = EProjectType::EProject_Perspective;
 	}
 	inline float GetFov() const { return m_ProjectionData.perspective.m_fov; }
@@ -58,7 +63,7 @@ public:
 		m_ProjectionData.ortho.m_right = right;
 		m_ProjectionData.ortho.m_top = top;
 		m_ProjectionData.ortho.m_bottom = bottom;
-		BIT_ADD(m_dirty, (CAMERA_PROJ_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY | CAMERA_FRUSTUM_SIZE_DIRTY));
+		BIT_ADD(m_dirty, (CAMERA_PROJ_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY | CAMERA_FRUSTUM_SIZE_DIRTY | CAMERA_NEED_PROJ_MATRIX_SHADER_CONST_UPDATE));
 		m_type = EProjectType::EProject_Ortho;
 	}
 	inline void GetOrtho(float &left, float &right, float &top, float &bottom) {
@@ -69,18 +74,21 @@ public:
 	}
 	inline void SetNearClip(float nearClip) {
 		m_nearclip = nearClip;
-		BIT_ADD(m_dirty, (CAMERA_PROJ_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY));
+		BIT_ADD(m_dirty, (CAMERA_PROJ_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY | CAMERA_NEED_PROJ_MATRIX_SHADER_CONST_UPDATE));
 	}
 	inline float GetNearClip() const { return m_nearclip; }
 	inline void SetFarClip(float farClip) {
 		m_farclip = farClip;
-		BIT_ADD(m_dirty, (CAMERA_PROJ_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY));
+		BIT_ADD(m_dirty, (CAMERA_PROJ_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY | CAMERA_NEED_PROJ_MATRIX_SHADER_CONST_UPDATE));
 	}
 	inline float GetFarClip() const { return m_farclip; }
 	void SetupProjMatrix() const;
 	const Matrix4& GetProjMatrix() const;
 
 	inline EProjectType GetProjType() const { return m_type; }
+
+	inline bool IsProjectionMatrixShaderConstNeedUpdate() const { return BIT_CHECK(m_dirty, CAMERA_NEED_PROJ_MATRIX_SHADER_CONST_UPDATE); }
+	inline void ProjectionMatrixShaderConstUpdated() { BIT_REMOVE(m_dirty, CAMERA_NEED_PROJ_MATRIX_SHADER_CONST_UPDATE); }
 
 	void SetupFrustumPlanes() const;
 	const Plane& GetFrustumPlane(EFrustumPlane ePlane) const;

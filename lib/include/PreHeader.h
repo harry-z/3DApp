@@ -138,6 +138,158 @@ struct TypeTraits {
 	typedef typename GetConstRefType<T>::RType _ConstRefType;
 };
 
+// And
+template <class... Types>
+struct TAnd;
+
+template <bool LHSValue, class... RHS>
+struct TAndValue
+{
+	enum { Value = TAnd<RHS...>::Value };
+};
+
+template <class... RHS>
+struct TAndValue<false, RHS...>
+{
+	enum { Value = false };
+};
+
+template <class LHS, class... RHS>
+struct TAnd<LHS, RHS...> : TAndValue<LHS::Value, RHS...>
+{
+};
+
+template <>
+struct TAnd<>
+{
+	enum { Value = true };
+};
+
+// Or
+template <class... Types>
+struct TOr;
+
+template <bool LHSValue, class... RHS>
+struct TOrValue
+{
+	enum { Value = TOr<RHS...>::Value };
+};
+
+template <class... RHS>
+struct TOrValue<true, RHS...>
+{
+	enum { Value = true };
+};
+
+template <class LHS, class... RHS>
+struct TOr<LHS, RHS...> : TOrValue<LHS::Value, RHS...>
+{
+};
+
+template <>
+struct TOr<>
+{
+	enum { Value = false };
+};
+
+// Not
+template <class T>
+struct TNot
+{
+	enum { Value = !T::Value };
+};
+
+// IsEnum
+template <class T>
+struct TIsEnum
+{
+	enum { Value = __is_enum(T); }
+};
+
+// IsArithmetic
+template <class T>
+struct TIsArithmetic
+{ 
+	enum { Value = false };
+};
+
+template <> struct TIsArithmetic<float>       { enum { Value = true }; };
+template <> struct TIsArithmetic<double>      { enum { Value = true }; };
+template <> struct TIsArithmetic<long double> { enum { Value = true }; };
+template <> struct TIsArithmetic<byte>       { enum { Value = true }; };
+template <> struct TIsArithmetic<word>      { enum { Value = true }; };
+template <> struct TIsArithmetic<dword>      { enum { Value = true }; };
+template <> struct TIsArithmetic<ldword>      { enum { Value = true }; };
+template <> struct TIsArithmetic<char>        { enum { Value = true }; };
+template <> struct TIsArithmetic<short>       { enum { Value = true }; };
+template <> struct TIsArithmetic<int>       { enum { Value = true }; };
+template <> struct TIsArithmetic<long long>       { enum { Value = true }; };
+template <> struct TIsArithmetic<bool>        { enum { Value = true }; };
+template <> struct TIsArithmetic<wchar_t>    { enum { Value = true }; };
+
+template <class T> struct TIsArithmetic<const          T> { enum { Value = TIsArithmetic<T>::Value }; };
+template <class T> struct TIsArithmetic<      volatile T> { enum { Value = TIsArithmetic<T>::Value }; };
+template <class T> struct TIsArithmetic<const volatile T> { enum { Value = TIsArithmetic<T>::Value }; };
+
+// IsPointer
+template <class T>
+struct TIsPointer
+{
+	enum { Value = false };
+};
+
+template <class T> struct TIsPointer<               T*> { enum { Value = true }; };
+template <class T> struct TIsPointer<const          T*> { enum { Value = true }; };
+template <class T> struct TIsPointer<      volatile T*> { enum { Value = true }; };
+template <class T> struct TIsPointer<const volatile T*> { enum { Value = true }; };
+
+template <class T> struct TIsPointer<const          T> { enum { Value = TIsPointer<T>::Value }; };
+template <class T> struct TIsPointer<      volatile T> { enum { Value = TIsPointer<T>::Value }; };
+template <class T> struct TIsPointer<const volatile T> { enum { Value = TIsPointer<T>::Value }; };
+
+// ZeroContructType
+template <class T>
+struct TIsZeroContructType
+{
+	enum { Value = TOr< TIsEnum<T>, TIsArithmetic<T>, TIsPointer<T> > };
+};
+
+// TriviallyDestructible
+namespace IsTriviallyDestructible_Private
+{
+	template <class T, bool bIsTriviallyTriviallyDestructible = __is_enum(T)>
+	struct TImpl
+	{
+		enum { Value = true };
+	};
+
+	template <class T, false>
+	struct TImpl
+	{
+		enum { Value = __has_trivial_destructor(T) };
+	};
+}
+
+template <class T>
+struct TIsTriviallyDestructible
+{
+	enum { Value = IsTriviallyDestructible_Private::TImpl<T>::Value };
+};
+
+template <bool Predicate, typename Result = void>
+class TEnableIf;
+
+template <typename Result>
+class TEnableIf<true, Result>
+{
+public:
+	typedef Result Type;
+};
+
+template <typename Result>
+class TEnableIf<false, Result>
+{};
+
 class CNoneCopyable {
 public:
 	CNoneCopyable() {}

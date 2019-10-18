@@ -107,6 +107,18 @@ enum class EShaderConstantType : byte {
 	EShaderConstantType_Unknown = 0xFF
 };
 
+enum EAutoUpdatedConstant : byte {
+    EAutoUpdatedConstant_View = 0,
+    EAutoUpdatedConstant_ViewProj,
+    EAutoUpdatedConstant_InvView,
+    EAutoUpdatedConstant_InvViewProj,
+    EAutoUpdatedConstant_Proj,
+    EAutoUpdatedConstant_InvProj,
+    EAutoUpdatedConstant_CamPos,
+    EAutoUpdatedConstant_CamDir,
+	EAutoUpdatedConstant_None = 0xFF
+};
+
 enum EClearFlag {
 	EClearFlag_Color = 0x01,
 	EClearFlag_Depth = 0x02,
@@ -132,3 +144,72 @@ enum class EDeviceState {
 
 #define RENDER_PATH_FORWARD_SHADING 1
 #define CURRENT_RENDER_PATH RENDER_PATH_FORWARD_SHADING
+
+#include "Vector.h"
+
+struct P3
+{
+	Vec3 m_Position;
+};
+
+struct P3T2
+{
+	Vec3 m_Position;
+	Vec2 m_Texcoord;
+};
+
+struct P3T2C
+{
+	Vec3 m_Position;
+	Vec2 m_Texcoord;
+	dword m_Color;
+};
+
+struct P3N3
+{
+	Vec3 m_Position;
+	Vec3 m_Normal;
+};
+
+struct P3N3C
+{
+	Vec3 m_Position;
+	Vec3 m_Normal;
+	dword m_Color;
+};
+
+struct P3N3T2
+{
+	Vec3 m_Position;
+	Vec3 m_Normal;
+	Vec2 m_Texcoord;
+};
+
+struct P3N3TAN3T2
+{
+	Vec3 m_Position;
+	Vec3 m_Normal;
+	Vec3 m_Tangent;
+	Vec2 m_Texcoord;
+};
+
+struct BlendIdxWeight
+{
+	byte m_BlendIndex[4];
+	float m_BlendWeight[4];
+};
+
+struct P3N3TAN3T2T2
+{
+	Vec3 m_Position;
+	Vec3 m_Normal;
+	Vec3 m_Tangent;
+	Vec2 m_Texcoord0;
+	Vec2 m_Texcoord1;
+};
+
+struct PSHORT2T2
+{
+	short m_Position[2];
+	Vec2 m_Texcoord;
+};

@@ -3,12 +3,8 @@
 
 void IRenderNode::UpdateWSBoundingBox()
 {
-    if (CheckInternalFlag(RN_FLAG_INTERNAL_TRANSFORM_DIRTY))
-    {
-        assert(m_pBoundingBox != nullptr);
-        m_pBoundingBox->Transform(*m_pTransform);
-        RemoveInternalFlag(RN_FLAG_INTERNAL_TRANSFORM_DIRTY);
-    }
+    assert(m_pBoundingBox != nullptr);
+    m_pBoundingBox->Transform(*m_pTransform);
 }
 
 void IRenderNode::PreRenderInternal(CCamera *pCamera, EPreRenderMode mode, struct RenderObject *pRenderObj, CMaterial *pMtl)

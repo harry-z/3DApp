@@ -32,7 +32,7 @@ public:
 	template <class NodeType>
 	NodeType* CreateRenderNode()
 	{
-		IRenderNode *pNode = CreateRenderNodeInternal(NodeType::GetType());
+		IRenderNode *pNode = CreateRenderNodeInternal(NodeType::S_GetType());
 		if (pNode != nullptr)
 			return static_cast<NodeType*>(pNode);
 		else

@@ -3,12 +3,14 @@
 #include "RenderNode.h"
 
 struct RenderObject;
-class CCustomGeometryNode final : public IRenderNode
+class DLL_EXPORT CCustomGeometryNode final : public IRenderNode
 {
 public:
 	friend class C3DEngine;
 
 	DECLARE_NODE_TYPE(ERNType::ERNType_CustomGeometry)
+
+	virtual ERNType GetType() const override { return CCustomGeometryNode::S_GetType(); }
 	
 	virtual void PreRender(CCamera *pCamera, EPreRenderMode mode) override;
 

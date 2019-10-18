@@ -28,6 +28,7 @@ add_library(${PROJECT_NAME}_lib SHARED
     Camera.cpp
     CustomGeometryNode.cpp
     File.cpp
+    FirstPersonCameraController.cpp
     FreelistAlloc.cpp
     Global.cpp 
     Hashmap.cpp
@@ -39,6 +40,7 @@ add_library(${PROJECT_NAME}_lib SHARED
     MaterialParser.cpp
     Matrix.cpp
     Memory.cpp
+    OrbitCameraController.cpp
     PixelFormatUtil.cpp
     Pool.cpp
     RenderNode.cpp

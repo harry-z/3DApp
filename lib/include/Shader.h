@@ -44,6 +44,28 @@ struct ShaderConstantInfo
     }
 };
 
+struct AutoUpdatedConstant
+{
+    dword m_nConstantCount;
+    byte *m_pData = nullptr;
+
+    AutoUpdatedConstant()
+    : m_nConstantCount(0)
+    {}
+    AutoUpdatedConstant(dword nConstantCount, byte *pData)
+    , m_Type(Type)
+    , m_nConstantCount(nCount)
+    , m_pData(pData)
+    {}
+    ~AutoUpdatedConstant()
+    {
+        if (m_pData != nullptr)
+        {
+            MEMFREE(m_pData);
+        }
+    }
+};
+
 class CShader 
 {
 public:
@@ -61,6 +83,7 @@ protected:
     EShaderType m_Type = EShaderType::EShaderType_Unknown;
 };
 
+class CCamera;
 class CShaderManager 
 {
 public:
@@ -80,7 +103,7 @@ public:
 
     bool IsAutoShaderConstant(const IdString &idStr) const;
     const ShaderConstantInfo* FindShaderConstantInfo(const IdString &idStr) const;
-    void UpdateShaderConstantInfoPerFrame();
+    void UpdateShaderConstantInfoPerFrame(CCamera *pCamera);
 
 private:
     void InitializeAutoShaderConstantMap();
@@ -88,8 +111,11 @@ private:
 protected:
     using ShaderMap = CMap<IdString, CShader*>;
     ShaderMap m_ShaderMap;
-    using AutoShaderConstantMap = CMap<IdString, ShaderConstantInfo>;
+    // using AutoShaderConstantMap = CMap<IdString, ShaderConstantInfo>;
+    using AutoShaderConstantMap = CMap<IdString, AutoUpdatedShaderConstantInfo>
     AutoShaderConstantMap m_AutoShaderConstMap;
+    using AutoUpdatedConstants = CArray<AutoUpdatedConstant>;
+    AutoUpdatedConstants m_AutoUpdatedConstants;
     using ShaderArr = CArray<CShader*>;
     ShaderArr m_ShaderArr;
     CShader *m_pDefaultVertexShader = nullptr;

@@ -3,7 +3,8 @@
 
 CCustomGeometryNode::~CCustomGeometryNode()
 {
-
+	if (m_pRenderObj != nullptr)
+		RenderObject::DestroyRenderObject(m_pRenderObj);
 }
 
 void CCustomGeometryNode::PreRender(CCamera *pCamera, EPreRenderMode mode)
@@ -23,11 +24,7 @@ void CCustomGeometryNode::PreRender(CCamera *pCamera, EPreRenderMode mode)
 		if (m_pRenderObj == nullptr)
 			m_pRenderObj = RenderObject::CreateRenderObject();
 
-		if (CheckInternalFlag(RN_FLAG_INTERNAL_TRANSFORM_DIRTY))
-		{
-			m_pRenderObj->m_pWorldTransform = m_pTransform;
-			RemoveInternalFlag(RN_FLAG_INTERNAL_TRANSFORM_DIRTY);
-		}
+		m_pRenderObj->m_pWorldTransform = m_pTransform;
 
 		if (CheckInternalFlag(RN_FLAG_INTERNAL_GEOMETRY_DIRTY))
 		{
@@ -67,6 +64,36 @@ void CCustomGeometryNode::PreRender(CCamera *pCamera, EPreRenderMode mode)
 
 		PreRenderInternal(pCamera, mode, m_pRenderObj, pUsedMtl);
 	}
+}
+
+void CCustomGeometryNode::SetPredefinedVertexLayout(EPredefinedVertexLayout PredefinedLayout)
+{
+	m_pVertexLayout = Global::m_pHwBufferManager->GetPredefinedVertexLayout(PredefinedLayout);
+	AddInternalFlag(RN_FLAG_INTERNAL_GEOMETRY_DIRTY);
+}
+
+void CCustomGeometryNode::SetVertexLayout(IVertexLayout *pVertexLayout)
+{
+	m_pVertexLayout = pVertexLayout;
+	AddInternalFlag(RN_FLAG_INTERNAL_GEOMETRY_DIRTY);
+}
+
+void CCustomGeometryNode::SetPrimitiveType(EPrimitiveType PrimType)
+{
+	m_PrimitiveType = PrimType;
+	AddInternalFlag(RN_FLAG_INTERNAL_GEOMETRY_DIRTY);
+}
+
+void CCustomGeometryNode::AddVertexBuffer(IHardwareBuffer *pVertexBuffer)
+{
+	m_arrVertexBuffer.Emplace(pVertexBuffer);
+	AddInternalFlag(RN_FLAG_INTERNAL_GEOMETRY_DIRTY);
+}
+
+void CCustomGeometryNode::SetIndexBuffer(IHardwareBuffer *pIndexBuffer)
+{
+	m_pIndexBuffer = pIndexBuffer;
+	AddInternalFlag(RN_FLAG_INTERNAL_GEOMETRY_DIRTY);
 }
 
 void CCustomGeometryNode::SetMaterial(CMaterial *pMaterial)

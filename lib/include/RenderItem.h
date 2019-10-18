@@ -59,6 +59,7 @@ struct RenderObject
 
 struct ShaderVariable
 {
+	EAutoUpdatedConstant m_AutoConstantType = EAutoUpdatedConstant_None;
 	EShaderConstantType m_Type;
 	word m_nStartRegister;
 	word m_nUsedRegister;

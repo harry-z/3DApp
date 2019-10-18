@@ -104,7 +104,7 @@ bool CShaderManagerDX9::LoadShaders() {
     CLog * __restrict pLog = Global::m_pLog;
 
     String szDefaultShader =
-		"float4x4 WorldViewProj : register(c0);\n" \
+		"float4x4 WorldViewProjectionMatrix : register(c0);\n" \
 		"struct VSOutput {\n" \
 		  "float4 oPosition : POSITION;\n" \
 		"};\n" \

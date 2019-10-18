@@ -13,6 +13,7 @@
 #include "Texture.h"
 #include "RenderBackend.h"
 #include "RenderItem.h"
+#include "RenderStage.h"
 // #include "TimeOfDay.h"
 
 const Vec2 Vec2::s_ZeroVector;
@@ -60,3 +61,4 @@ CPool ShaderObject::m_ShaderObjectPool;
 #if CURRENT_RENDER_PATH == RENDER_PATH_FORWARD_SHADING
 RenderItem::RenderItems RenderItem::m_RenderItems[EForwardShading_ShaderBatch_Count];
 #endif
+IRenderStage* IRenderStage::m_ppRenderStage[ERenderStage_Count];

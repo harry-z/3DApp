@@ -27,6 +27,9 @@ C3DEngine::C3DEngine()
 {
     g_MainThreadId = std::this_thread::get_id();
     Global::m_p3DEngine = this;
+
+    m_MatrixPool.Initialize(sizeof(Matrix4));
+    m_AABBPool.Initialize(sizeof(AxisAlignedBox));
 }
 
 C3DEngine::~C3DEngine()
@@ -199,6 +202,7 @@ void C3DEngine::Run()
     IDisplay * __restrict pDisplay = Global::m_pDisplay;
     IRenderBackend * __restrict pRenderBackend = Global::m_pRenderBackend;
     CInputListener * __restrict pInputListener = Global::m_pInputListener;
+    CShaderManager * __restrict pShaderManager = Global::m_pShaderManager;
 
     dword nFrameId = 0;
     while (pDisplay->MessagePump())
@@ -212,6 +216,11 @@ void C3DEngine::Run()
 		}
 
         pInputListener->Capture();
+
+        if (m_pCameraController != nullptr)
+            m_pCameraController->Update();
+
+        pShaderManager->UpdateShaderConstantInfoPerFrame();
 
         Frame(nFrameId);
 
@@ -248,6 +257,7 @@ void C3DEngine::Frame(dword nFrameId)
         {
             IRenderNode *pNode = pTemp->m_pOwner;
             pNode->UpdateWSBoundingBox();
+            pTemp = pTemp->m_pNext;
         }
 
         if (m_pSceneClipping != nullptr)

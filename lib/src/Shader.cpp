@@ -1,10 +1,18 @@
 #include "Shader.h"
+#include "Camera.h"
 
-#define INIT_CONSTANT_INFO(InfoName, ValueType, ValueCount, ConstantType, ConstantCount) \
-    ValueType *pData##InfoName = (ValueType*)MEMALLOC(sizeof(ValueType) * ValueCount); \
-    memset(pData##InfoName, 0, sizeof(ValueType) * ValueCount); \
-    ShaderConstantInfo ConstantInfo##InfoName(InfoName, ConstantType, ConstantCount, (byte*)pData##InfoName); \
-    m_AutoShaderConstMap.Insert(IdString(InfoName), ConstantInfo##InfoName);
+// #define INIT_CONSTANT_INFO(InfoName, ValueType, ValueCount, ConstantType, ConstantCount) \
+//     ValueType *pData##InfoName = (ValueType*)MEMALLOC(sizeof(ValueType) * ValueCount); \
+//     memset(pData##InfoName, 0, sizeof(ValueType) * ValueCount); \
+//     ShaderConstantInfo ConstantInfo##InfoName(InfoName, ConstantType, ConstantCount, (byte*)pData##InfoName); \
+//     m_AutoShaderConstMap.Insert(IdString(InfoName), ConstantInfo##InfoName);
+
+#define INIT_CONSTANT_INFO(InfoName, AutoConstantType, ConstantType, RegisterCount) \
+    m_AutoShaderConstMap.Insert(IdString(InfoName), ConstantInfo##InfoName(AutoConstantType, ConstantType, RegisterCount));
+
+#define INIT_AUTO_UPDATED_CONSTANT(AutoUpdatedConstantType, ConstantType, ConstantCount) \
+    ConstantType *pData = MEMALLOC(sizeof(ConstantType) * ConstantCount); \
+    m_AutoUpdatedConstants[(dword)]
 
 void CShaderManager::InitializeAutoShaderConstantMap()
 {
@@ -38,7 +46,11 @@ const ShaderConstantInfo* CShaderManager::FindShaderConstantInfo(const IdString 
     return CIter ? &CIter.Value() : nullptr;
 }
 
-void CShaderManager::UpdateShaderConstantInfoPerFrame()
+void CShaderManager::UpdateShaderConstantInfoPerFrame(CCamera *pCamera)
 {
-    
+    if (pCamera->IsViewMatrixShaderConstNeedUpdate())
+    {
+        
+        pCamera->ViewMatrixShaderConstUpdated();
+    }
 }

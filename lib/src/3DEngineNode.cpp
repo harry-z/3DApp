@@ -51,6 +51,7 @@ void C3DEngine::UnregisterNode(IRenderNode *pNode)
 void C3DEngine::OnCreateRenderNode(IRenderNode *pNode) 
 {
 	pNode->m_pTransform = (Matrix4 *)m_MatrixPool.Allocate_mt();
+    new (pNode->m_pTransform) Matrix4;
 	pNode->m_pTransform->MakeIdentity();
 	pNode->m_pBoundingBox = (AxisAlignedBox *)m_AABBPool.Allocate_mt();
 	new (pNode->m_pBoundingBox) AxisAlignedBox;

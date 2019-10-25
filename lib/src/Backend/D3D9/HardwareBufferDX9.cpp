@@ -410,3 +410,24 @@ D3DFORMAT CHardwareBufferManagerDX9::GetIndexFormat(dword nStride) const
 	else
 		return D3DFMT_UNKNOWN;
 }
+
+void CRenderBackendDX9::SetVertexLayout(IVertexLayout *pVertexLayout)
+{
+	CVertexLayoutDX9 *pVertexLayoutDX9 = static_cast<CVertexLayoutDX9*>(pVertexLayout);
+	m_pD3DDevice9->SetVertexDeclaration(pVertexLayoutDX9->m_pVertexDecl);
+}
+
+void CRenderBackendDX9::SetVertexBuffers(const CArray<IHardwareBuffer*> &arrVertexBuffer)
+{
+	for (dword i = 0, iEnd = arrVertexBuffer.Num(); i < iEnd; ++i)
+	{
+		CVertexBufferDX9 *pVertexBufferDX9 = static_cast<CVertexBufferDX9*>(arrVertexBuffer[i]);
+		m_pD3DDevice9->SetStreamSource(i, pVertexBufferDX9->m_pVertexBuffer, 0, pVertexBufferDX9->Stride());
+	}
+}
+
+void CRenderBackendDX9::SetIndexBuffer(IHardwareBuffer *pIndexBuffer)
+{
+	CIndexBufferDX9 *pIndexBufferDX9 = static_cast<CIndexBufferDX9*>(pIndexBuffer);
+	m_pD3DDevice9->SetIndices(pIndexBufferDX9->m_pIndexBuffer);
+}

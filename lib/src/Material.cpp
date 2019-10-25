@@ -22,11 +22,12 @@ CShaderRef::~CShaderRef()
 
 bool CShaderRef::AddShaderConstantInfo(const CArray<String> &arrParam)
 {
-	if (!CheckParamIsValid(arrParam))
+	EShaderConstantType Type;
+	dword nElemCount, nTotalElem;
+	if (!CheckParamIsValid(arrParam, Type, nTotalElem, nElemCount))
 		return false;
-	EShaderConstantType Type = GetShaderConstantType(arrParam[1]);
-	dword nElemCount = GetShaderConstantElementCount(Type);
-	dword nTotalElem = arrParam.Num() - 2;
+	dword nRegisterCount = nTotalElem / nElemCount;
+	dword nSkip = 4 - nElemCount;
 	switch (Type)
 	{
 		case EShaderConstantType::EShaderConstantType_Float:
@@ -34,13 +35,21 @@ bool CShaderRef::AddShaderConstantInfo(const CArray<String> &arrParam)
 		case EShaderConstantType::EShaderConstantType_Float3:
 		case EShaderConstantType::EShaderConstantType_Float4:
 		{
-			float *pFloat = (float *)MEMALLOC(sizeof(float) * nTotalElem);
-			for (dword i = 0; i < nTotalElem; ++i)
+			byte *pConstantInfoData = (byte *)MEMALLOC(sizeof(float) * 4 * nRegisterCount); 
+			memset(pConstantInfoData, 0, sizeof(float) * 4 * nRegisterCount);
+			float *pTypedDest = (float *)pConstantInfoData;
+			for (dword i = 0; i < nRegisterCount; ++i, pTypedDest += nSkip)
 			{
-				pFloat[i] = atof(arrParam[i + 2].c_str());
+				for (dword j = 0; j < nElemCount; ++j)
+					*pTypedDest++ = atof(arrParam[2 + i * nElemCount + j].c_str());
 			}
-			AddShaderConstantInfo(arrParam[0], Type, nTotalElem / nElemCount, pFloat);
-			MEMFREE(pFloat);
+
+			ShaderConstantBuffer ConstantBuffer;
+			ConstantBuffer.m_Info.m_Name = IdString(arrParam[0]);
+			ConstantBuffer.m_Info.m_RegisterCount = nRegisterCount;
+			ConstantBuffer.m_Info.m_Type = EShaderConstantType::EShaderConstantType_Float4;
+			ConstantBuffer.m_pData = pConstantInfoData;
+			m_arrShaderConstInfo.Add(ConstantBuffer);
 			break;
 		}
 		case EShaderConstantType::EShaderConstantType_Int:
@@ -48,15 +57,25 @@ bool CShaderRef::AddShaderConstantInfo(const CArray<String> &arrParam)
 		case EShaderConstantType::EShaderConstantType_Int3:
 		case EShaderConstantType::EShaderConstantType_Int4:
 		{
-			int *pInt = (int *)MEMALLOC(sizeof(int) * nTotalElem);
-			for (dword i = 0; i < nTotalElem; ++i)
+			byte *pConstantInfoData = (byte *)MEMALLOC(sizeof(int) * 4 * nRegisterCount); 
+			memset(pConstantInfoData, 0, sizeof(int) * 4 * nRegisterCount);
+			int *pTypedDest = (int *)pConstantInfoData;
+			for (dword i = 0; i < nRegisterCount; ++i, pTypedDest += nSkip)
 			{
-				pInt[i] = atoi(arrParam[i + 2].c_str());
+				for (dword j = 0; j < nElemCount; ++j)
+					*pTypedDest++ = atoi(arrParam[2 + i * nElemCount + j].c_str());
 			}
-			AddShaderConstantInfo(arrParam[0], Type, nTotalElem / nElemCount, pInt);
-			MEMFREE(pInt);
+
+			ShaderConstantBuffer ConstantBuffer;
+			ConstantBuffer.m_Info.m_Name = IdString(arrParam[0]);
+			ConstantBuffer.m_Info.m_RegisterCount = nRegisterCount;
+			ConstantBuffer.m_Info.m_Type = EShaderConstantType::EShaderConstantType_Int4;
+			ConstantBuffer.m_pData = pConstantInfoData;
+			m_arrShaderConstInfo.Add(ConstantBuffer);
 			break;	
 		}
+		default:
+			return false;
 	}
 	return true;
 }
@@ -84,29 +103,19 @@ ldword CShaderRef::Compile()
 	assert(pShader != nullptr);
 
 	m_pShaderObj = ShaderObject::CreateShaderObject();
-	const CArray<ShaderConstantInfo> &arrShaderConstInfo = GetShaderConstantInfo();
-	const CArray<IdString> &arrAutoShaderConstInfo = GetAutoShaderConstantInfo();
-	m_pShaderObj->m_arrShaderVar.Reserve(arrShaderConstInfo.Num() + arrAutoShaderConstInfo.Num());
-	for (const auto &ConstantInfo : arrShaderConstInfo)
+
+	const CArray<ShaderConstantBuffer> &arrShaderConstBuffer = GetShaderConstantBuffer();
+	m_pShaderObj->m_arrShaderVar.Reserve(arrShaderConstBuffer.Num());
+	for (const auto &ConstantBuffer : arrShaderConstBuffer)
 	{
 		ShaderVariable *pShaderVar = m_pShaderObj->m_arrShaderVar.AddIndex(1);
-		pShaderVar->m_Type = ConstantInfo.m_Type;
-		pShaderVar->m_nStartRegister = pShader->GetConstantIndexByName(ConstantInfo.m_Name);
-		pShaderVar->m_nUsedRegister = ConstantInfo.m_RegisterCount;
-		pShaderVar->m_pData = ConstantInfo.m_pData;
+		pShaderVar->m_Type = ConstantBuffer.m_Info.m_Type;
+		pShaderVar->m_nStartRegister = pShader->GetConstantIndexByName(ConstantBuffer.m_Info.m_Name);
+		pShaderVar->m_nUsedRegister = ConstantBuffer.m_Info.m_RegisterCount;
+		pShaderVar->m_pData = ConstantBuffer.m_pData;
 	}
-	for (const auto &AutoConstantInfo : arrAutoShaderConstInfo)
-	{
-		const ShaderConstantInfo *pAutoConstantInfo = pShaderMgr->FindShaderConstantInfo(AutoConstantInfo);
-		if (pAutoConstantInfo != nullptr)
-		{
-			ShaderVariable *pShaderVar = m_pShaderObj->m_arrShaderVar.AddIndex(1);
-			pShaderVar->m_Type = pAutoConstantInfo->m_Type;
-			pShaderVar->m_nStartRegister = pShader->GetConstantIndexByName(pAutoConstantInfo->m_Name);
-			pShaderVar->m_nUsedRegister = pAutoConstantInfo->m_RegisterCount;
-			pShaderVar->m_pData = pAutoConstantInfo->m_pData;
-		}
-	}
+
+	m_pShaderObj->m_arrAutoShaderVar = GetAutoShaderConstantInfo();
 
 	return g_ShaderRefMask | m_RefId;
 }
@@ -114,7 +123,7 @@ ldword CShaderRef::Compile()
 bool CShaderRef::AddAutoShaderConstantInfo(const String &szParamName)
 {
 	IdString idStr(szParamName);
-	if (Global::m_pShaderManager->IsAutoShaderConstant(idStr))
+	if (Global::m_pShaderManager->IsAutoUpdatedShaderConstant(idStr))
 	{
 		m_arrAutoShaderConstInfo.Emplace(idStr);
 		return true;
@@ -123,58 +132,64 @@ bool CShaderRef::AddAutoShaderConstantInfo(const String &szParamName)
 		return false;
 }
 
-bool CShaderRef::CheckParamIsValid(const CArray<String> &arrParam) const
+bool CShaderRef::CheckParamIsValid(const CArray<String> &arrParam, OUT EShaderConstantType &Type, OUT dword &nTotalElem, OUT dword &nElemCount) const
 {
+	Type = EShaderConstantType::EShaderConstantType_Unknown;
+	nTotalElem = 0;
+	nElemCount = 0;
+
 	if (arrParam.Num() <= 2)
 		return false;
-	EShaderConstantType Type = GetShaderConstantType(arrParam[1]);
-	if (Type == EShaderConstantType::EShaderConstantType_Unknown)
+	GetShaderConstantTypeAndCount(arrParam[1], Type, nElemCount);
+	if (Type == EShaderConstantType::EShaderConstantType_Unknown || nElemCount == 0)
 		return false;
-	dword nElemCount = GetShaderConstantElementCount(Type);
-	dword nTotalElem = arrParam.Num() - 2;
+	nTotalElem = arrParam.Num() - 2;
 	return nTotalElem % nElemCount == 0;
 }
 
-EShaderConstantType CShaderRef::GetShaderConstantType(const String &szTypeName) const
+void CShaderRef::GetShaderConstantTypeAndCount(const String &szTypeName, OUT EShaderConstantType &Type, OUT dword &nElemCount) const
 {
+	Type = EShaderConstantType::EShaderConstantType_Unknown;
+	nElemCount = 0;
 	if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_FLOAT2) != String::npos)
-		return EShaderConstantType::EShaderConstantType_Float2;
-	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_FLOAT3) != String::npos)
-		return EShaderConstantType::EShaderConstantType_Float3;
-	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_FLOAT4) != String::npos)
-		return EShaderConstantType::EShaderConstantType_Float4;
-	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_FLOAT) != String::npos)
-		return EShaderConstantType::EShaderConstantType_Float;
-	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_INT2) != String::npos)
-		return EShaderConstantType::EShaderConstantType_Int2;
-	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_INT3) != String::npos)
-		return EShaderConstantType::EShaderConstantType_Int3;
-	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_INT4) != String::npos)
-		return EShaderConstantType::EShaderConstantType_Int4;
-	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_INT) != String::npos)
-		return EShaderConstantType::EShaderConstantType_Int;
-	else
-		return EShaderConstantType::EShaderConstantType_Unknown;
-}
-
-dword CShaderRef::GetShaderConstantElementCount(EShaderConstantType ConstType) const
-{
-	switch (ConstType)
 	{
-		case EShaderConstantType::EShaderConstantType_Float:
-		case EShaderConstantType::EShaderConstantType_Int:
-			return 1;
-		case EShaderConstantType::EShaderConstantType_Int2:
-		case EShaderConstantType::EShaderConstantType_Float2:
-			return 2;
-		case EShaderConstantType::EShaderConstantType_Int3:
-		case EShaderConstantType::EShaderConstantType_Float3:
-			return 3;
-		case EShaderConstantType::EShaderConstantType_Int4:
-		case EShaderConstantType::EShaderConstantType_Float4:
-			return 4;
-		default:
-			return 0;
+		Type = EShaderConstantType::EShaderConstantType_Float4;
+		nElemCount = 2;
+	}
+	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_FLOAT3) != String::npos)
+	{
+		Type = EShaderConstantType::EShaderConstantType_Float4;
+		nElemCount = 3;
+	}
+	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_FLOAT4) != String::npos)
+	{
+		Type = EShaderConstantType::EShaderConstantType_Float4;
+		nElemCount = 4;
+	}
+	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_FLOAT) != String::npos)
+	{
+		Type = EShaderConstantType::EShaderConstantType_Float;
+		nElemCount = 1;
+	}
+	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_INT2) != String::npos)
+	{
+		Type = EShaderConstantType::EShaderConstantType_Int4;
+		nElemCount = 2;
+	}
+	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_INT3) != String::npos)
+	{
+		Type = EShaderConstantType::EShaderConstantType_Int4;
+		nElemCount = 3;
+	}
+	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_INT4) != String::npos)
+	{
+		Type = EShaderConstantType::EShaderConstantType_Int4;
+		nElemCount = 4;
+	}
+	else if (szTypeName.find(SHADER_CONSTANT_TYPE_KEYWORD_INT) != String::npos)
+	{
+		Type = EShaderConstantType::EShaderConstantType_Int;
+		nElemCount = 1;
 	}
 }
 

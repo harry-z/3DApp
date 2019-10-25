@@ -116,11 +116,16 @@ protected:
 	virtual void DestroyInstance(CTexture *pTexture) = 0;
 	
 private:
-	typedef CHashmap<IdString, CTexture*> TextureMap;
+	typedef CMap<IdString, CTexture*> TextureMap;
 	TextureMap m_TextureMap;
 	std::mutex m_TextureMapLock;
 	dword m_TextureId;
 };
 
-
+struct InternalTextures
+{
+#if CURRENT_RENDER_PATH == RENDER_PATH_FORWARD_SHADING
+	static CTexture *s_pViewDepth;
+#endif
+};
 

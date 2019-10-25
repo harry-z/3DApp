@@ -2,23 +2,27 @@
 #include "Texture.h"
 #include "RenderBackend.h"
 
-void CTexture::Destroy() {
+void CTexture::Destroy() 
+{
 	Global::m_pTextureManager->DestroyTexture(this);
 }
 
-bool CTexture::Streaming(const String &sFilePath, EAutoGenmip bAutoGenMipmap, INOUT TEXTURE_FILE_DESC *pDesc) {
+bool CTexture::Streaming(const String &sFilePath, EAutoGenmip bAutoGenMipmap, INOUT TEXTURE_FILE_DESC *pDesc) 
+{
 	return ReadTextureFile(sFilePath, bAutoGenMipmap, pDesc);
 }
 
 
 REGISTER_JOB_CTOR_DTOR_IMPL(TEXTURE_LOADING_JOB);
 
-void TextureLoadingJob::OnJobFailed() {
+void TextureLoadingJob::OnJobFailed() 
+{
 	TextureLoadingJobData *pJobData = (TextureLoadingJobData*)m_pData;
 	DELETE_TYPE(pJobData, TextureLoadingJobData);
 }
 
-void TextureLoadingJob::OnJobFinished() {
+void TextureLoadingJob::OnJobFinished() 
+{
 	OnJobFailed();
 }
 
@@ -28,18 +32,17 @@ bool TextureLoadingJob::DoWork_WorkerThread()
 	return pJobData->pTexture->Streaming(pJobData->szFileName, pJobData->bAutoGenMipmap, &pJobData->texture_desc);
 }
 
-bool TextureLoadingJob::DoWork_MainThread() {
+bool TextureLoadingJob::DoWork_MainThread() 
+{
 	TextureLoadingJobData *pJobData = (TextureLoadingJobData*)m_pData;
 	pJobData->pTexture->Load(&pJobData->texture_desc, pJobData->bGamma);
 	pJobData->pTexture->m_pJob = nullptr;
 	return true;
 }
 
-
 CTextureManager::CTextureManager() 
-: m_TextureId(1) {
-	m_TextureMap.SetSlotCount(100);
-}
+: m_TextureId(1) 
+{}
 
 CTexture* CTextureManager::CreateTexture(const String& szName, word width, word height, 
 	ETextureType textureType /* = ETextureType_2D */, 
@@ -50,14 +53,13 @@ CTexture* CTextureManager::CreateTexture(const String& szName, word width, word 
 	assert((textureType == ETextureType_1D && height == 1) || textureType == ETextureType_2D);
 
 	IdString idStr(szName);
-	TextureMap::_ValuePointerType pTexture;
 
 	CTexture *pNewTexture = nullptr;
 	{
 		std::lock_guard<std::mutex> l(m_TextureMapLock);
-		pTexture = m_TextureMap.Find(idStr);
-		if (pTexture != nullptr)
-			return *pTexture;
+		TextureMap::_MyIterType iter = m_TextureMap.Find(idStr);
+		if (iter)
+			return iter.Value();
 
 		pNewTexture = CreateInstance(); //new (m_TexturePool.Allocate_mt()) CTexture;
 		pNewTexture->m_IdStr = idStr;
@@ -77,9 +79,9 @@ CTexture* CTextureManager::LoadTexture(const String &filePath,
 	CTexture *pNewTexture = nullptr;
 	{
 		std::lock_guard<std::mutex> l(m_TextureMapLock);
-		TextureMap::_ValuePointerType pTexture = m_TextureMap.Find(idStr);
-		if (pTexture != nullptr)
-			return *pTexture;
+		TextureMap::_MyIterType iter = m_TextureMap.Find(idStr);
+		if (iter)
+			return iter.Value();
 
 		pNewTexture = CreateInstance(); //new (m_TexturePool.Allocate_mt()) CTexture;
 		pNewTexture->m_IdStr = idStr;
@@ -122,7 +124,7 @@ void CTextureManager::DestroyTexture(CTexture *pTexture) {
 	bool bHas;
 	{
 		std::lock_guard<std::mutex> l(m_TextureMapLock);
-		bHas = m_TextureMap.Has(pTexture->m_IdStr);
+		bHas = (bool)m_TextureMap.Find(pTexture->m_IdStr);
 		if (bHas)
 			m_TextureMap.Remove(pTexture->m_IdStr);
 	}
@@ -134,12 +136,14 @@ void CTextureManager::DestroyTexture(CTexture *pTexture) {
 CTexture* CTextureManager::FindTexture(const String &szName) {
 	IdString idStr(szName);
 	std::lock_guard<std::mutex> l(m_TextureMapLock);
-	TextureMap::_ValuePointerType pTexture = m_TextureMap.Find(idStr);
-	return pTexture != nullptr ? *pTexture : nullptr;
+	TextureMap::_MyIterType iter = m_TextureMap.Find(idStr);
+	return iter ? iter.Value() : nullptr;
 }
 
 CTexture* CTextureManager::FindTexture(const IdString &idStr) {
 	std::lock_guard<std::mutex> l(m_TextureMapLock);
-	TextureMap::_ValuePointerType pTexture = m_TextureMap.Find(idStr);
-	return pTexture != nullptr ? *pTexture : nullptr;
+	TextureMap::_MyIterType iter = m_TextureMap.Find(idStr);
+	return iter ? iter.Value() : nullptr;
 }
+
+CTexture* InternalTextures::s_pViewDepth = nullptr;

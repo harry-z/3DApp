@@ -69,6 +69,7 @@ public:
 			{
 				m_pElements = (T*)MEMALLOC(sizeof(_ValueType) * m_nAllocCount);
 				assert(m_pElements != nullptr);
+				ConstructItems(m_pElements, m_nAllocCount);
 			}
 		}
 	}

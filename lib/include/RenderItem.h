@@ -59,7 +59,6 @@ struct RenderObject
 
 struct ShaderVariable
 {
-	EAutoUpdatedConstant m_AutoConstantType = EAutoUpdatedConstant_None;
 	EShaderConstantType m_Type;
 	word m_nStartRegister;
 	word m_nUsedRegister;
@@ -69,6 +68,7 @@ struct ShaderVariable
 struct ShaderObject
 {
 	CArray<ShaderVariable> m_arrShaderVar;
+	CArray<IdString> m_arrAutoShaderVar;
 
 	static CPool m_ShaderObjectPool;
 	static void Initialize() 

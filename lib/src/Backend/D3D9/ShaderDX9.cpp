@@ -1,4 +1,5 @@
 #include "ShaderDX9.h"
+#include "RenderBackendDX9.h"
 
 CShaderDX9::CShaderDX9() {
     m_Shader.m_pVertexShader = nullptr;
@@ -82,19 +83,16 @@ CShaderManagerDX9::~CShaderManagerDX9() {
     for (auto &Shader : m_ShaderArr)
     {
         CShaderDX9 *pShaderDX9 = static_cast<CShaderDX9*>(Shader);
-        pShaderDX9->~CShaderDX9();
         DELETE_TYPE(pShaderDX9, CShaderDX9);
     }
     m_ShaderArr.Clear();
     if (m_pDefaultVertexShader != nullptr) {
         CShaderDX9 *pDefaultShaderDX9 = static_cast<CShaderDX9*>(m_pDefaultVertexShader);
-        pDefaultShaderDX9->~CShaderDX9();
         DELETE_TYPE(pDefaultShaderDX9, CShaderDX9);
         m_pDefaultVertexShader = nullptr;
     }
     if (m_pDefaultPixelShader != nullptr) {
         CShaderDX9 *pDefaultShaderDX9 = static_cast<CShaderDX9*>(m_pDefaultPixelShader);
-        pDefaultShaderDX9->~CShaderDX9();
         DELETE_TYPE(pDefaultShaderDX9, CShaderDX9);
         m_pDefaultPixelShader = nullptr;
     }
@@ -203,4 +201,23 @@ bool CShaderManagerDX9::LoadShaders() {
     }
     else
         return false;
+}
+
+void CRenderBackendDX9::SetShader(CShader *pShader)
+{
+    switch (pShader->GetShaderType())
+    {
+        case EShaderType::EShaderType_Vertex:
+        {
+            CShaderDX9 *pShaderDX9 = static_cast<CShaderDX9*>(pShader);
+            m_pD3DDevice9->SetVertexShader(pShaderDX9->m_Shader.m_pVertexShader);
+            break;
+        }
+        case EShaderType::EShaderType_Pixel:
+        {
+            CShaderDX9 *pShaderDX9 = static_cast<CShaderDX9*>(pShader);
+            m_pD3DDevice9->SetPixelShader(pShaderDX9->m_Shader.m_pPixelShader);
+            break;
+        }
+    }
 }

@@ -16,47 +16,48 @@
 #define INVERSE_PROJECTION_MATRIX "InverseProjectionMatrix"
 #define CAMERA_POSITION "CameraPosition"
 #define CAMERA_DIRECTION "CameraDirection"
+#define NEAR_FAR_CLIP "NearFarClip"
+
+struct AutoUpdatedShaderConstantIdStr
+{
+    static IdString s_WorldMatrix;
+    static IdString s_WorldViewMatrix;
+    static IdString s_WorldViewProjMatrix;
+    static IdString s_InvWorldMatrix;
+    static IdString s_InvWorldViewMatrix;
+    static IdString s_InvWorldViewProjMatrix;
+    static IdString s_ViewMatrix;
+    static IdString s_ViewProjMatrix;
+    static IdString s_InvViewMatrix;
+    static IdString s_InvViewProjMatrix;
+    static IdString s_ProjMatrix;
+    static IdString s_InvProjMatrix;
+    static IdString s_CamPos;
+    static IdString s_CamDir;
+    static IdString s_NearFarClip;
+};
 
 struct ShaderConstantInfo
 {
     IdString m_Name;
     EShaderConstantType m_Type;
     dword m_RegisterCount;
-    byte *m_pData = nullptr;
 
     ShaderConstantInfo()
     : m_Type(EShaderConstantType::EShaderConstantType_Unknown)
-    , m_RegisterCount(0)
-    , m_pData(nullptr) {}
+    , m_RegisterCount(0) {}
 
-    ShaderConstantInfo(const String &szStr, EShaderConstantType Type, dword nCount, byte *pData)
+    ShaderConstantInfo(const String &szStr, EShaderConstantType Type, dword nCount)
     : m_Name(szStr)
     , m_Type(Type)
-    , m_RegisterCount(nCount)
-    , m_pData(pData) {}
-
-    ~ShaderConstantInfo()
-    {
-        if (m_pData)
-        {
-            MEMFREE(m_pData);
-        }
-    }
+    , m_RegisterCount(nCount) {}
 };
 
 struct AutoUpdatedConstant
 {
-    dword m_nConstantCount;
+    dword m_nConstantCount = 0;
     byte *m_pData = nullptr;
 
-    AutoUpdatedConstant()
-    : m_nConstantCount(0)
-    {}
-    AutoUpdatedConstant(dword nConstantCount, byte *pData)
-    , m_Type(Type)
-    , m_nConstantCount(nCount)
-    , m_pData(pData)
-    {}
     ~AutoUpdatedConstant()
     {
         if (m_pData != nullptr)
@@ -101,8 +102,12 @@ public:
     CShader* GetDefaultVertexShader() { return m_pDefaultVertexShader; }
     CShader* GetDefaultPixelShader() { return m_pDefaultPixelShader; }
 
-    bool IsAutoShaderConstant(const IdString &idStr) const;
-    const ShaderConstantInfo* FindShaderConstantInfo(const IdString &idStr) const;
+    bool IsAutoUpdatedShaderConstant(const IdString &idStr) const;
+    const ShaderConstantInfo* FindAutoUpdatedShaderConstantInfo(const IdString &idStr) const;
+
+    AutoUpdatedConstant& GetAutoUpdatedConstant(EAutoUpdatedConstant Constant);
+    const AutoUpdatedConstant& GetAutoUpdatedConstant(EAutoUpdatedConstant AutoUpdatedConstant) const;
+
     void UpdateShaderConstantInfoPerFrame(CCamera *pCamera);
 
 private:
@@ -111,9 +116,8 @@ private:
 protected:
     using ShaderMap = CMap<IdString, CShader*>;
     ShaderMap m_ShaderMap;
-    // using AutoShaderConstantMap = CMap<IdString, ShaderConstantInfo>;
-    using AutoShaderConstantMap = CMap<IdString, AutoUpdatedShaderConstantInfo>
-    AutoShaderConstantMap m_AutoShaderConstMap;
+    using AutoUpdatedShaderConstantMap = CMap<IdString, ShaderConstantInfo>;
+    AutoUpdatedShaderConstantMap m_AutoUpdatedShaderConstMap;
     using AutoUpdatedConstants = CArray<AutoUpdatedConstant>;
     AutoUpdatedConstants m_AutoUpdatedConstants;
     using ShaderArr = CArray<CShader*>;

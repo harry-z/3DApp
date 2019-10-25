@@ -282,7 +282,7 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 	CHashmap<Key, Value, KeyTraits, ValueTraits>::CHashmap(dword nSlotCount)
 {
 	m_nSlotCount = GetPrime(nSlotCount);
-	m_pSlots = NEW_TYPE_ARRAY(_MySlot, m_nSlotCount);
+	m_pSlots = NewObjectArray<_MySlot>(m_nSlotCount);
 }
 
 template <class Key, class Value,
@@ -290,7 +290,7 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 	CHashmap<Key, Value, KeyTraits, ValueTraits>::~CHashmap() 
 {
 	if (m_pSlots) {
-		DELETE_TYPE_ARRAY(m_pSlots, _MySlot, m_nSlotCount);
+		DeleteObjectArray(m_pSlots, m_nSlotCount);
 		// delete[] m_pSlots;
 		m_pSlots = nullptr;
 	}
@@ -302,12 +302,12 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 {
 	if (m_pSlots) {
 		// delete[] m_pSlots;
-		DELETE_TYPE_ARRAY(m_pSlots, Slot, m_nSlotCount);
+		DeleteObjectArray(m_pSlots, m_nSlotCount);
 		m_pSlots = nullptr;
 	}
 	m_nSlotCount = GetPrime(nSlotCount);
 	// m_pSlots = new Slot[m_nSlotCount];
-	m_pSlots = NEW_TYPE_ARRAY(Slot, m_nSlotCount);
+	m_pSlots = NewObjectArray<Slot>(m_nSlotCount);
 }
 
 template <class Key, class Value,
@@ -317,7 +317,6 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 	if (!Has(key)) {
 		dword hash = Hash<_KeyType>()(key);
 		dword idx = hash % m_nSlotCount;
-		// Pair *pair = new Pair;
 		Pair *pair = NEW_TYPE(Pair);
 		pair->first = key;
 		pair->second = const_cast<_ValueRefType>(value);
@@ -416,7 +415,7 @@ class KeyTraits /*= TypeTraits<Key>*/, class ValueTraits /*= TypeTraits<Value>*/
 {
 	if (m_pSlots) {
 		// delete[] m_pSlots;
-		DELETE_TYPE_ARRAY(m_pSlots, Slot, m_nSlotCount);
+		DeleteObjectArray(m_pSlots, m_nSlotCount);
 		m_pSlots = nullptr;
 	}
 }
@@ -427,9 +426,9 @@ template <class Key, class Value,
 {
 	if (m_pSlots) {
 		// delete[] m_pSlots;
-		DELETE_TYPE_ARRAY(m_pSlots, Slot, m_nSlotCount);
+		DeleteObjectArray(m_pSlots, m_nSlotCount);
 		// m_pSlots = new Slotp[m_nSlotCount];
-		m_pSlots = NEW_TYPE_ARRAY(Slot, m_nSlotCount);
+		m_pSlots = NewObjectArray<Slot>(m_nSlotCount);
 	}
 }
 

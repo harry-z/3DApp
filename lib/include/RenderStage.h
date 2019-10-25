@@ -20,6 +20,7 @@ enum ERenderStage
 };
 #endif
 
+class CCamera;
 class IRenderStage
 {
 public:

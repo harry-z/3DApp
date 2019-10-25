@@ -107,6 +107,24 @@ enum class EShaderConstantType : byte {
 	EShaderConstantType_Unknown = 0xFF
 };
 
+enum EAutoUpdatedShaderConstant : byte {
+	EAutoUpdatedShaderConstant_W = 0,
+	EAutoUpdatedShaderConstant_WV,
+	EAutoUpdatedShaderConstant_WVP,
+	EAutoUpdatedShaderConstant_InvW,
+	EAutoUpdatedShaderConstant_InvWV,
+	EAutoUpdatedShaderConstant_InvWVP,
+	EAutoUpdatedShaderConstant_V,
+	EAutoUpdatedShaderConstant_VP,
+	EAutoUpdatedShaderConstant_InvV,
+	EAutoUpdatedShaderConstant_InvVP,
+	EAutoUpdatedShaderConstant_P,
+	EAutoUpdatedShaderConstant_InvP,
+	EAutoUpdatedShaderConstant_CamPos,
+	EAutoUpdatedShaderConstant_CamDir,
+	EAutoUpdatedShaderConstant_Unknown = 0xFF
+};
+
 enum EAutoUpdatedConstant : byte {
     EAutoUpdatedConstant_View = 0,
     EAutoUpdatedConstant_ViewProj,
@@ -116,6 +134,8 @@ enum EAutoUpdatedConstant : byte {
     EAutoUpdatedConstant_InvProj,
     EAutoUpdatedConstant_CamPos,
     EAutoUpdatedConstant_CamDir,
+	EAutoUpdatedConstant_NearFar,
+	EAutoUpdatedConstant_Num,
 	EAutoUpdatedConstant_None = 0xFF
 };
 

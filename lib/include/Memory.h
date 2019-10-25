@@ -45,10 +45,36 @@ inline void DeleteObject(ObjType *pObj)
 	DELETE_TYPE(pObj, ObjType);
 }
 
+template <class ObjType>
+inline ObjType* NewObjectArray(dword nCount)
+{
+	ObjType *pMem = (ObjType *)MEMALLOC(sizeof(ObjType) * nCount);
+	ConstructItems(pMem, nCount);
+	return pMem;
+}
+
+template <class ObjType>
+inline void DeleteObjectArray(ObjType *pObjs, dword nCount)
+{
+	DestructItems(pObjs, nCount);
+	MEMFREE(pObjs);
+}
+
 template <class T>
 inline typename TEnableIf<!TIsZeroContructType<T>::Value>::Type ConstructItems(T *pData, dword nCount)
 {
-	
+	while (nCount)
+	{
+		new (pData) T;
+		++pData;
+		--nCount;
+	}
+}
+
+template <class T>
+inline typename TEnableIf<TIsZeroContructType<T>::Value>::Type ConstructItems(T *pData, dword nCount)
+{
+	memset(pData, 0, sizeof(T) * nCount);
 }
 
 template <class T>
@@ -56,7 +82,7 @@ inline typename TEnableIf<!TIsTriviallyDestructible<T>::Value>::Type DestructIte
 {
 	while (nCount)
 	{
-		pData->T::~();
+		pData->~T();
 		++pData;
 		--nCount;
 	}

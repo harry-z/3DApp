@@ -52,11 +52,26 @@ public:
 
 	virtual ERenderAPI GetRenderAPI() const override { return ERenderAPI::ERenderAPI_DX9; }
 
+	virtual void ClearTarget(dword nFlag, dword color, float fDepth, byte stencil) override;
+	virtual void RestoreTarget() override;
+	virtual void SetTarget(CTexture *pColorBuffer, CTexture *pDepthStencilBuffer) override;
+
+	virtual void SetShader(CShader *pShader) override;
+
+	virtual void SetVertexLayout(IVertexLayout *pLayout) override;
+	virtual void SetVertexBuffers(const CArray<IHardwareBuffer*> &arrVertexBuffer) override;
+	virtual void SetIndexBuffer(IHardwareBuffer *pIndexBuffer) override;
+
+	virtual void Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nPrimitiveCount) override;
+	virtual void Draw(EPrimitiveType ePrimitiveType,
+		dword nVertexOffset, dword nVertexCount,
+		dword nIndexOffset, dword nPrimitiveCount) override;
+
+	virtual Matrix4 ConvertProjectionMatrixByAPI(const Matrix4 &proj) const override { return proj; }
+
 	// Method from IDisplay::IObserver
 	virtual void OnDisplayResized(dword w, dword h) override;
 
-	void ClearTarget(dword nFlag, dword color, float fDepth, byte stencil);
-	void RestoreTarget();
 	// void SetTarget(CTexture *pRenderTarget, CTexture *pDepthStencil);
 
 	//virtual void SetBlendStateBlock(BlendStateBlock *pBlendBlock) override;
@@ -73,15 +88,7 @@ public:
 	// void SetVertexLayout(IVertexLayout *pVertexLayout);
 	// void SetVBIB(IHardwareBuffer *pVB, dword nStride, IHardwareBuffer *pSkinningVB, IHardwareBuffer *pIB);
 
-	void Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nPrimitiveCount);
-	void Draw(EPrimitiveType ePrimitiveType,
-		dword nVertexOffset, dword nVertexCount,
-		dword nIndexOffset, dword nPrimitiveCount);
-
 	
-
-	
-	Matrix4 ConvertProjectionMatrix(const Matrix4 &proj) { return proj; }
 
 
 public:

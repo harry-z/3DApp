@@ -225,6 +225,7 @@ bool CompileAndCacheAllShaders(const CMap<String, char*> &arrShaderFiles, const 
     struct ShaderBuffer {
         void *buffer;
         dword size;
+        ShaderBuffer() {}
         ShaderBuffer(void *buf, dword nz) : buffer(buf), size(nz) {}
         ~ShaderBuffer() {
             if (buffer != nullptr)

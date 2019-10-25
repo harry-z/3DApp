@@ -13,12 +13,12 @@ void IRenderNode::PreRenderInternal(CCamera *pCamera, EPreRenderMode mode, struc
 #if CURRENT_RENDER_PATH == RENDER_PATH_FORWARD_SHADING
 	switch (mode)
 	{
-		case IRenderNode::EPreRenderMode_ShadowCaster:
-			pRenderItem = RenderItem::AddItem(EForwardShading_ShaderBatch_ShadowDepth);
-			break;
-		case IRenderNode::EPreRenderMode_ShadowReceiver:
-			pRenderItem = RenderItem::AddItem(EForwardShading_ShaderBatch_ShadowMask);
-			break;
+		// case IRenderNode::EPreRenderMode_ShadowCaster:
+		// 	pRenderItem = RenderItem::AddItem(EForwardShading_ShaderBatch_ShadowDepth);
+		// 	break;
+		// case IRenderNode::EPreRenderMode_ShadowReceiver:
+		// 	pRenderItem = RenderItem::AddItem(EForwardShading_ShaderBatch_ShadowMask);
+		// 	break;
 		case IRenderNode::EPreRenderMode_General:
 		{
 			const CArray<CPass*> &Passes = pMtl->GetPasses();

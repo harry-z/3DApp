@@ -363,11 +363,18 @@ CTextureManagerDX9::CTextureManagerDX9() {
 }
 
 CTextureManagerDX9::~CTextureManagerDX9() {
-
+	DestroyTexture(InternalTextures::s_pViewDepth);
 }
 
 bool CTextureManagerDX9::Initialize() {
-	return true;
+	bool bRet = true;
+
+	dword w, h;
+	Global::m_pDisplay->GetDimension(w, h);
+	InternalTextures::s_pViewDepth = CreateTexture("SceneDepth", w, h, ETextureType_2D, EPixelFormat::EPixelFormat_F16_R, ETextureUsage::ETextureUsage_RenderTarget);
+	bRet |= InternalTextures::s_pViewDepth->IsCreatedOrLoaded();
+
+	return bRet;
 }
 
 CTexture* CTextureManagerDX9::CreateInstance() {
@@ -378,4 +385,25 @@ void CTextureManagerDX9::DestroyInstance(CTexture *pTexture) {
 	CTextureDX9 *pTextureDX9 = static_cast<CTextureDX9*>(pTexture);
 	pTextureDX9->~CTextureDX9();
 	m_TexturePool.Free_mt(pTextureDX9);
+}
+
+void CRenderBackendDX9::SetTarget(CTexture *pColorBuffer, CTexture *pDepthStencilBuffer) {
+	CTextureDX9 *pRenderTarget9 = (CTextureDX9 *)pColorBuffer;
+	assert(pRenderTarget9->GetTextureUsage() == ETextureUsage::ETextureUsage_RenderTarget ||
+		pRenderTarget9->GetTextureUsage() == ETextureUsage::ETextureUsage_RenderTargetFixedSize);
+	m_pD3DDevice9->SetRenderTarget(0, pRenderTarget9->m_pSurface);
+
+	if (pDepthStencilBuffer) {
+		CTextureDX9 *pDepthStencil9 = (CTextureDX9 *)pDepthStencilBuffer;
+		assert(pDepthStencil9->GetTextureUsage() == ETextureUsage::ETextureUsage_DepthStencil || 
+			pDepthStencil9->GetTextureUsage() == ETextureUsage::ETextureUsage_DepthStencilFixedSize);
+		m_pD3DDevice9->SetDepthStencilSurface(pDepthStencil9->m_pSurface);
+	}
+	
+	D3DVIEWPORT9 viewport;
+	ZeroMemory(&viewport, sizeof(D3DVIEWPORT9));
+	viewport.Width = pColorBuffer->GetWidth();
+	viewport.Height = pColorBuffer->GetHeight();
+	viewport.MaxZ = 1.0f;
+	m_pD3DDevice9->SetViewport(&viewport);
 }

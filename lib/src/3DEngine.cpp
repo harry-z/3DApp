@@ -220,7 +220,7 @@ void C3DEngine::Run()
         if (m_pCameraController != nullptr)
             m_pCameraController->Update();
 
-        pShaderManager->UpdateShaderConstantInfoPerFrame();
+        pShaderManager->UpdateShaderConstantInfoPerFrame(m_pMainCamera);
 
         Frame(nFrameId);
 

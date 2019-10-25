@@ -30,6 +30,10 @@ struct DLL_EXPORT Matrix4 {
 		m31 = m31_; m32 = m32_; m33 = m33_; m34 = m34_;
 		m41 = m41_; m42 = m42_; m43 = m43_; m44 = m44_;
 	}
+	Matrix4(float *p) {
+		for (dword i = 0; i < 16; ++i)
+			m[i] = *p++;
+	}
 	Matrix4(const Quat &q) {
 		FromQuat(q);
 	}

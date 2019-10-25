@@ -5,9 +5,9 @@
 #include "Display.h"
 #include "RenderBackend.h"
 #include "SceneClipping.h"
+#include "CameraController.h"
 
 //struct TerrainInfo;
-class ICameraController;
 class CInputListener;
 
 
@@ -76,6 +76,7 @@ private:
 	void DestroySceneClippingStrategy(ISceneClippingStrategy *pClippingStrategy);
 
 	IRenderNode* CreateRenderNodeInternal(ERNType NodeType);
+	void DestroyRenderNodeInternal(IRenderNode *pNode);
 	void OnCreateRenderNode(IRenderNode *pNode);
 	void OnDestroyRenderNode(IRenderNode *pNode);
 

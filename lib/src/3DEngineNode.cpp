@@ -1,26 +1,11 @@
 #include "3DEngine.h"
 #include "CustomGeometryNode.h"
 
-IRenderNode* C3DEngine::CreateRenderNodeInternal(ERNType eNodeType)
-{
-    IRenderNode *pNode = nullptr;
-    switch (eNodeType)
-    {
-        case ERNType::ERNType_CustomGeometry:
-            pNode = NEW_TYPE(CCustomGeometryNode);
-        default:
-            break;
-    }
-    if (pNode != nullptr)
-        OnCreateRenderNode(pNode);
-    return pNode;
-}
-
 void C3DEngine::DestroyRenderNode(IRenderNode *pNode)
 {
     assert(pNode != nullptr);
     UnregisterNode(pNode);
-    OnDestroyRenderNode(pNode);
+    DestroyRenderNodeInternal(pNode);
 }
 
 void C3DEngine::RegisterNode(IRenderNode *pNode)
@@ -61,6 +46,35 @@ void C3DEngine::OnDestroyRenderNode(IRenderNode *pNode)
 {
     m_MatrixPool.Free_mt(pNode->m_pTransform);
     m_AABBPool.Free_mt(pNode->m_pBoundingBox);
+}
+
+IRenderNode* C3DEngine::CreateRenderNodeInternal(ERNType eNodeType)
+{
+    IRenderNode *pNode = nullptr;
+    switch (eNodeType)
+    {
+        case ERNType::ERNType_CustomGeometry:
+            pNode = NEW_TYPE(CCustomGeometryNode);
+        default:
+            break;
+    }
+    if (pNode != nullptr)
+        OnCreateRenderNode(pNode);
+    return pNode;
+}
+
+void C3DEngine::DestroyRenderNodeInternal(IRenderNode *pNode)
+{
+    OnDestroyRenderNode(pNode);
+    switch (pNode->GetType())
+    {
+        case ERNType::ERNType_CustomGeometry:
+        {
+            CCustomGeometryNode *pCustomGeoNode = static_cast<CCustomGeometryNode*>(pNode);
+            DELETE_TYPE(pCustomGeoNode, CCustomGeometryNode);
+            break;
+        }
+    }
 }
 
 C3DEngine::ENodeListType C3DEngine::GetListTypeByNodeType(ERNType type) const

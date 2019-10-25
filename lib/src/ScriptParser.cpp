@@ -9,6 +9,7 @@ struct ParserNode {
     String m_szType;
     CArray<String> m_arrParam;
     CArray<ParserNode> m_ChildNodes;
+    ParserNode() {}
     ParserNode(dword nDepth, const String &szType, const CArray<String> &arrParam)
     : m_nDepth(nDepth), m_szType(szType), m_arrParam(arrParam) {}
 };

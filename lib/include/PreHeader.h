@@ -203,7 +203,7 @@ struct TNot
 template <class T>
 struct TIsEnum
 {
-	enum { Value = __is_enum(T); }
+	enum { Value = __is_enum(T) };
 };
 
 // IsArithmetic
@@ -251,7 +251,7 @@ template <class T> struct TIsPointer<const volatile T> { enum { Value = TIsPoint
 template <class T>
 struct TIsZeroContructType
 {
-	enum { Value = TOr< TIsEnum<T>, TIsArithmetic<T>, TIsPointer<T> > };
+	enum { Value = TOr< TIsEnum<T>, TIsArithmetic<T>, TIsPointer<T> >::Value };
 };
 
 // TriviallyDestructible
@@ -263,8 +263,8 @@ namespace IsTriviallyDestructible_Private
 		enum { Value = true };
 	};
 
-	template <class T, false>
-	struct TImpl
+	template <class T>
+	struct TImpl<T, false>
 	{
 		enum { Value = __has_trivial_destructor(T) };
 	};
@@ -276,17 +276,17 @@ struct TIsTriviallyDestructible
 	enum { Value = IsTriviallyDestructible_Private::TImpl<T>::Value };
 };
 
-template <bool Predicate, typename Result = void>
+template <bool Predicate, class Result = void>
 class TEnableIf;
 
-template <typename Result>
+template <class Result>
 class TEnableIf<true, Result>
 {
 public:
 	typedef Result Type;
 };
 
-template <typename Result>
+template <class Result>
 class TEnableIf<false, Result>
 {};
 

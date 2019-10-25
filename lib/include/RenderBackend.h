@@ -8,6 +8,12 @@ enum class ERenderAPI {
 	ERenderAPI_DX11
 };
 
+class IDisplay;
+class CTexture;
+class CShader;
+class IVertexLayout;
+class IHardwareBuffer;
+
 // class CRendererStateCache {
 // public:
 
@@ -67,4 +73,21 @@ public:
 	virtual bool HandleDeviceLost() = 0;
 
 	virtual ERenderAPI GetRenderAPI() const = 0;
+
+	virtual void ClearTarget(dword nFlag, dword color, float fDepth, byte stencil) = 0;
+	virtual void RestoreTarget() = 0;
+	virtual void SetTarget(CTexture *pColorBuffer, CTexture *pDepthStencilBuffer) = 0;
+
+	virtual void SetShader(CShader *pShader) = 0;
+
+	virtual void SetVertexLayout(IVertexLayout *pLayout) = 0;
+	virtual void SetVertexBuffers(const CArray<IHardwareBuffer*> &arrVertexBuffer) = 0;
+	virtual void SetIndexBuffer(IHardwareBuffer *pIndexBuffer) = 0;
+
+	virtual void Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nPrimitiveCount) = 0;
+	virtual void Draw(EPrimitiveType ePrimitiveType,
+		dword nVertexOffset, dword nVertexCount,
+		dword nIndexOffset, dword nPrimitiveCount) = 0;
+
+	virtual Matrix4 ConvertProjectionMatrixByAPI(const Matrix4 &proj) const = 0;
 };

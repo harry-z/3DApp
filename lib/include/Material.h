@@ -4,6 +4,19 @@
 #include "Shader.h"
 #include "ScriptParser.h"
 
+struct ShaderConstantBuffer
+{
+    ShaderConstantInfo m_Info;
+    byte *m_pData = nullptr;
+    ~ShaderConstantBuffer()
+    {
+        if (m_pData != nullptr)
+        {
+            MEMFREE(m_pData);
+        }
+    }
+};
+
 struct ShaderObject;
 class DLL_EXPORT CShaderRef
 {
@@ -11,7 +24,7 @@ public:
     friend class CPass;
 
     bool AddShaderConstantInfo(const CArray<String> &arrParam);
-    inline const CArray<ShaderConstantInfo>& GetShaderConstantInfo() const { return m_arrShaderConstInfo; }
+    inline const CArray<ShaderConstantBuffer>& GetShaderConstantBuffer() const { return m_arrShaderConstInfo; }
 
     bool AddAutoShaderConstantInfo(const String &szParamName);
     inline const CArray<IdString>& GetAutoShaderConstantInfo() const { return m_arrAutoShaderConstInfo; }
@@ -23,38 +36,13 @@ public:
 private:
     CShaderRef(EShaderType Type, word Id) : m_ShaderType(Type), m_RefId(Id) {}
     ~CShaderRef();
-    bool CheckParamIsValid(const CArray<String> &arrParam) const;
-    template <class T>
-    void AddShaderConstantInfo(const String &szName, EShaderConstantType ConstType, dword nCount, T *pOriginData)
-    {
-        byte *pData = FillConstantInfoData(ConstType, nCount, pOriginData);
-        m_arrShaderConstInfo.Emplace(szName, ConstType, nCount, pData);
-    }
-    EShaderConstantType GetShaderConstantType(const String &szTypeName) const;
-    template <class T>
-    byte* FillConstantInfoData(EShaderConstantType ConstType, dword nCount, T *pData)
-    {
-        dword nElemCount = GetShaderConstantElementCount(ConstType);
-
-        byte *pConstantInfoData = (byte *)MEMALLOC(sizeof(T) * 4 * nCount); 
-        memset(pConstantInfoData, 0, sizeof(T) * 4 * nCount);
-
-        dword nSkip = 4 - nElemCount;
-
-        T *pTypedDest = (T *)pConstantInfoData;
-        for (dword i = 0; i < nCount; ++i, pTypedDest += nSkip)
-        {
-            for (dword j = 0; j < nElemCount; ++j)
-                *pTypedDest++ = *pData++;
-        }
-        return pConstantInfoData;
-    }
-    dword GetShaderConstantElementCount(EShaderConstantType ConstType) const;
+    bool CheckParamIsValid(const CArray<String> &arrParam, OUT EShaderConstantType &Type, OUT dword &nTotalElem, OUT dword &nElemCount) const;
+    void GetShaderConstantTypeAndCount(const String &szTypeName, OUT EShaderConstantType &Type, OUT dword &nElemCount) const;
 
     word m_RefId = 0xFFFF;
     EShaderType m_ShaderType;
     ShaderObject *m_pShaderObj = nullptr;
-    CArray<ShaderConstantInfo> m_arrShaderConstInfo;
+    CArray<ShaderConstantBuffer> m_arrShaderConstInfo;
     CArray<IdString> m_arrAutoShaderConstInfo;
 };
 

@@ -25,14 +25,17 @@ CJobSystem::~CJobSystem() {
 	for (byte i = 0; i < m_nWorkerCount; ++i) {
 		m_pWorkers[i].NotifyFinished();
 		m_ppThreads[i]->join();
+		// DELETE_TYPE(m_ppThreads[i], thread);
 		DELETE_TYPE(m_ppThreads[i], thread);
 	}
-	MEMFREE(m_ppThreads);
-	// delete[] m_pWorkers;
-	DELETE_TYPE_ARRAY(m_pWorkers, CWorker, m_nWorkerCount);
+	// MEMFREE(m_ppThreads);
+	DeleteObjectArray(m_ppThreads, m_nWorkerCount);
+	// DELETE_TYPE_ARRAY(m_pWorkers, CWorker, m_nWorkerCount);
+	DeleteObjectArray(m_pWorkers, m_nWorkerCount);
 }
 
-void CJobSystem::Initialize() {
+void CJobSystem::Initialize() 
+{
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
 	SYSTEM_INFO sys_info;
 	DWORD_PTR process_affinity_mask = 1;
@@ -52,23 +55,28 @@ void CJobSystem::Initialize() {
 #endif
 	m_nWorkerCount = max(1, m_nWorkerCount);
 	// m_pWorkers = new CWorker[m_nWorkerCount];
-	m_pWorkers = NEW_TYPE_ARRAY(CWorker, m_nWorkerCount);
-	m_ppThreads = (std::thread**)MEMALLOC(sizeof(std::thread**) * m_nWorkerCount);
+	m_pWorkers = NewObjectArray<CWorker>(m_nWorkerCount);
+	// m_ppThreads = (std::thread**)MEMALLOC(sizeof(std::thread**) * m_nWorkerCount);
+	m_ppThreads = NewObjectArray<std::thread*>(m_nWorkerCount);
 	for (byte i = 0; i < m_nWorkerCount; ++i)
 		m_ppThreads[i] = NEW_TYPE(std::thread)(ThreadFunc, &m_pWorkers[i]);
+		// m_ppThreads[i] = NEW_TYPE(std::thread)(ThreadFunc, &m_pWorkers[i]);
 }
 
-Job* CJobSystem::CreateJob(EJobType nJobType) {
+Job* CJobSystem::CreateJob(EJobType nJobType) 
+{
 	return JobFactories::m_JobCtorCallback[(dword)nJobType](m_JobPool.Allocate_mt());
 }
 
-void CJobSystem::DestroyJob(Job *pJob) {
+void CJobSystem::DestroyJob(Job *pJob) 
+{
 	assert(pJob != nullptr);
 	JobFactories::m_JobDtorCallback[(dword)pJob->m_Type](pJob);
 	m_JobPool.Free_mt(pJob);
 }
 
-void CJobSystem::QueueJob(Job *pJob) {
+void CJobSystem::QueueJob(Job *pJob) 
+{
 	assert(pJob != nullptr);
 	// 通过轮询的方式实现简单的负载均衡
 	std::lock_guard<std::mutex> slock(m_WorkerLock);
@@ -77,7 +85,8 @@ void CJobSystem::QueueJob(Job *pJob) {
 	m_pWorkers[workerIndex].QueueJob(pJob);
 }
 
-void CJobSystem::Update_MainThread(dword nFrameId) {
+void CJobSystem::Update_MainThread(dword nFrameId) 
+{
 	if (m_nWorkerCount == 0)
 		return;
 	

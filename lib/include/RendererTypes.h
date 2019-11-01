@@ -97,32 +97,8 @@ enum class EShaderType : byte {
 
 enum class EShaderConstantType : byte {
 	EShaderConstantType_Float = 0,
-	EShaderConstantType_Float2,
-	EShaderConstantType_Float3,
-	EShaderConstantType_Float4,
 	EShaderConstantType_Int,
-	EShaderConstantType_Int2,
-	EShaderConstantType_Int3,
-	EShaderConstantType_Int4,
 	EShaderConstantType_Unknown = 0xFF
-};
-
-enum EAutoUpdatedShaderConstant : byte {
-	EAutoUpdatedShaderConstant_W = 0,
-	EAutoUpdatedShaderConstant_WV,
-	EAutoUpdatedShaderConstant_WVP,
-	EAutoUpdatedShaderConstant_InvW,
-	EAutoUpdatedShaderConstant_InvWV,
-	EAutoUpdatedShaderConstant_InvWVP,
-	EAutoUpdatedShaderConstant_V,
-	EAutoUpdatedShaderConstant_VP,
-	EAutoUpdatedShaderConstant_InvV,
-	EAutoUpdatedShaderConstant_InvVP,
-	EAutoUpdatedShaderConstant_P,
-	EAutoUpdatedShaderConstant_InvP,
-	EAutoUpdatedShaderConstant_CamPos,
-	EAutoUpdatedShaderConstant_CamDir,
-	EAutoUpdatedShaderConstant_Unknown = 0xFF
 };
 
 enum EAutoUpdatedConstant : byte {

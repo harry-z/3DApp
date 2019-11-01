@@ -94,6 +94,9 @@ public:
 public:
 	//void UpdateCVars(const Config &cfg);
 
+	void InitRenderStageDX9();
+	void UninitRenderStageDX9();
+
 	bool Reset(dword w, dword h);
 
 	void DefaultPoolRcRelease();

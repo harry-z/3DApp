@@ -3,6 +3,15 @@
 #include "RenderBackendDX9.h"
 #include "..\..\Windows\IDisplay_Windows.h"
 
+#if CURRENT_RENDER_PATH == RENDER_PATH_FORWARD_SHADING
+#include "RenderStageDX9_SceneDepth.h"
+#include "RenderStageDX9_ShadowDepth.h"
+#include "RenderStageDX9_ShadowMask.h"
+#include "RenderStageDX9_Sky.h"
+#include "RenderStageDX9_Opaque.h"
+#include "RenderStageDX9_Translucent.h"
+#endif
+
 //CRenderBackendDX9* CRenderBackendDX9::s_me = nullptr;
 
 IDirect3DDevice9 *g_pDevice9;
@@ -90,6 +99,8 @@ bool CRenderBackendDX9::Initialize(IDisplay *pDisplay) {
 
 	//m_Cache.Initialize(this);
 
+	InitRenderStageDX9();
+
 	pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize RenderBackend D3D9");
 
 	return true;
@@ -99,6 +110,9 @@ void CRenderBackendDX9::Shutdown() {
 	// UninitializePredefinedVertexLayouts();
 	//UninitializePredefinedStates();
 	//UninitializePredefinedTextures();
+
+	UninitRenderStageDX9();
+	
 	if (m_pDeviceCaps9)
 	{
 		DELETE_TYPE(m_pDeviceCaps9, D3DCAPS9);
@@ -191,6 +205,46 @@ void CRenderBackendDX9::OnDisplayResized(dword w, dword h) {
 //	m_cvars.m_nMSAAQuality = cfg.m_nMSAAQuality;
 //	m_cvars.m_bGammaOutput = cfg.m_bGammaOutput;
 //}
+
+void CRenderBackendDX9::InitRenderStageDX9()
+{
+#if CURRENT_RENDER_PATH == RENDER_PATH_FORWARD_SHADING
+	IRenderStage::m_ppRenderStage[EForwardShading_ShaderBatch_ShadowDepth] = 
+		NewObject<CRenderStageDX9_ShadowDepth>(&RenderItem::m_RenderItems[EForwardShading_ShaderBatch_ShadowDepth]);
+	IRenderStage::m_ppRenderStage[EForwardShading_ShaderBatch_TransluentShadowDepth] = 
+		NewObject<CRenderStageDX9_TranslucentShadowDepth>(&RenderItem::m_RenderItems[EForwardShading_ShaderBatch_TransluentShadowDepth]);
+	IRenderStage::m_ppRenderStage[EForwardShading_ShaderBatch_ShadowMask] = 
+		NewObject<CRenderStageDX9_ShadowMask>(&RenderItem::m_RenderItems[EForwardShading_ShaderBatch_ShadowMask]);
+	IRenderStage::m_ppRenderStage[EForwardShading_ShaderBatch_TransluentShadowMask] = 
+		NewObject<CRenderStageDX9_TranslucentShadowMask>(&RenderItem::m_RenderItems[EForwardShading_ShaderBatch_TransluentShadowMask]);
+	IRenderStage::m_ppRenderStage[EForwardShading_ShaderBatch_SceneDepth] = 
+		NewObject<CRenderStageDX9_SceneDepth>(&RenderItem::m_RenderItems[EForwardShading_ShaderBatch_SceneDepth]);
+	IRenderStage::m_ppRenderStage[EForwardShading_ShaderBatch_Sky] = 
+		NewObject<CRenderStageDX9_Sky>(&RenderItem::m_RenderItems[EForwardShading_ShaderBatch_Sky]);
+	IRenderStage::m_ppRenderStage[EForwardShading_ShaderBatch_Opaque] = 
+		NewObject<CRenderStageDX9_Opaque>(&RenderItem::m_RenderItems[EForwardShading_ShaderBatch_Opaque]);
+	IRenderStage::m_ppRenderStage[EForwardShading_ShaderBatch_Transluent] = 
+		NewObject<CRenderStageDX9_Translucent>(&RenderItem::m_RenderItems[EForwardShading_ShaderBatch_Transluent]);
+#endif
+}
+
+void CRenderBackendDX9::UninitRenderStageDX9()
+{
+#define DELETE_RENDER_STAGE(RenderStageType, RenderStage) \
+	RenderStageType *RenderStageType##_Ptr = static_cast<RenderStageType*>(IRenderStage::m_ppRenderStage[RenderStage]); \
+	DeleteObject(RenderStageType##_Ptr);
+
+#if CURRENT_RENDER_PATH == RENDER_PATH_FORWARD_SHADING
+	DELETE_RENDER_STAGE(CRenderStageDX9_ShadowDepth, EForwardShading_ShaderBatch_ShadowDepth);
+	DELETE_RENDER_STAGE(CRenderStageDX9_TranslucentShadowDepth, EForwardShading_ShaderBatch_TransluentShadowDepth);
+	DELETE_RENDER_STAGE(CRenderStageDX9_ShadowMask, EForwardShading_ShaderBatch_ShadowMask);
+	DELETE_RENDER_STAGE(CRenderStageDX9_TranslucentShadowMask, EForwardShading_ShaderBatch_TransluentShadowMask);
+	DELETE_RENDER_STAGE(CRenderStageDX9_SceneDepth, EForwardShading_ShaderBatch_SceneDepth);
+	DELETE_RENDER_STAGE(CRenderStageDX9_Sky, EForwardShading_ShaderBatch_Sky);
+	DELETE_RENDER_STAGE(CRenderStageDX9_Opaque, EForwardShading_ShaderBatch_Opaque);
+	DELETE_RENDER_STAGE(CRenderStageDX9_Translucent, EForwardShading_ShaderBatch_Transluent);
+#endif
+}
 
 bool CRenderBackendDX9::Reset(dword w, dword h) {
 	float w_changed_ratio = (float)w / (float)m_dpparams.BackBufferWidth;

@@ -17,7 +17,8 @@ enum EForwardShading_ShaderBatch {
 	//EShaderBatch_Terrain,
 	EForwardShading_ShaderBatch_Opaque,
 	EForwardShading_ShaderBatch_Transluent,
-	EForwardShading_ShaderBatch_GUI,
+	EForwardShading_ShaderBatch_3DCount,
+	EForwardShading_ShaderBatch_GUI = EForwardShading_ShaderBatch_3DCount,
 	EForwardShading_ShaderBatch_Count
 };
 
@@ -143,3 +144,11 @@ struct RenderItem
 #endif
 	}
 };
+
+inline ldword VertexShaderId(ldword nId) { return nId << 52; }
+inline ldword GetVertexShaderId(ldword nId) { return (nId >> 52) & 0x0000000000000FFF; }
+
+inline ldword PixelShaderId(ldword nId) { return nId << 40; }
+inline ldword GetPixelShaderId(ldword nId) { return (nId >> 40) & 0x0000000000000FFF; }
+
+inline ldword SortVal(ldword nVSId, ldword nPSId) { return VertexShaderId(nVSId) | PixelShaderId(nPSId); }

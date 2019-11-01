@@ -11,12 +11,15 @@ void CTestScene::InitSample()
 {
 	C3DEngine * __restrict p3DEngine = Global::m_p3DEngine;
 	CHardwareBufferManager * __restrict pHwBufferMgr = Global::m_pHwBufferManager;
+	CMaterialManager * __restrict pMtlMgr = Global::m_pMaterialManager;
 
 	p3DEngine->SetSceneClipping(SCENE_CLIPPING_DEFAULT);
 
 	CCamera *pMainCamera = p3DEngine->GetMainCamera();
     pMainCamera->SetEye(Vec3(0.0f, 0.0f, -100.0f));
     pMainCamera->SetLookat(Vec3::s_ZeroVector);
+
+	CMaterial *pMtl = pMtlMgr->LoadMaterial("Mtl/NoIllumColor.mtl");
 
     CCustomGeometryNode *pGeomNode = p3DEngine->CreateRenderNode<CCustomGeometryNode>();
 	
@@ -29,6 +32,8 @@ void CTestScene::InitSample()
 	pGeomNode->AddVertexBuffer(pVertexBuffer);
 	pGeomNode->SetPrimitiveType(EPrimitiveType::EPrimType_TriangleStrip);
 	pGeomNode->SetPredefinedVertexLayout(EPredefinedVertexLayout::EPredefinedLayout_P);
+	if (pMtl != nullptr)
+		pGeomNode->SetMaterial(pMtl);
 
 	p3DEngine->RegisterNode(pGeomNode);
 }

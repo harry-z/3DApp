@@ -3,7 +3,7 @@
 CCamera::CCamera()
 	: m_nearclip(0.1f),
 	m_farclip(1000.0f),
-	m_dirty(CAMERA_VIEW_DIRTY | CAMERA_PROJ_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY | CAMERA_FRUSTUM_SIZE_DIRTY), 
+	m_dirty(CAMERA_VIEW_DIRTY | CAMERA_PROJ_DIRTY | CAMERA_FRUSTUM_PLANE_DIRTY | CAMERA_FRUSTUM_SIZE_DIRTY | CAMERA_NEED_VIEW_MATRIX_SHADER_CONST_UPDATE | CAMERA_NEED_PROJ_MATRIX_SHADER_CONST_UPDATE), 
 	m_type(EProjectType::EProject_Perspective) {
 	m_ProjectionData.perspective.m_fov = PI * 0.25f;
 	m_ProjectionData.perspective.m_aspect = 1.3333f;

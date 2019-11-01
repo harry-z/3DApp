@@ -30,7 +30,7 @@ public:
 		m_nCount = other.m_nCount;
 		m_nAllocCount = other.m_nAllocCount;
 		Realloc();
-		memcpy(m_pElements, other.m_pElements, other.m_nAllocCount * sizeof(_ValueType));
+		Copy(m_pElements, other.m_pElements, other.m_nCount);
 	}
 	~CArray() { Free(); }
 
@@ -41,7 +41,7 @@ public:
 	}
 
 	void Free() {
-		DestructItems<T>(m_pElements, m_nCount);
+		DestructItems(m_pElements, m_nCount);
 		m_nCount = 0;
 		if (m_nAllocCount)
 			MEMFREE(m_pElements);
@@ -61,7 +61,8 @@ public:
 				_PointerType pTempElements = (T*)MEMALLOC(sizeof(_ValueType) * m_nAllocCount);
 				assert(pTempElements != nullptr);
 				if (m_nCount)
-					memcpy(pTempElements, m_pElements, sizeof(_ValueType) * m_nCount);
+					Copy(pTempElements, m_pElements, m_nCount);
+				DestructItems(m_pElements, m_nCount);
 				MEMFREE(m_pElements);
 				m_pElements = pTempElements;
 			}
@@ -69,12 +70,17 @@ public:
 			{
 				m_pElements = (T*)MEMALLOC(sizeof(_ValueType) * m_nAllocCount);
 				assert(m_pElements != nullptr);
-				ConstructItems(m_pElements, m_nAllocCount);
 			}
 		}
 	}
 	void Remove(dword nIndex, dword nCount = 1) {
 		if (nCount && nIndex + nCount <= m_nCount) {
+			dword nIter = nCount;
+			while (nIter > 0)
+			{
+				(m_pElements + (nIndex + nCount - nIter))->~T();
+				--nIter;
+			}
 			memmove(m_pElements + nIndex, m_pElements + nIndex + nCount, sizeof(_ValueType) * (m_nCount - nIndex - nCount));
 			m_nCount -= nCount;
 		}
@@ -85,7 +91,8 @@ public:
 	inline bool Full() const { return m_nCount >= m_nAllocCount; }
 	inline void SetNum(dword nCount) { m_nCount = nCount; }
 	void Clear() {
-		memset(m_pElements, 0, sizeof(_ValueType) * m_nAllocCount);
+		DestructItems(m_pElements, m_nCount);
+		memset(m_pElements, 0, sizeof(_ValueType) * m_nCount);
 	}
 	_PointerType Data() { return m_pElements; }
 	_ConstPointerType Data() const { return m_pElements; }
@@ -111,14 +118,15 @@ public:
 			dword nOldAlloc = m_nAllocCount;
 			m_nAllocCount = nNewCount * 2; //nNewCount + (nNewCount >> 1) + 10;
 			Realloc();
-			memset(&m_pElements[nOldAlloc], 0, sizeof(_ValueType) * (m_nAllocCount - nOldAlloc));
+			// memset(&m_pElements[nOldAlloc], 0, sizeof(_ValueType) * (m_nAllocCount - nOldAlloc));
 		}
 		m_nCount = nNewCount;
 		return &m_pElements[nIndex];
 	}
 	void Add(_RefType obj) {
 		_PointerType p = AddIndex(1);
-		*p = obj;
+		new (p) T(obj);
+		// *p = obj;
 	}
 	template <class ... ArgsType>
 	void Emplace(ArgsType &&... Args) {
@@ -139,6 +147,15 @@ public:
 	friend _ConstPointerType begin(const CArray &array) { return array.Data(); }
 	friend _PointerType end(CArray &array) { return array.Data() + array.Num(); }
 	friend _ConstPointerType end(const CArray &array) { return array.Data() + array.Num(); }
+
+private:
+	void Copy(_PointerType pRawDestData, _ConstPointerType pSrcData, dword nCount) {
+		for (dword i = 0; i < nCount; ++i)
+		{
+			new (&pRawDestData[i]) T;
+			pRawDestData[i] = pSrcData[i];
+		}
+	}
 
 private:
 	_PointerType m_pElements;

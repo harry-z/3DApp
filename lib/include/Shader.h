@@ -97,7 +97,7 @@ public:
         return ShaderIterator ? ShaderIterator.Value() : nullptr;
     }
     inline CShader* FindShaderById(word nShaderId) {
-        return m_ShaderArr.IsValidIndex(nShaderId) ? m_ShaderArr[nShaderId] : nullptr;
+        return m_ShaderArr.IsValidIndex(nShaderId - 1) ? m_ShaderArr[nShaderId - 1] : nullptr;
     }
     CShader* GetDefaultVertexShader() { return m_pDefaultVertexShader; }
     CShader* GetDefaultPixelShader() { return m_pDefaultPixelShader; }

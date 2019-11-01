@@ -25,5 +25,7 @@ void CDefaultSceneClippingStrategy::SceneClipping(CCamera *pCamera, Linklist<IRe
     	bVisible = bVisible || pNode->CheckFlag(RN_FLAG_ALWAYSVISIBLE);
     	if (bVisible)
     		RenderNode(pCamera, pNode);
+
+		pTemp = pTemp->m_pNext;
     }
 }

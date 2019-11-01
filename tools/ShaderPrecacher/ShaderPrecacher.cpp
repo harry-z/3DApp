@@ -227,10 +227,6 @@ bool CompileAndCacheAllShaders(const CMap<String, char*> &arrShaderFiles, const 
         dword size;
         ShaderBuffer() {}
         ShaderBuffer(void *buf, dword nz) : buffer(buf), size(nz) {}
-        ~ShaderBuffer() {
-            if (buffer != nullptr)
-                MEMFREE(buffer);
-        }
     };
     CArray<ShaderBuffer> arrShaderBuffer;
 
@@ -328,7 +324,10 @@ bool CompileAndCacheAllShaders(const CMap<String, char*> &arrShaderFiles, const 
     }
     file.Close();
 
-    arrShaderBuffer.Empty();
+    for (auto &Buffer : arrShaderBuffer)
+    {
+        MEMFREE(Buffer.buffer);
+    }
 
     return true;
 }

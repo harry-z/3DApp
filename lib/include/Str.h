@@ -13,10 +13,12 @@ public:
 	String() { Init(); }
 	String(const char *pszStr);
 	String(const String &other);
+	String(String &&other);
 	~String() { MEMFREE(m_pData); }
 
 	String& operator= (const char *pszStr);
 	String& operator= (const String &other);
+	String& operator= (String &&other);
 
 	bool operator== (const char *pszStr) const {
 		assert(pszStr != nullptr);
@@ -39,20 +41,45 @@ public:
 		return *this;
 	}
 
-	String operator+ (const char *pszStr) const {
-		String str(*this);
-		str += pszStr;
-		return str;
+	friend String operator+ (const String &str, const char *pszStr) {
+		String MyStr(str);
+		MyStr += pszStr;
+		return MyStr;
 	}
-	String operator+ (const String &other) const {
-		String str(*this);
-		str += other;
-		return str;
+	friend String operator+ (const String &str, const String &other) {
+		String MyStr(str);
+		MyStr += other;
+		return MyStr;
+	}
+	friend String operator+ (const String &str, String &&other) {
+		String MyStr(str);
+		MyStr += other.c_str();
+		return MyStr;
 	}
 	friend String operator+ (const char *pszStr, const String &str) {
-		String s(str);
-		s += pszStr;
-		return s;
+		String MyStr(str);
+		MyStr += pszStr;
+		return MyStr;
+	}
+	friend String operator+ (const char *pszStr, String &&other) {
+		String MyStr(pszStr);
+		MyStr += other.c_str();
+		return MyStr;
+	}
+	friend String operator+ (String &&str, const char *pszStr) {
+		String MyStr(str);
+		MyStr += pszStr;
+		return MyStr;
+	}
+	friend String operator+ (String &&str, const String &other) {
+		String MyStr(str);
+		MyStr += other;
+		return MyStr;
+	}
+	friend String operator+ (String &&str, String &&other) {
+		String MyStr(str);
+		MyStr += other.c_str();
+		return MyStr;
 	}
 
 	char& operator[] (size_type index) { 
@@ -119,6 +146,7 @@ public:
 
 private:
 	void Init();
+	void Init(const char *pszStr);
 	void EnsureAllocated(size_type nSize);
 	void Reallocate(size_type nSize);
 	void Append(const char *pszStr);
@@ -131,25 +159,15 @@ private:
 };
 
 inline String::String(const char *pszStr) {
-	assert(pszStr != nullptr);
-
-	Init();
-
-	size_type nLen = strlen(pszStr);
-	EnsureAllocated(nLen + 1);
-	strcpy(m_pData, pszStr);
-	m_pData[nLen] = 0;
-	m_nLen = nLen;
+	Init(pszStr);
 }
 
 inline String::String(const String &other) {
-	Init();
+	Init(other.c_str());
+}
 
-	size_type nLen = other.length();
-	EnsureAllocated(nLen + 1);
-	strcpy(m_pData, other.c_str());
-	m_pData[nLen] = 0;
-	m_nLen = nLen;
+inline String::String(String &&other) {
+	Init(other.c_str());
 }
 
 inline String& String::operator=(const char *pszStr) {
@@ -171,7 +189,17 @@ inline String& String::operator=(const String &other) {
 	return *this;
 }
 
+inline String& String::operator=(String &&other) {
+	size_type nLen = other.length();
+	EnsureAllocated(nLen + 1);
+	strcpy(m_pData, other.c_str());
+	m_pData[nLen] = 0;
+	m_nLen = nLen;
+	return *this;
+}
+
 inline void String::clear() {
+	assert(m_pData != nullptr);
 	MEMFREE(m_pData);
 	Init();
 }
@@ -235,6 +263,17 @@ inline void String::Init() {
 	m_pData = (char *)MEMALLOC(STR_ALLOC_BASE);
 	assert(m_pData != nullptr);
 	m_pData[0] = 0;
+}
+
+inline void String::Init(const char *pszStr) {
+	m_nLen = strlen(pszStr);
+	dword div = m_nLen / STR_ALLOC_GRAN;
+	m_nCapacity = STR_ALLOC_GRAN * (div + 1);
+		
+	m_pData = (char *)MEMALLOC(m_nCapacity);
+	assert(m_pData != nullptr);
+	strcpy(m_pData, pszStr);
+	m_pData[m_nLen] = 0;
 }
 
 inline void String::EnsureAllocated(size_type nSize) {

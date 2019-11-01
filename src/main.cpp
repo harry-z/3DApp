@@ -34,12 +34,16 @@ int main(int argc, char **argv)
     }
 
     SampleMap::_MyIterType Iter = g_SampleMap.CreateIterator();
-    while (nSelectIndex > 1)
+    if (Iter)
     {
-        ++Iter;
-        --nSelectIndex;
+        while (nSelectIndex > 1)
+        {
+            ++Iter;
+            --nSelectIndex;
+        }
+        Iter.Value()->UninitSample();
     }
-    Iter.Value()->UninitSample();
+    
 
     DELETE_TYPE(p3DEngine, C3DEngine);
     return 0;

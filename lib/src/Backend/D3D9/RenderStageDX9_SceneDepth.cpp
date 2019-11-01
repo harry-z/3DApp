@@ -1,4 +1,5 @@
 #include "RenderStageDX9_SceneDepth.h"
+#include "RenderStageDX9.h"
 #include "Camera.h"
 #include "Shader.h"
 #include "Texture.h"
@@ -48,17 +49,7 @@ void CRenderStageDX9_SceneDepth::Render(CCamera *pCamera)
                 g_pDevice9->SetVertexShaderConstantF(nWVPIndex, ((*item.m_pRenderObj->m_pWorldTransform) * VP).m, 4);
                 g_pDevice9->SetVertexShaderConstantF(nWVIndex, ((*item.m_pRenderObj->m_pWorldTransform) * V).m, 4);
 
-                pRenderBackend->SetVertexLayout(item.m_pRenderObj->m_pVertexLayout);
-                pRenderBackend->SetVertexBuffers(item.m_pRenderObj->m_arrHwBuffer);
-                if (item.m_pRenderObj->m_pIB != nullptr)
-                {
-                    pRenderBackend->SetIndexBuffer(item.m_pRenderObj->m_pIB);
-                    pRenderBackend->Draw(item.m_pRenderObj->m_PrimType, 0, item.m_pRenderObj->m_nVertexCount, 0, item.m_pRenderObj->m_nPrimitiveCount);
-                }
-                else
-                {
-                    pRenderBackend->Draw(item.m_pRenderObj->m_PrimType, 0, item.m_pRenderObj->m_nPrimitiveCount);
-                }
+                RenderStageDX9_SetGeometryData(&item, pRenderBackend);
             }
             
             g_pDevice9->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);

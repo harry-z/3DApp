@@ -108,7 +108,7 @@ bool CShaderManagerDX9::LoadShaders() {
 		"};\n" \
 		"VSOutput VS_Default(float4 iPosition : POSITION) {\n" \
 		  "VSOutput output;\n" \
-		  "output.oPosition = mul(WorldViewProj, iPosition);\n" \
+		  "output.oPosition = mul(WorldViewProjectionMatrix, iPosition);\n" \
 		  "return output;\n" \
 		"}\n" \
 		"float4 PS_Default() : COLOR0 {\n" \

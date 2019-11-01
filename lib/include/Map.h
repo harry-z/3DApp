@@ -215,6 +215,11 @@ public:
         m_NodePool.Initialize(sizeof(_MyNodeType));
 	}
 
+	~CRBTree()
+	{
+		ClearTree(m_pRoot);
+	}
+
 	_MyNodeptr GetRoot() const
 	{
 		return m_pRoot;

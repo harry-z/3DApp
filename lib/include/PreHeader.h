@@ -92,6 +92,7 @@
 #include <thread>
 #include <initializer_list>
 #include <iostream>
+#include <algorithm>
 
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
 	#include <Windows.h>

@@ -17,16 +17,6 @@ IdString AutoUpdatedShaderConstantIdStr::s_CamPos(CAMERA_POSITION);
 IdString AutoUpdatedShaderConstantIdStr::s_CamDir(CAMERA_DIRECTION);
 IdString AutoUpdatedShaderConstantIdStr::s_NearFarClip(NEAR_FAR_CLIP);
 
-// #define INIT_CONSTANT_INFO(InfoName, ValueType, ValueCount, ConstantType, ConstantCount) \
-//     ValueType *pData##InfoName = (ValueType*)MEMALLOC(sizeof(ValueType) * ValueCount); \
-//     memset(pData##InfoName, 0, sizeof(ValueType) * ValueCount); \
-//     ShaderConstantInfo ConstantInfo##InfoName(InfoName, ConstantType, ConstantCount, (byte*)pData##InfoName); \
-//     m_AutoShaderConstMap.Insert(IdString(InfoName), ConstantInfo##InfoName);
-
-// #define INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(InfoName, ConstantType, RegisterCount) \
-//     ShaderConstantInfo ConstantInfo##InfoName(InfoName, ConstantType, RegisterCount); \
-//     m_AutoUpdatedShaderConstMap.Insert(IdString(InfoName), ConstantInfo##InfoName);
-
 #define INIT_AUTO_UPDATED_CONSTANT(AutoUpdatedConstantType, ConstantType, ConstantCount) \
     ConstantType *p##AutoUpdatedConstantType##Data = (ConstantType *)MEMALLOC(sizeof(ConstantType) * ConstantCount); \
     m_AutoUpdatedConstants[(dword)AutoUpdatedConstantType].m_nConstantCount = ConstantCount; \
@@ -34,24 +24,6 @@ IdString AutoUpdatedShaderConstantIdStr::s_NearFarClip(NEAR_FAR_CLIP);
 
 void CShaderManager::InitializeAutoShaderConstantMap()
 {
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(WORLD_MATRIX, EShaderConstantType::EShaderConstantType_Float4, 4);
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(WORLD_VIEW_MATRIX, EShaderConstantType::EShaderConstantType_Float4, 4);
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(WORLD_VIEW_PROJECTION_MATRIX, EShaderConstantType::EShaderConstantType_Float4, 4);
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(INVERSE_WORLD_MATRIX, EShaderConstantType::EShaderConstantType_Float4, 4);
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(INVERSE_WORLD_VIEW_MATRIX, EShaderConstantType::EShaderConstantType_Float4, 4);
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(INVERSE_WORLD_VIEW_PROJECTION_MATRIX, EShaderConstantType::EShaderConstantType_Float4, 4);
-
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(VIEW_MATRIX, EShaderConstantType::EShaderConstantType_Float4, 4);
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(VIEW_PROJECTION_MATRIX, EShaderConstantType::EShaderConstantType_Float4, 4);
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(INVERSE_VIEW_MATRIX, EShaderConstantType::EShaderConstantType_Float4, 4);
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(INVERSE_VIEW_PROJECTION_MATRIX, EShaderConstantType::EShaderConstantType_Float4, 4);
-
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(PROJECTION_MATRIX, EShaderConstantType::EShaderConstantType_Float4, 4);
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(INVERSE_PROJECTION_MATRIX, EShaderConstantType::EShaderConstantType_Float4, 4);
-
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(CAMERA_POSITION, EShaderConstantType::EShaderConstantType_Float4, 1);
-    // INIT_AUTO_UPDATED_SHADER_CONSTANT_INFO(CAMERA_DIRECTION, EShaderConstantType::EShaderConstantType_Float4, 1);
-
     m_AutoUpdatedConstants.Reserve((dword)EAutoUpdatedConstant_Num);
     m_AutoUpdatedConstants.SetNum((dword)EAutoUpdatedConstant_Num);
     INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_View, float, 16);

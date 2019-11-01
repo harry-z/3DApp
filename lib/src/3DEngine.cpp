@@ -1,6 +1,7 @@
 #include "3DEngine.h"
 #include "JobSystem.h"
 #include "RenderItem.h"
+#include "RenderStage.h"
 
 #ifdef RENDERAPI_DX9
 #include "Backend/D3D9/RenderBackendDX9.h"
@@ -263,9 +264,20 @@ void C3DEngine::Frame(dword nFrameId)
         if (m_pSceneClipping != nullptr)
             m_pSceneClipping->SceneClipping(m_pMainCamera, m_SceneNodelist[i]);
     }
+
+#if CURRENT_RENDER_PATH == RENDER_PATH_FORWARD_SHADING
+    dword nCount = EForwardShading_ShaderBatch_3DCount;
+#endif
+
+    for (dword i = 0; i < nCount; ++i)
+		IRenderStage::m_ppRenderStage[i]->Prepare(m_pMainCamera);
     
     IRenderBackend * __restrict pRenderBackend = Global::m_pRenderBackend;
     pRenderBackend->BeginRendering();
+
+    for (dword i = 0; i < nCount; ++i)
+		IRenderStage::m_ppRenderStage[i]->Render(m_pMainCamera);
+
     pRenderBackend->EndRendering();
 }
 

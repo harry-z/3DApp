@@ -14,10 +14,16 @@
 constexpr ldword g_ShaderRefMask = 0x000000000000FFFF;
 constexpr ldword g_InvalidId = 0xFFFFFFFFFFFFFFFF;
 
+CShaderRef::CShaderRef(EShaderType Type, word Id)
+: m_ShaderType(Type), m_RefId(Id) 
+{
+	m_pShaderObj = ShaderObject::CreateShaderObject();
+	m_Compiled = false;
+}
+
 CShaderRef::~CShaderRef()
 {
-	if (m_pShaderObj != nullptr)
-		ShaderObject::DestroyShaderObject(m_pShaderObj);
+	ShaderObject::DestroyShaderObject(m_pShaderObj);
 }
 
 bool CShaderRef::AddShaderConstantInfo(const CArray<String> &arrParam)
@@ -41,12 +47,12 @@ bool CShaderRef::AddShaderConstantInfo(const CArray<String> &arrParam)
 					*pTypedDest++ = atof(arrParam[2 + i * nElemCount + j].c_str());
 			}
 
-			ShaderConstantBuffer ConstantBuffer;
-			ConstantBuffer.m_Info.m_Name = IdString(arrParam[0]);
-			ConstantBuffer.m_Info.m_RegisterCount = nRegisterCount;
-			ConstantBuffer.m_Info.m_Type = EShaderConstantType::EShaderConstantType_Float;
-			ConstantBuffer.m_pData = pConstantInfoData;
-			m_arrShaderConstInfo.Add(ConstantBuffer);
+			ShaderConstantBuffer *pConstantBuffer = m_arrShaderConstInfo.AddIndex(1);
+			new (pConstantBuffer) ShaderConstantBuffer;
+			pConstantBuffer->m_Info.m_Name = IdString(arrParam[0]);
+			pConstantBuffer->m_Info.m_RegisterCount = nRegisterCount;
+			pConstantBuffer->m_Info.m_Type = EShaderConstantType::EShaderConstantType_Float;
+			pConstantBuffer->m_pData = pConstantInfoData;
 			break;
 		}
 		case EShaderConstantType::EShaderConstantType_Int:
@@ -76,12 +82,16 @@ bool CShaderRef::AddShaderConstantInfo(const CArray<String> &arrParam)
 
 ldword CShaderRef::Compile()
 {
+	if (IsCompiled())
+		return g_ShaderRefMask & m_RefId;
+
 	CShaderManager * __restrict pShaderMgr = Global::m_pShaderManager;
 	CShader *pShader = nullptr;
 	if (m_RefId != 0)
 		pShader = pShaderMgr->FindShaderById(m_RefId);
 	if (pShader == nullptr)
 	{
+		m_RefId = 0;
 		switch (m_ShaderType)
 		{
 			case EShaderType::EShaderType_Vertex:
@@ -96,8 +106,6 @@ ldword CShaderRef::Compile()
 
 	assert(pShader != nullptr);
 
-	m_pShaderObj = ShaderObject::CreateShaderObject();
-
 	const CArray<ShaderConstantBuffer> &arrShaderConstBuffer = GetShaderConstantBuffer();
 	m_pShaderObj->m_arrShaderVar.Reserve(arrShaderConstBuffer.Num());
 	for (const auto &ConstantBuffer : arrShaderConstBuffer)
@@ -111,20 +119,13 @@ ldword CShaderRef::Compile()
 
 	m_pShaderObj->m_arrAutoShaderVar = GetAutoShaderConstantInfo();
 
+	Compiled();
+
 	return g_ShaderRefMask & m_RefId;
 }
 
 bool CShaderRef::AddAutoShaderConstantInfo(const String &szParamName)
 {
-	// IdString idStr(szParamName);
-	// if (Global::m_pShaderManager->IsAutoUpdatedShaderConstant(idStr))
-	// {
-	// 	m_arrAutoShaderConstInfo.Emplace(idStr);
-	// 	return true;
-	// }
-	// else
-	// 	return false;
-
 	m_arrAutoShaderConstInfo.Emplace(szParamName);
 	return true;
 }
@@ -190,6 +191,8 @@ void CShaderRef::GetShaderConstantTypeAndCount(const String &szTypeName, OUT ESh
 	}
 }
 
+CPool ShaderResources::m_ShaderResourcePool;
+
 CPass::CPass() 
 {
 	m_Compiled = false;
@@ -201,6 +204,7 @@ CPass::CPass(const String &szName)
 {
 	m_Compiled = false;
 	m_nHashId = g_InvalidId;
+	m_pShaderResources = ShaderResources::CreateShaderResource();
 }
 
 CPass::~CPass()
@@ -215,13 +219,49 @@ CPass::~CPass()
 		DELETE_TYPE(m_pPixelShaderRef, CShaderRef);
 		m_pPixelShaderRef = nullptr;
 	}
+	if (m_pShaderResources != nullptr)
+	{
+		ShaderResources::DestroyShaderResource(m_pShaderResources);
+	}
 }
 
 ldword CPass::Compile()
 {
-	ldword nVSCompile = m_pVertexShaderRef->Compile();
-	ldword nPSCompile = m_pPixelShaderRef->Compile();
-	m_nHashId = SortVal(nVSCompile, nPSCompile);
+	if (IsCompiled())
+		return m_nHashId;
+
+	ldword nVSCompile = 0;
+	if (m_pVertexShaderRef != nullptr)
+		nVSCompile = m_pVertexShaderRef->Compile();
+	else
+		return g_InvalidId;
+
+	ldword nPSCompile = 0;
+	if (m_pPixelShaderRef != nullptr)
+		nPSCompile = m_pPixelShaderRef->Compile();
+	else
+		return g_InvalidId;
+
+	ldword nSRCompile = 0;
+	if (m_pShaderResources->IsValid())
+	{
+		bool bAllTextureLoaded = true;
+		for (const auto &Texture : m_pShaderResources->m_arrTexture)
+		{
+			if (!Texture->IsCreatedOrLoaded())
+			{
+				bAllTextureLoaded = false;
+				break;
+			}
+		}
+
+		if (bAllTextureLoaded)
+			nSRCompile = m_pShaderResources->m_arrTexture[0]->GetID();
+		else
+			return g_InvalidId;
+	} 
+
+	m_nHashId = SortVal(nVSCompile, nPSCompile, nSRCompile);
 	Compiled();
 	return m_nHashId;
 }
@@ -259,9 +299,10 @@ CShaderRef* CPass::CreateShaderRef(EShaderType eShaderType, const String &szShad
 	}
 }
 
-void CPass::AddTextureSlot(const String &szTextureName)
+void CPass::LoadTextureSlot(const String &szTextureName, EAutoGenmip bAutoGenMipmap, bool bGamma)
 {
-	m_arrTexture.Emplace(szTextureName);
+	CTexture *pTexture = Global::m_pTextureManager->LoadTexture(szTextureName, bAutoGenMipmap, bGamma);
+	m_pShaderResources->m_arrTexture.Emplace(pTexture);
 }
 
 CPass* CMaterial::CreatePass()
@@ -280,6 +321,9 @@ CPass* CMaterial::CreatePass(const String &szName)
 
 bool CMaterial::Compile()
 {
+	if (IsCompiled())
+		return true;
+
 	for (auto &Pass : m_Passes)
 	{
 		if (Pass->Compile() == g_InvalidId)

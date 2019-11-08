@@ -3,26 +3,35 @@
 
 void CFirstPersonCameraController::OnMouseMove(dword x, dword y) 
 {
-    if (BIT_CHECK(m_State, EState_Rotating)) {
-        int nDeltaX = (int)(m_LastX - x);
-        int nDeltaY = (int)(m_LastY - y);
-        const Vec3 &eye = m_pCamera->GetEye();
-        const Vec3 &lookat = m_pCamera->GetLookat();
-        Vec3 dir = lookat - eye;
-        dir.Normalize();
-        Vec3 up(0.0f, 1.0f, 0.0f);
-        bool bHorizontal = abs(nDeltaX) >= abs(nDeltaY);
-        if (bHorizontal) {
-            Quat rot(up, nDeltaX * 0.005f);
-            dir = rot * dir;
+    static bool bFirstTime = true;
+    if (bFirstTime)
+    {
+        BIT_ADD(m_State, EState_Rotating);
+        bFirstTime = false;
+    }
+    else
+    {
+        if (BIT_CHECK(m_State, EState_Rotating)) {
+            int nDeltaX = (int)(m_LastX - x);
+            int nDeltaY = (int)(m_LastY - y);
+            const Vec3 &eye = m_pCamera->GetEye();
+            const Vec3 &lookat = m_pCamera->GetLookat();
+            Vec3 dir = lookat - eye;
+            dir.Normalize();
+            Vec3 up(0.0f, 1.0f, 0.0f);
+            bool bHorizontal = abs(nDeltaX) >= abs(nDeltaY);
+            if (bHorizontal) {
+                Quat rot(up, nDeltaX * 0.005f);
+                dir = rot * dir;
+            }
+            else {
+                Vec3 right = up.Cross(dir);
+                right.Normalize();
+                Quat rot(right, nDeltaY * 0.005f);
+                dir = rot * dir;
+            }
+            m_pCamera->SetLookat(lookat + dir * 1.0f);
         }
-        else {
-            Vec3 right = up.Cross(dir);
-            right.Normalize();
-            Quat rot(right, nDeltaY * 0.005f);
-            dir = rot * dir;
-        }
-        m_pCamera->SetLookat(eye + dir * 1.0f);
     }
 
     m_LastX = x; m_LastY = y;
@@ -85,7 +94,7 @@ void CFirstPersonCameraController::Update()
         Vec3 eye = m_pCamera->GetEye();
         Vec3 lookat = m_pCamera->GetLookat();
         Vec3 dir = lookat - eye;
-        dir.Normalize();
+        float length = dir.Normalize();
         Vec3 right = Vec3(0.0f, 1.0f, 0.0f).Cross(dir);
         right.Normalize();
         if (BIT_CHECK(m_MovingState, EMoving_Forward))
@@ -101,6 +110,6 @@ void CFirstPersonCameraController::Update()
         if (BIT_CHECK(m_MovingState, EMoving_Downward))
             eye.y -= 0.5f;
         m_pCamera->SetEye(eye);
-        m_pCamera->SetLookat(eye + dir * 1.0f);
+        m_pCamera->SetLookat(eye + dir * length);
     }
 }

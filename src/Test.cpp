@@ -14,6 +14,7 @@ void CTestScene::InitSample()
 	CMaterialManager * __restrict pMtlMgr = Global::m_pMaterialManager;
 
 	p3DEngine->SetSceneClipping(SCENE_CLIPPING_DEFAULT);
+	p3DEngine->SetCameraController(FIRST_PERSON_CAMERA_CONTROLLER);
 
 	CCamera *pMainCamera = p3DEngine->GetMainCamera();
     pMainCamera->SetEye(Vec3(0.0f, 0.0f, -100.0f));

@@ -1,22 +1,26 @@
 #pragma once
 #include "CameraController.h"
 
+#define FIRST_PERSON_CAMERA_CONTROLLER "FirstPerson"
+
 class CFirstPersonCameraController final : public ICameraController
 {
 public:
     CFirstPersonCameraController(CCamera *pCamera) 
     : ICameraController(pCamera) 
+    , m_State(0)
     , m_MovingState(0)
     , m_LastX(0)
     , m_LastY(0)
     {
-        BIT_ADD(m_State, EState_Rotating);
+        
     }
 
 	virtual void OnMouseMove(dword x, dword y) override;
 	virtual void OnKeyDown(EKeyCode KeyCode) override;
 	virtual void OnKeyUp(EKeyCode KeyCode) override;
 
+    virtual const char* Name() const override { return FIRST_PERSON_CAMERA_CONTROLLER; }
     virtual void Update() override;
 
 private:

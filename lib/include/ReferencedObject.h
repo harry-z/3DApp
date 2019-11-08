@@ -18,7 +18,7 @@ public:
 	// 	Return true indicates reference count is greater than 0, otherwise
 	//	equals to 0
 	inline bool CheckRefCount() {
-		return 0 == m_nRefCount;
+		return 0 != m_nRefCount;
 	}
 
 protected:

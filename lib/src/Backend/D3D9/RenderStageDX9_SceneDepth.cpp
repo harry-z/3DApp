@@ -25,7 +25,7 @@ void CRenderStageDX9_SceneDepth::Render(CCamera *pCamera)
         if (pVertexShader && pPixelShader)
         {
             pRenderBackend->RestoreTarget();
-            pRenderBackend->SetTarget(InternalTextures::s_pViewDepth, nullptr);
+            pRenderBackend->SetTarget(InternalTextures::s_pViewDepth.Get(), nullptr);
             pRenderBackend->ClearTarget(EClearFlag_Color | EClearFlag_Depth | EClearFlag_Stencil, D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0);
 
             const AutoUpdatedConstant &ViewProjConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_ViewProj);

@@ -70,7 +70,7 @@ void C3DEngine::DestroyRenderNodeInternal(IRenderNode *pNode)
     {
         case ERNType::ERNType_CustomGeometry:
         {
-            CCustomGeometryNode *pCustomGeoNode = static_cast<CCustomGeometryNode*>(pNode);
+            CCustomGeometryNode *pCustomGeoNode = static_cast<CCustomGeometryNode*>(pNode);      
             DELETE_TYPE(pCustomGeoNode, CCustomGeometryNode);
             break;
         }

@@ -230,6 +230,11 @@ public:
 		return m_pNil;
 	}
 
+	bool IsEmpty() const
+	{
+		return m_pRoot == m_pNil;
+	}
+
 	dword BackHeight() const
 	{
 		_MyNodeptr np = m_pRoot;
@@ -704,11 +709,11 @@ public:
 
 	_MyIterType CreateIterator()
 	{
-		return _MyIterType(this, CRBTree::Minimum(CRBTree::GetRoot()));
+		return CRBTree::IsEmpty() ? _MyIterType() : _MyIterType(this, CRBTree::Minimum(CRBTree::GetRoot()));
 	}
 
 	_MyConstIterType CreateConstIterator()
 	{
-		return _MyConstIterType(this, CRBTree::Minimum(CRBTree::GetRoot()));
+		return CRBTree::IsEmpty() ? _MyConstIterType() :_MyConstIterType(this, CRBTree::Minimum(CRBTree::GetRoot()));
 	}
 };

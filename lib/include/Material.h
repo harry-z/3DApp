@@ -2,6 +2,7 @@
 #include "Job.h"
 #include "Resource.h"
 #include "Shader.h"
+#include "Texture.h"
 #include "ScriptParser.h"
 
 struct ShaderConstantBuffer
@@ -30,15 +31,18 @@ public:
     inline const CArray<IdString>& GetAutoShaderConstantInfo() const { return m_arrAutoShaderConstInfo; }
 
     ldword Compile();
+    inline void Compiled() { m_Compiled = true; }
+    inline bool IsCompiled() const { return m_Compiled; }
 
     inline ShaderObject* GetShaderObject() { return m_pShaderObj; }
 
 private:
-    CShaderRef(EShaderType Type, word Id) : m_ShaderType(Type), m_RefId(Id) {}
+    CShaderRef(EShaderType Type, word Id);
     ~CShaderRef();
     bool CheckParamIsValid(const CArray<String> &arrParam, OUT EShaderConstantType &Type, OUT dword &nTotalElem, OUT dword &nElemCount) const;
     void GetShaderConstantTypeAndCount(const String &szTypeName, OUT EShaderConstantType &Type, OUT dword &nElemCount) const;
 
+    std::atomic_bool m_Compiled;
     word m_RefId = 0xFFFF;
     EShaderType m_ShaderType;
     ShaderObject *m_pShaderObj = nullptr;
@@ -46,13 +50,41 @@ private:
     CArray<IdString> m_arrAutoShaderConstInfo;
 };
 
+struct ShaderResources
+{
+	CArray< CReferencedPointer<CTexture> > m_arrTexture;
+
+	inline bool IsValid() const { return m_arrTexture.Num() > 0; }
+
+	static CPool m_ShaderResourcePool;
+	static void Initialize()
+	{
+		m_ShaderResourcePool.Initialize(sizeof(ShaderResources));
+	}
+	static void Uninitialize()
+	{
+		m_ShaderResourcePool.Uninitialize();
+	}
+	static ShaderResources* CreateShaderResource()
+	{
+		return new (m_ShaderResourcePool.Allocate()) ShaderResources;
+	}
+	static void DestroyShaderResource(ShaderResources *pShaderResources)
+	{
+		pShaderResources->~ShaderResources();
+		m_ShaderResourcePool.Free(pShaderResources);
+	}
+};
+
+struct ShaderResources;
 class DLL_EXPORT CPass
 {
 public:
     friend class CMaterial;
 
     CShaderRef* CreateShaderRef(EShaderType eShaderType, const String &szShaderName);
-    void AddTextureSlot(const String &szTextureName);
+
+    void LoadTextureSlot(const String &szTextureName, EAutoGenmip bAutoGenMipmap = EAutoGenmip::EAutoGenmip_AUTO, bool bGamma = false);
 
     inline ldword GetHashId() const { return m_nHashId; }
     inline CShaderRef* GetVertexShaderRef() { return m_pVertexShaderRef; }
@@ -71,7 +103,7 @@ private:
 private:
     CShaderRef *m_pVertexShaderRef = nullptr;
     CShaderRef *m_pPixelShaderRef = nullptr;
-    CArray<IdString> m_arrTexture;
+    ShaderResources *m_pShaderResources = nullptr;
     IdString m_IdStr;
     std::atomic_bool m_Compiled;
     ldword m_nHashId;

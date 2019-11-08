@@ -363,7 +363,7 @@ CTextureManagerDX9::CTextureManagerDX9() {
 }
 
 CTextureManagerDX9::~CTextureManagerDX9() {
-	DestroyTexture(InternalTextures::s_pViewDepth);
+	InternalTextures::s_pViewDepth.Detach();
 }
 
 bool CTextureManagerDX9::Initialize() {

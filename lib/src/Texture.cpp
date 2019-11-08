@@ -146,4 +146,4 @@ CTexture* CTextureManager::FindTexture(const IdString &idStr) {
 	return iter ? iter.Value() : nullptr;
 }
 
-CTexture* InternalTextures::s_pViewDepth = nullptr;
+CReferencedPointer<CTexture> InternalTextures::s_pViewDepth;

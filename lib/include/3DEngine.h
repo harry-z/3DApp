@@ -25,9 +25,13 @@ public:
 	~C3DEngine();
 
 	bool Initialize();
+	void ClearScene();
 
 	void SetSceneClipping(const char *pszName);
 	void SetExternalSceneClipping(ISceneClippingStrategy *pSceneClipping);
+
+	void SetCameraController(const char *pszName);
+	void SetExternalCameraController(ICameraController *pCameraController);
 
 	template <class NodeType>
 	NodeType* CreateRenderNode()
@@ -74,6 +78,9 @@ private:
 
 	ISceneClippingStrategy* CreateSceneClippingStrategy(const char *pszName);
 	void DestroySceneClippingStrategy(ISceneClippingStrategy *pClippingStrategy);
+
+	ICameraController* CreateCameraController(const char *pszName);
+	void DestroyCameraController(ICameraController *pCameraController);
 
 	IRenderNode* CreateRenderNodeInternal(ERNType NodeType);
 	void DestroyRenderNodeInternal(IRenderNode *pNode);

@@ -125,7 +125,7 @@ private:
 struct InternalTextures
 {
 #if CURRENT_RENDER_PATH == RENDER_PATH_FORWARD_SHADING
-	static CTexture *s_pViewDepth;
+	static CReferencedPointer<CTexture> s_pViewDepth;
 #endif
 };
 

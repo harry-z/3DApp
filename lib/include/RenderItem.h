@@ -1,9 +1,11 @@
 #pragma once
 #include "Prereq.h"
 #include "RendererTypes.h"
+#include "ReferencedObject.h"
 
 class IHardwareBuffer;
 class IVertexLayout;
+class CTexture;
 
 #if CURRENT_RENDER_PATH == RENDER_PATH_FORWARD_SHADING
 
@@ -91,6 +93,7 @@ struct ShaderObject
 	}
 };
 
+struct ShaderResources;
 struct RenderItem
 {
 	union {
@@ -101,6 +104,7 @@ struct RenderItem
 	RenderObject *m_pRenderObj = nullptr;
 	ShaderObject *m_pVSShaderObj = nullptr;
 	ShaderObject *m_pPSShaderObj = nullptr;
+	ShaderResources *m_pShaderResources = nullptr;
 
 	using RenderItems = CArray<RenderItem>;
 #if CURRENT_RENDER_PATH == RENDER_PATH_FORWARD_SHADING
@@ -151,4 +155,7 @@ inline ldword GetVertexShaderId(ldword nId) { return (nId >> 52) & 0x00000000000
 inline ldword PixelShaderId(ldword nId) { return nId << 40; }
 inline ldword GetPixelShaderId(ldword nId) { return (nId >> 40) & 0x0000000000000FFF; }
 
-inline ldword SortVal(ldword nVSId, ldword nPSId) { return VertexShaderId(nVSId) | PixelShaderId(nPSId); }
+inline ldword ShaderResourceId(ldword nId) { return nId << 24; }
+inline ldword GetShaderResourceId(ldword nId) { return (nId >> 24) & 0x000000000000FFFF; }
+
+inline ldword SortVal(ldword nVSId, ldword nPSId, ldword nSRId) { return VertexShaderId(nVSId) | PixelShaderId(nPSId) | ShaderResourceId(nSRId); }

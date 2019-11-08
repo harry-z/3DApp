@@ -2,6 +2,8 @@
 #include "JobSystem.h"
 #include "RenderItem.h"
 #include "RenderStage.h"
+#include "FirstPersonCameraController.h"
+#include "OrbitCameraController.h"
 
 #ifdef RENDERAPI_DX9
 #include "Backend/D3D9/RenderBackendDX9.h"
@@ -35,9 +37,13 @@ C3DEngine::C3DEngine()
 
 C3DEngine::~C3DEngine()
 {
+    ClearScene();
+
     DestroySceneClippingStrategy(m_pSceneClipping);
+    DestroyCameraController(m_pCameraController);
 
     RenderObject::Uninitialize();
+    ShaderResources::Uninitialize();
     ShaderObject::Uninitialize();
     RenderItem::Uninitialize();
 
@@ -179,11 +185,25 @@ bool C3DEngine::Initialize()
     Global::m_pJobSystem = pJobSystem;
 
     RenderObject::Initialize();
+    ShaderResources::Initialize();
     ShaderObject::Initialize();
     RenderItem::Initialize();
 
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize 3DEngine");
     return true;
+}
+
+void C3DEngine::ClearScene()
+{
+    for (dword i = 0; i < C3DEngine::ENodeListType_Count; ++i)
+    {
+        Linklist<IRenderNode>::_NodeType *pNode = m_SceneNodelist[i].m_pRoot;
+        while (pNode != nullptr)
+        {
+            DestroyRenderNode(pNode->m_pOwner);
+            pNode = pNode->m_pNext;
+        }
+    }
 }
 
 void C3DEngine::SetSceneClipping(const char *pszName)
@@ -194,8 +214,38 @@ void C3DEngine::SetSceneClipping(const char *pszName)
 
 void C3DEngine::SetExternalSceneClipping(ISceneClippingStrategy *pSceneClipping)
 {
+    if (strcmp(pSceneClipping->Name(), SCENE_CLIPPING_DEFAULT) == 0 || 
+        strcmp(pSceneClipping->Name(), SCENE_CLIPPING_OCTREE) == 0)
+    {
+        assert(0 && "Scene Clipping Name Conflict");
+        return;
+    }
+
     DestroySceneClippingStrategy(m_pSceneClipping);
     m_pSceneClipping = pSceneClipping;
+}
+
+void C3DEngine::SetCameraController(const char *pszName)
+{
+    DestroyCameraController(m_pCameraController);
+    m_pCameraController = CreateCameraController(pszName);
+    if (m_pCameraController != nullptr)
+        Global::m_pInputListener->AddInputHandler(m_pCameraController);
+}
+
+void C3DEngine::SetExternalCameraController(ICameraController *pCameraController)
+{
+    if (strcmp(pCameraController->Name(), FIRST_PERSON_CAMERA_CONTROLLER) == 0 || 
+        strcmp(pCameraController->Name(), ORBIT_CAMERA_CONTROLLER) == 0)
+    {
+        assert(0 && "Camera Controller Name Conflict");
+        return;
+    }
+
+    DestroyCameraController(m_pCameraController);
+    m_pCameraController = pCameraController;
+    if (m_pCameraController != nullptr)
+        Global::m_pInputListener->AddInputHandler(m_pCameraController);
 }
 
 void C3DEngine::Run()
@@ -295,10 +345,38 @@ void C3DEngine::DestroySceneClippingStrategy(ISceneClippingStrategy *pClippingSt
 {
     if (pClippingStrategy != nullptr)
     {
-        if (strcmp(pClippingStrategy->Name(), SCENE_CLIPPING_DEFAULT))
+        if (strcmp(pClippingStrategy->Name(), SCENE_CLIPPING_DEFAULT) == 0)
         {
             CDefaultSceneClippingStrategy *pDefaultClippingStrategy = (CDefaultSceneClippingStrategy *)pClippingStrategy;
             DELETE_TYPE(pDefaultClippingStrategy, CDefaultSceneClippingStrategy);
+        }
+    }
+}
+
+ICameraController* C3DEngine::CreateCameraController(const char *pszName)
+{
+    if (strcmp(pszName, FIRST_PERSON_CAMERA_CONTROLLER) == 0)
+        return NEW_TYPE(CFirstPersonCameraController)(m_pMainCamera);
+    else if (strcmp(pszName, ORBIT_CAMERA_CONTROLLER) == 0)
+        return NEW_TYPE(COrbitCameraController)(m_pMainCamera);
+    else
+        return nullptr;
+}
+
+void C3DEngine::DestroyCameraController(ICameraController *pCameraController)
+{
+    if (pCameraController != nullptr)
+    {
+        Global::m_pInputListener->RemoveInputHandler(pCameraController);
+        if (strcmp(pCameraController->Name(), FIRST_PERSON_CAMERA_CONTROLLER) == 0)
+        {
+            CFirstPersonCameraController *pFPSController = (CFirstPersonCameraController *)pCameraController;
+            DELETE_TYPE(pFPSController, CFirstPersonCameraController);
+        }
+        else if (strcmp(pCameraController->Name(), ORBIT_CAMERA_CONTROLLER) == 0)
+        {
+            COrbitCameraController *pOrbitController = (COrbitCameraController *)pOrbitController;
+            DELETE_TYPE(pOrbitController, COrbitCameraController);
         }
     }
 }

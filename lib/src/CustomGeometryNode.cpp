@@ -53,16 +53,18 @@ void CCustomGeometryNode::PreRender(CCamera *pCamera, EPreRenderMode mode)
 			RemoveInternalFlag(RN_FLAG_INTERNAL_GEOMETRY_DIRTY);
 		}
 
-		CMaterial *pUsedMtl = nullptr;
 		if (m_MtlPtr.IsValid() && m_MtlPtr->IsCreatedOrLoaded())
-			pUsedMtl = m_MtlPtr.Get();
-		else
-			pUsedMtl = Global::m_pMaterialManager->GetDefaultMaterial().Get();
+		{
+			if (m_MtlPtr->Compile())
+			{
+				PreRenderInternal(pCamera, mode, m_pRenderObj, m_MtlPtr.Get());
+				return;
+			}
+		}
 
-		if (!pUsedMtl->IsCompiled())
-			pUsedMtl->Compile();
-
-		PreRenderInternal(pCamera, mode, m_pRenderObj, pUsedMtl);
+		CMaterial *pDefaultMtl = Global::m_pMaterialManager->GetDefaultMaterial().Get();
+		pDefaultMtl->Compile();
+		PreRenderInternal(pCamera, mode, m_pRenderObj, pDefaultMtl);
 	}
 }
 

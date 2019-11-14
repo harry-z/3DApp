@@ -1,0 +1,14 @@
+Material NoIllumColor
+{
+    Pass
+    {
+        VertexShader VS_NoIllumColor
+        {
+            AutoShaderParam WorldViewProjectionMatrix
+        }
+        PixelShader PS_NoIllumColor
+        {
+            ShaderParam Albedo Float3 1.0 0.5 0.0
+        }
+    }
+}

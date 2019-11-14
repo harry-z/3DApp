@@ -1,0 +1,48 @@
+Shader VS_SceneDepth
+{
+    Type Vertex
+    EntryPoint VS_SceneDepth
+    File SceneDepth.hlsl
+}
+
+Shader PS_SceneDepth
+{
+    Type Pixel
+    EntryPoint PS_SceneDepth
+    File SceneDepth.hlsl
+}
+
+Shader VS_NoIllumColor
+{
+    Type Vertex
+    EntryPoint VS_NoIllumColor
+    File NoIllum.hlsl
+}
+
+Shader PS_NoIllumColor
+{
+    Type Pixel
+    EntryPoint PS_NoIllumColor
+    File NoIllum.hlsl
+}
+
+Shader VS_NoIllum
+{
+    Type Vertex
+    EntryPoint VS_NoIllum
+    File NoIllum.hlsl
+}
+
+Shader PS_NoIllum
+{
+    Type Pixel
+    EntryPoint PS_NoIllum
+    File NoIllum.hlsl
+}
+
+Shader PS_NoIllumBlended
+{
+    Type Pixel
+    EntryPoint PS_NoIllumBlended
+    File NoIllum.hlsl
+}

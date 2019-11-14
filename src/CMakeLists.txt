@@ -13,4 +13,6 @@ add_custom_command(TARGET ${PROJECT_NAME}
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/lib/dependencies/png/debug/libpng16.dll ${PROJECT_BINARY_DIR}/src/Debug
     COMMENT "Copy libpng"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/rc ${PROJECT_BINARY_DIR}/src/Debug
+    COMMENT "Copy rc"
 )

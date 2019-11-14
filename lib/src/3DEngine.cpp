@@ -42,11 +42,6 @@ C3DEngine::~C3DEngine()
     DestroySceneClippingStrategy(m_pSceneClipping);
     DestroyCameraController(m_pCameraController);
 
-    RenderObject::Uninitialize();
-    ShaderResources::Uninitialize();
-    ShaderObject::Uninitialize();
-    RenderItem::Uninitialize();
-
     CJobSystem *pJobSystem = Global::m_pJobSystem;
     if (pJobSystem)
     {
@@ -120,10 +115,20 @@ C3DEngine::~C3DEngine()
     Global::m_pLog = nullptr;
 
     Global::m_p3DEngine = nullptr;
+
+    RenderObject::Uninitialize();
+    ShaderResources::Uninitialize();
+    ShaderObject::Uninitialize();
+    RenderItem::Uninitialize();
 }
 
 bool C3DEngine::Initialize() 
 {
+    RenderObject::Initialize();
+    ShaderResources::Initialize();
+    ShaderObject::Initialize();
+    RenderItem::Initialize();
+
     CLog *pLog = NEW_TYPE(CLog);
     pLog->SetLogToDebugger(true);
     pLog->SetLogToFile(true, "3DApp.log");
@@ -184,10 +189,7 @@ bool C3DEngine::Initialize()
     pJobSystem->Initialize();
     Global::m_pJobSystem = pJobSystem;
 
-    RenderObject::Initialize();
-    ShaderResources::Initialize();
-    ShaderObject::Initialize();
-    RenderItem::Initialize();
+    
 
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize 3DEngine");
     return true;
@@ -323,6 +325,8 @@ void C3DEngine::Frame(dword nFrameId)
 		IRenderStage::m_ppRenderStage[i]->Prepare(m_pMainCamera);
     
     IRenderBackend * __restrict pRenderBackend = Global::m_pRenderBackend;
+    pRenderBackend->m_Cache.Reset();
+    
     pRenderBackend->BeginRendering();
 
     for (dword i = 0; i < nCount; ++i)

@@ -1,5 +1,6 @@
 #include "RenderStageDX9.h"
 #include "Shader.h"
+#include "Material.h"
 #include "RenderBackend.h"
 #include "../../RendererStableHeader.h"
 
@@ -116,7 +117,12 @@ void RenderStageDX9_SetShaderAutoConstants(ShaderObject *pShaderObject, Matrix4 
 
 void RenderStageDX9_SetVertexShaderAndConstants(RenderItem *pRI, IRenderBackend *pRenderBackend, CShader *pVertexShader)
 {
-    pRenderBackend->SetShader(pVertexShader);
+    if (pRenderBackend->m_Cache.NeedUpdateVS(pVertexShader->GetId()))
+    {
+        pRenderBackend->SetShader(pVertexShader);
+        pRenderBackend->m_Cache.m_nCurrentVS = pVertexShader->GetId();
+    }
+
     RenderStageDX9_SetShaderConstants(pRI->m_pVSShaderObj, 
         SetVertexShaderConstantF,
         SetVertexShaderConstantI);
@@ -130,7 +136,12 @@ void RenderStageDX9_SetVertexShaderAndConstants(RenderItem *pRI, IRenderBackend 
 
 void RenderStageDX9_SetPixelShaderAndConstants(RenderItem *pRI, IRenderBackend *pRenderBackend, CShader *pPixelShader)
 {
-    pRenderBackend->SetShader(pPixelShader);
+    if (pRenderBackend->m_Cache.NeedUpdatePS(pPixelShader->GetId()))
+    {
+        pRenderBackend->SetShader(pPixelShader);
+        pRenderBackend->m_Cache.m_nCurrentPS = pPixelShader->GetId();
+    }
+
     RenderStageDX9_SetShaderConstants(pRI->m_pPSShaderObj, 
         SetPixelShaderConstantF,
         SetPixelShaderConstantI);
@@ -140,6 +151,17 @@ void RenderStageDX9_SetPixelShaderAndConstants(RenderItem *pRI, IRenderBackend *
         pPixelShader,
         SetPixelShaderConstantF,
         SetPixelShaderConstantI);
+}
+
+void RenderStageDX9_SetShaderResources(ShaderResources *pSR, IRenderBackend *pRenderBackend)
+{
+    if (pRenderBackend->m_Cache.NeedUpdateShaderResource(pSR->m_arrTexture[0]->GetID()))
+    {
+        for (dword nSlot = 0; nSlot < pSR->m_arrTexture.Num(); ++nSlot)
+        {
+            pRenderBackend->SetTexture(nSlot, pSR->m_arrTexture[nSlot].Get());
+        }
+    }
 }
 
 void RenderStageDX9_SetGeometryData(RenderItem *pRI, IRenderBackend *pRenderBackend)

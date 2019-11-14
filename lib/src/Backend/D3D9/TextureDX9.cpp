@@ -407,3 +407,31 @@ void CRenderBackendDX9::SetTarget(CTexture *pColorBuffer, CTexture *pDepthStenci
 	viewport.MaxZ = 1.0f;
 	m_pD3DDevice9->SetViewport(&viewport);
 }
+
+void CRenderBackendDX9::SetTexture(dword nSlot, CTexture *pTexture)
+{
+	m_pD3DDevice9->SetSamplerState(nSlot, D3DSAMP_SRGBTEXTURE, pTexture->NeedGammaCorrection() ? 1 : 0);
+
+	switch (pTexture->GetTextureType())
+	{
+		case ETextureType_1D:
+		case ETextureType_2D:
+		{
+			CTextureDX9 *pTextureDX9 = static_cast<CTextureDX9*>(pTexture);
+			m_pD3DDevice9->SetTexture(nSlot, pTextureDX9->m_Texture.m_pTexture);
+			break;
+		}
+		case ETextureType_3D:
+		{
+			CTextureDX9 *pTextureDX9 = static_cast<CTextureDX9*>(pTexture);
+			m_pD3DDevice9->SetTexture(nSlot, pTextureDX9->m_Texture.m_pVolumeTexture);
+			break;
+		}
+		case ETextureType_Cube:
+		{
+			CTextureDX9 *pTextureDX9 = static_cast<CTextureDX9*>(pTexture);
+			m_pD3DDevice9->SetTexture(nSlot, pTextureDX9->m_Texture.m_pCubeTexture);
+			break;
+		}
+	}
+}

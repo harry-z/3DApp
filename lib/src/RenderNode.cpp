@@ -31,6 +31,7 @@ void IRenderNode::PreRenderInternal(CCamera *pCamera, EPreRenderMode mode, struc
 				pRenderItem->m_pRenderObj = pRenderObj;
 				pRenderItem->m_pVSShaderObj = Pass->GetVertexShaderRef()->GetShaderObject();
 				pRenderItem->m_pPSShaderObj = Pass->GetPixelShaderRef()->GetShaderObject();
+				pRenderItem->m_pShaderResources = Pass->GetShaderResources();
 				pRenderItem->m_nSortVal = Pass->GetHashId();
 			}
 			break;

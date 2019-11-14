@@ -326,7 +326,7 @@ bool ReadDDSStream(const byte *pStreamData, dword nLen, EAutoGenmip bAutoGenMipm
 
 
 
-void SwizzleDataPNG(EPixelFormat eFormat, INOUT byte *pData, png_infop info_ptr)
+void SwizzleDataPNG(EPixelFormat eFormat, INOUT byte *pData, png_infop info_ptr, png_bytep *row_pointers)
 {
 #if defined(RENDERAPI_DX11)
 
@@ -336,7 +336,7 @@ void SwizzleDataPNG(EPixelFormat eFormat, INOUT byte *pData, png_infop info_ptr)
 		{
 			for (png_uint_32 i = 0; i < info_ptr->height; ++i)
 			{
-				byte *temp = info_ptr->row_pointers[i];
+				byte *temp = row_pointers[i];
 				for (png_uint_32 j = 0; j < info_ptr->width; ++j)
 				{
 					*pData++ = *(temp + 2);
@@ -352,7 +352,7 @@ void SwizzleDataPNG(EPixelFormat eFormat, INOUT byte *pData, png_infop info_ptr)
 		{
 			for (png_uint_32 i = 0; i < info_ptr->height; ++i)
 			{
-				byte *temp = info_ptr->row_pointers[i];
+				byte *temp = row_pointers[i];
 				for (png_uint_32 j = 0; j < info_ptr->width; ++j)
 				{
 					*pData++ = *(temp + 2);
@@ -374,7 +374,7 @@ void SwizzleDataPNG(EPixelFormat eFormat, INOUT byte *pData, png_infop info_ptr)
 		{
 			for (png_uint_32 i = 0; i < info_ptr->height; ++i)
 			{
-				byte *temp = info_ptr->row_pointers[i];
+				byte *temp = row_pointers[i];
 				for (png_uint_32 j = 0; j < info_ptr->width; ++j)
 				{
 					*pData++ = *temp++;
@@ -389,7 +389,7 @@ void SwizzleDataPNG(EPixelFormat eFormat, INOUT byte *pData, png_infop info_ptr)
 		{
 			for (png_uint_32 i = 0; i < info_ptr->height; ++i)
 			{
-				memcpy(pData, info_ptr->row_pointers[i], info_ptr->rowbytes);
+				memcpy(pData, row_pointers[i], info_ptr->rowbytes);
 				pData += info_ptr->rowbytes;
 			}
 		}
@@ -469,6 +469,7 @@ bool Fill_PNG_FILE_DESC(byte *pData, dword nLen, EAutoGenmip bAutoGenMipmap,
 	png_set_read_fn(png_ptr, (png_voidp)pBufPtr, LibPNG_IOFunc);
 
 	png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_PACKSWAP | PNG_TRANSFORM_EXPAND | PNG_TRANSFORM_BGR | PNG_TRANSFORM_SWAP_ENDIAN, 0);
+	png_bytep *row_pointers = png_get_rows(png_ptr, info_ptr);
 
 	dword nNumBytes = 0;
 	switch (png_ptr->channels)
@@ -510,7 +511,7 @@ bool Fill_PNG_FILE_DESC(byte *pData, dword nLen, EAutoGenmip bAutoGenMipmap,
 		}
 		case EPixelFormat::EPixelFormat_X8R8G8B8:
 		case EPixelFormat::EPixelFormat_A8R8G8B8:
-			SwizzleDataPNG(pDesc->eFormat, pRow, info_ptr);
+			SwizzleDataPNG(pDesc->eFormat, pRow, info_ptr, row_pointers);
 			break;
 	}
 	pDesc->pData = pImageData;

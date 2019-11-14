@@ -89,6 +89,7 @@ public:
     inline ldword GetHashId() const { return m_nHashId; }
     inline CShaderRef* GetVertexShaderRef() { return m_pVertexShaderRef; }
     inline CShaderRef* GetPixelShaderRef() { return m_pPixelShaderRef; }
+    inline ShaderResources* GetShaderResources() { return m_pShaderResources; }
 
 private:
     CPass();

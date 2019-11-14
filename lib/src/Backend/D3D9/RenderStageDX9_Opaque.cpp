@@ -30,6 +30,7 @@ void CRenderStageDX9_Opaque::Render(CCamera *pCamera)
 
         pRenderBackend->RestoreTarget();
         pRenderBackend->ClearTarget(EClearFlag_Color, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+        pRenderBackend->m_Cache.m_nCurrentRenderTarget = 0;
 
         // Enable Early-Z
         g_pDevice9->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
@@ -44,6 +45,7 @@ void CRenderStageDX9_Opaque::Render(CCamera *pCamera)
             {
                 RenderStageDX9_SetVertexShaderAndConstants(&item, pRenderBackend, pVertexShader);
                 RenderStageDX9_SetPixelShaderAndConstants(&item, pRenderBackend, pPixelShader);
+                RenderStageDX9_SetShaderResources(item.m_pShaderResources, pRenderBackend);
                 RenderStageDX9_SetGeometryData(&item, pRenderBackend);
             }
         }

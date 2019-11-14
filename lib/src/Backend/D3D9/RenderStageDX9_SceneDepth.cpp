@@ -25,8 +25,11 @@ void CRenderStageDX9_SceneDepth::Render(CCamera *pCamera)
         if (pVertexShader && pPixelShader)
         {
             pRenderBackend->RestoreTarget();
+            pRenderBackend->m_Cache.m_nCurrentRenderTarget = 0;
+
             pRenderBackend->SetTarget(InternalTextures::s_pViewDepth.Get(), nullptr);
             pRenderBackend->ClearTarget(EClearFlag_Color | EClearFlag_Depth | EClearFlag_Stencil, D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0);
+            pRenderBackend->m_Cache.m_nCurrentRenderTarget = InternalTextures::s_pViewDepth->GetID();
 
             const AutoUpdatedConstant &ViewProjConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_ViewProj);
             Matrix4 VP((float *)ViewProjConstant.m_pData);
@@ -34,10 +37,12 @@ void CRenderStageDX9_SceneDepth::Render(CCamera *pCamera)
             Matrix4 V((float *)ViewConstant.m_pData);
 
             pRenderBackend->SetShader(pVertexShader);
+            pRenderBackend->m_Cache.m_nCurrentVS = pVertexShader->GetId();
             dword nWVPIndex = pVertexShader->GetConstantIndexByName(AutoUpdatedShaderConstantIdStr::s_WorldViewProjMatrix);
             dword nWVIndex = pVertexShader->GetConstantIndexByName(AutoUpdatedShaderConstantIdStr::s_WorldViewMatrix);
 
             pRenderBackend->SetShader(pPixelShader);
+            pRenderBackend->m_Cache.m_nCurrentPS = pPixelShader->GetId();
             dword nNearFarIndex = pPixelShader->GetConstantIndexByName(AutoUpdatedShaderConstantIdStr::s_NearFarClip);
             const AutoUpdatedConstant &NearFarConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_NearFar);
             g_pDevice9->SetPixelShaderConstantF(nNearFarIndex, (float*)NearFarConstant.m_pData, 1);

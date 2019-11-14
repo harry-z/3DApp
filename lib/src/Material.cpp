@@ -197,6 +197,7 @@ CPass::CPass()
 {
 	m_Compiled = false;
 	m_nHashId = g_InvalidId;
+	m_pShaderResources = ShaderResources::CreateShaderResource();
 }
 
 CPass::CPass(const String &szName)
@@ -219,10 +220,8 @@ CPass::~CPass()
 		DELETE_TYPE(m_pPixelShaderRef, CShaderRef);
 		m_pPixelShaderRef = nullptr;
 	}
-	if (m_pShaderResources != nullptr)
-	{
-		ShaderResources::DestroyShaderResource(m_pShaderResources);
-	}
+
+	ShaderResources::DestroyShaderResource(m_pShaderResources);
 }
 
 ldword CPass::Compile()

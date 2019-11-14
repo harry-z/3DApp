@@ -58,6 +58,8 @@ public:
 
 	virtual void SetShader(CShader *pShader) override;
 
+	virtual void SetTexture(dword nSlot, CTexture *pTexture) override;
+
 	virtual void SetVertexLayout(IVertexLayout *pLayout) override;
 	virtual void SetVertexBuffers(const CArray<IHardwareBuffer*> &arrVertexBuffer) override;
 	virtual void SetIndexBuffer(IHardwareBuffer *pIndexBuffer) override;
@@ -116,7 +118,7 @@ public:
 public:
 	D3DPRESENT_PARAMETERS m_dpparams;
 	//RendererDX9CVars m_cvars;
-	// CRendererStateCache m_Cache;
+	
 
 	IDirect3D9 *m_pD3D9;
 	IDirect3DDevice9 *m_pD3DDevice9;

@@ -19,6 +19,7 @@ class CTimeOfDay;
 class CTimerManager;
 class IDisplay;
 class IRenderBackend;
+class IPlatform;
 struct ShaderResourcesManager;
 
 struct Global {
@@ -39,6 +40,7 @@ struct Global {
 				static CTimerManager *m_pTimerManager;
 	DLL_EXPORT	static IDisplay *m_pDisplay;
 				static IRenderBackend *m_pRenderBackend;
+	DLL_EXPORT	static IPlatform *m_pPlatform;
 				static ShaderResourcesManager *m_pShaderResourceManager;
 
     DLL_EXPORT static bool IsMainThread();

@@ -136,37 +136,49 @@ bool CDisplayWindows::Initialize() {
 	if (!RegisterClass(&WndClass))
 		return false;
 
-	m_nWidth = nWidth; m_nHeight = nHeight;
+	m_nClientLeft = nLeft; m_nClientTop = nTop;
+	m_nClientWidth = nWidth; m_nClientHeight = nHeight;
 
 	// RECT rect;
 	SetRect(&rect, 0, 0, nWidth, nHeight);
 	AdjustWindowRect(&rect, dwStyle, FALSE);
-	nWidth = rect.right - rect.left;
-	nHeight = rect.bottom - rect.top;
+	m_nLeft = m_nClientLeft + rect.left;
+	m_nTop = m_nClientTop + rect.top;
+	m_nWidth = rect.right - rect.left;
+	m_nHeight = rect.bottom - rect.top;
 	HWND hWnd = CreateWindowEx(dwStyleEx, WndClass.lpszClassName, WndClass.lpszClassName,
-		dwStyle, nLeft, nTop, nWidth, nHeight, nullptr, nullptr, hInst, nullptr);
+		dwStyle, m_nLeft, m_nTop, m_nWidth, m_nHeight, nullptr, nullptr, hInst, nullptr);
 	if (hWnd == INVALID_HANDLE_VALUE)
 		return false;
 	ShowWindow(hWnd, SW_SHOWNORMAL);
 	UpdateWindow(hWnd);
 
-	m_nLeft = nLeft; m_nTop = nTop;
+	// m_nLeft = nLeft; m_nTop = nTop;
 	m_dwStyle = dwStyle;
 	m_hWnd = hWnd;
 	m_bFullScreen = bFullScreen;
 	return true;
 }
 void CDisplayWindows::Move(int x, int y) {
-	SetWindowPos(m_hWnd, nullptr, x, y, 0, 0, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+	SetWindowPos(m_hWnd, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 	__super::Move(x, y);
+
+	RECT rect;
+	SetRect(&rect, 0, 0, m_nClientWidth, m_nClientHeight);
+	AdjustWindowRect(&rect, m_dwStyle, FALSE);
+	m_nLeft = m_nClientLeft + rect.left;
+	m_nTop = m_nClientTop + rect.top;
 }
 void CDisplayWindows::Resize(dword w, dword h) {
+	SetWindowPos(m_hWnd, nullptr, 0, 0, 
+		w, h, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+	__super::Resize(w, h);
+
 	RECT rect;
 	SetRect(&rect, 0, 0, w, h);
 	AdjustWindowRect(&rect, m_dwStyle, FALSE);
-	SetWindowPos(m_hWnd, nullptr, 0, 0, 
-		rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
-	__super::Resize(w, h);
+	m_nWidth = rect.right - rect.left;
+	m_nHeight = rect.bottom - rect.top;
 }
 bool CDisplayWindows::MessagePump() {
 	MSG msg;

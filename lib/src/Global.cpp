@@ -12,6 +12,7 @@
 // //#include "Terrain.h"
 #include "Texture.h"
 #include "RenderBackend.h"
+#include "Platform.h"
 #include "RenderItem.h"
 #include "RenderStage.h"
 // #include "TimeOfDay.h"
@@ -45,6 +46,7 @@ CTextureManager* Global::m_pTextureManager = nullptr;
 // CTimerManager* Global::m_pTimerManager = nullptr;
 IDisplay* Global::m_pDisplay = nullptr;
 IRenderBackend* Global::m_pRenderBackend = nullptr;
+IPlatform* Global::m_pPlatform = nullptr;
 // //ShaderGlobalParams* Global::m_pShaderGlobalParams = nullptr;
 // ShaderResourcesManager* Global::m_pShaderResourceManager = nullptr;
 

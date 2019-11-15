@@ -1,9 +1,16 @@
 #include "FirstPersonCameraController.h"
 #include "Camera.h"
+#include "Platform.h"
+#include "Display.h"
 
 void CFirstPersonCameraController::OnMouseMove(dword x, dword y) 
 {
     static bool bFirstTime = true;
+
+    dword w, h;
+    Global::m_pDisplay->GetClientDimension(w, h);
+    w /= 2; h /= 2;
+
     if (bFirstTime)
     {
         BIT_ADD(m_State, EState_Rotating);
@@ -12,8 +19,8 @@ void CFirstPersonCameraController::OnMouseMove(dword x, dword y)
     else
     {
         if (BIT_CHECK(m_State, EState_Rotating)) {
-            int nDeltaX = (int)(m_LastX - x);
-            int nDeltaY = (int)(m_LastY - y);
+            int nDeltaX = (int)(w - x);
+            int nDeltaY = (int)(h - y);
             const Vec3 &eye = m_pCamera->GetEye();
             const Vec3 &lookat = m_pCamera->GetLookat();
             Vec3 dir = lookat - eye;
@@ -21,19 +28,22 @@ void CFirstPersonCameraController::OnMouseMove(dword x, dword y)
             Vec3 up(0.0f, 1.0f, 0.0f);
             bool bHorizontal = abs(nDeltaX) >= abs(nDeltaY);
             if (bHorizontal) {
-                Quat rot(up, nDeltaX * 0.005f);
+                Quat rot(up, nDeltaX * 0.05f);
                 dir = rot * dir;
             }
             else {
                 Vec3 right = up.Cross(dir);
                 right.Normalize();
-                Quat rot(right, nDeltaY * 0.005f);
+                Quat rot(right, nDeltaY * 0.05f);
                 dir = rot * dir;
             }
             m_pCamera->SetLookat(lookat + dir * 1.0f);
         }
     }
 
+    int dx, dy;
+    Global::m_pDisplay->GetClientPosition(dx, dy);
+    Global::m_pPlatform->SetCursorPos(dx + (int)w, dy + (int)h);
     m_LastX = x; m_LastY = y;
 }
 

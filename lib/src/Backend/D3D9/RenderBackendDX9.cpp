@@ -59,7 +59,7 @@ bool CRenderBackendDX9::Initialize(IDisplay *pDisplay) {
 	}*/
 
 	dword nBackBufferWidth, nBackBufferHeight;
-	pDisplayWindows->GetDimension(nBackBufferWidth, nBackBufferHeight);
+	pDisplayWindows->GetClientDimension(nBackBufferWidth, nBackBufferHeight);
 	m_dpparams.AutoDepthStencilFormat = D3DFMT_D24S8;
 	m_dpparams.BackBufferCount = 1;
 	m_dpparams.BackBufferFormat = D3DFMT_X8R8G8B8;

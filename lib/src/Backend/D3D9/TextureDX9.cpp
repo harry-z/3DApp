@@ -370,7 +370,7 @@ bool CTextureManagerDX9::Initialize() {
 	bool bRet = true;
 
 	dword w, h;
-	Global::m_pDisplay->GetDimension(w, h);
+	Global::m_pDisplay->GetClientDimension(w, h);
 	InternalTextures::s_pViewDepth = CreateTexture("SceneDepth", w, h, ETextureType_2D, EPixelFormat::EPixelFormat_F16_R, ETextureUsage::ETextureUsage_RenderTarget);
 	bRet |= InternalTextures::s_pViewDepth->IsCreatedOrLoaded();
 

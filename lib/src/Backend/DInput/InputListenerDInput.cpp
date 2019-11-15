@@ -153,7 +153,7 @@ void CInputListenerDInput::Mouse::Initialize(IDirectInput8 *pDInput8, IDisplay *
 		return;
 	}
 
-	pDisplay->GetDimension(m_ClientWidth, m_ClientHeight);
+	pDisplay->GetClientDimension(m_ClientWidth, m_ClientHeight);
 	pDisplay->AddDisplayObserver(this);
 	m_bOk = true;
 }

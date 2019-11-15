@@ -18,6 +18,7 @@
 
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
 #include "Windows/Display_Windows.h"
+#include "Windows/Platform_Windows.h"
 #endif
 
 extern std::thread::id g_MainThreadId;
@@ -99,6 +100,9 @@ C3DEngine::~C3DEngine()
     Global::m_pRenderBackend = nullptr;
 
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
+    CPlatformWindows *pPlatformWindows = static_cast<CPlatformWindows*>(Global::m_pPlatform);
+    DELETE_TYPE(pPlatformWindows, CPlatformWindows);
+    
     if (Global::m_pDisplay)
     {
         CDisplayWindows *pDisplayWindows = static_cast<CDisplayWindows*>(Global::m_pDisplay);
@@ -135,6 +139,7 @@ bool C3DEngine::Initialize()
     Global::m_pLog = pLog;
 
 #if TARGET_PLATFORM == PLATFORM_WINDOWS
+    Global::m_pPlatform = NEW_TYPE(CPlatformWindows);
     IDisplay *pDisplay = NEW_TYPE(CDisplayWindows);
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create Display Windows");
 #endif

@@ -90,6 +90,20 @@ public:
     inline CShaderRef* GetVertexShaderRef() { return m_pVertexShaderRef; }
     inline CShaderRef* GetPixelShaderRef() { return m_pPixelShaderRef; }
     inline ShaderResources* GetShaderResources() { return m_pShaderResources; }
+    inline void SetShadingModel(EShadingModel sm) { m_ShadingModel = sm; }
+    inline EShadingModel GetShadingModel() const { return m_ShadingModel; }
+    inline bool IsTranslucentPass() const {
+        switch (GetShadingModel())
+        {
+            case ESM_NoIllumTranslucent:
+            case ESM_IllumTranslucent:
+                return true;
+            case ESM_NoIllum:
+            case ESM_Illum:
+            default:
+                return false;
+        }
+    }
 
 private:
     CPass();
@@ -102,12 +116,13 @@ private:
     inline bool IsCompiled() const { return m_Compiled; }
 
 private:
+    ldword m_nHashId;
     CShaderRef *m_pVertexShaderRef = nullptr;
     CShaderRef *m_pPixelShaderRef = nullptr;
     ShaderResources *m_pShaderResources = nullptr;
     IdString m_IdStr;
     std::atomic_bool m_Compiled;
-    ldword m_nHashId;
+    EShadingModel m_ShadingModel;
 };
 
 class DLL_EXPORT CMaterial final : public CBaseResource 

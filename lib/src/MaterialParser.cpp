@@ -2,6 +2,7 @@
 
 #define TOKEN_MATERIAL "Material"
 #define TOKEN_PASS "Pass"
+#define TOKEN_SHADINGMODEL "ShadingModel"
 #define TOKEN_TEXTURE "Texture"
 #define TOKEN_VS "VertexShader"
 #define TOKEN_PS "PixelShader"
@@ -26,6 +27,25 @@ void CMaterialParser::OnProcessNode(const String &szParamType, const CArray<Stri
 			m_pCurrentPass = m_pCurrentMaterial->CreatePass(arrParam[0]);
 		else
 			m_pCurrentPass = m_pCurrentMaterial->CreatePass();
+	}
+	else if (szParamType == TOKEN_SHADINGMODEL && m_pCurrentPass != nullptr)
+	{
+		if (arrParam.Num() > 0)
+		{
+			const String &szSM = arrParam[0];
+			if (szSM == "NoIllum")
+				m_pCurrentPass->SetShadingModel(ESM_NoIllum);
+			else if (szSM == "NoIllumTranslucent")
+				m_pCurrentPass->SetShadingModel(ESM_NoIllumTranslucent);
+			else if (szSM == "Illum")
+				m_pCurrentPass->SetShadingModel(ESM_Illum);
+			else if (szSM == "IllumTranslucent")
+				m_pCurrentPass->SetShadingModel(ESM_IllumTranslucent);
+			else
+				m_pCurrentPass->SetShadingModel(ESM_Unknown);
+		}
+		else
+			Error();
 	}
 	else if (szParamType == TOKEN_TEXTURE && m_pCurrentPass != nullptr)
 	{

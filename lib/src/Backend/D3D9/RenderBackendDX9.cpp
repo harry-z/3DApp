@@ -143,7 +143,7 @@ void CRenderBackendDX9::BeginRendering() {
 
 	RestoreTarget();
 	ClearTarget(EClearFlag::EClearFlag_Color | EClearFlag::EClearFlag_Depth | EClearFlag::EClearFlag_Stencil, 
-		D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0);
+		D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 }
 
 void CRenderBackendDX9::EndRendering() {

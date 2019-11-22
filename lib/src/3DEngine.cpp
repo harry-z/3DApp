@@ -265,6 +265,9 @@ void C3DEngine::Run()
     dword nFrameId = 0;
     while (pDisplay->MessagePump())
     {
+        if (!pDisplay->IsActive())
+            continue;
+
         EDeviceState devState = pRenderBackend->CheckDeviceState();
 		if (devState == EDeviceState::EDevState_Lost)
 			continue;

@@ -180,6 +180,10 @@ void CDisplayWindows::Resize(dword w, dword h) {
 	m_nWidth = rect.right - rect.left;
 	m_nHeight = rect.bottom - rect.top;
 }
+bool CDisplayWindows::IsActive()
+{
+	return ::GetActiveWindow() == m_hWnd;
+}
 bool CDisplayWindows::MessagePump() {
 	MSG msg;
 	if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {

@@ -19,17 +19,17 @@ Shader VS_NoIllumColor
     File NoIllum.hlsl
 }
 
-Shader PS_NoIllumColor
-{
-    Type Pixel
-    EntryPoint PS_NoIllumColor
-    File NoIllum.hlsl
-}
-
 Shader VS_NoIllum
 {
     Type Vertex
     EntryPoint VS_NoIllum
+    File NoIllum.hlsl
+}
+
+Shader PS_NoIllumColor
+{
+    Type Pixel
+    EntryPoint PS_NoIllumColor
     File NoIllum.hlsl
 }
 
@@ -44,5 +44,26 @@ Shader PS_NoIllumBlended
 {
     Type Pixel
     EntryPoint PS_NoIllumBlended
+    File NoIllum.hlsl
+}
+
+Shader PS_NoIllumColorTranslucent
+{
+    Type Pixel
+    EntryPoint PS_NoIllumColorTranslucent
+    File NoIllum.hlsl
+}
+
+Shader PS_NoIllumTranslucent
+{
+    Type Pixel
+    EntryPoint PS_NoIllumTranslucent
+    File NoIllum.hlsl
+}
+
+Shader PS_NoIllumBlendedTranslucent
+{
+    Type Pixel
+    EntryPoint PS_NoIllumBlendedTranslucent
     File NoIllum.hlsl
 }

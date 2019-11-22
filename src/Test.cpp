@@ -22,8 +22,6 @@ void CTestScene::InitSample()
 
 	CMaterial *pMtl = pMtlMgr->LoadMaterial("Mtl/NoIllum.mtl");
 
-    CCustomGeometryNode *pGeomNode = p3DEngine->CreateRenderNode<CCustomGeometryNode>();
-	
 	P3T2 vb[4];
 	vb[0].m_Position.Set(-50.0f, -50.0f, 0.0f);
 	vb[0].m_Texcoord.Set(0.0f, 1.0f);
@@ -33,14 +31,26 @@ void CTestScene::InitSample()
 	vb[2].m_Texcoord.Set(1.0f, 1.0f);
 	vb[3].m_Position.Set(50.0f, 50.0f, 0.0f);
 	vb[3].m_Texcoord.Set(1.0f, 0.0f);
+
 	IHardwareBuffer *pVertexBuffer = pHwBufferMgr->CreateVertexBuffer(false, sizeof(P3T2), sizeof(P3T2) * 4, (const byte *)vb);
+
+	CCustomGeometryNode *pGeomNode = p3DEngine->CreateRenderNode<CCustomGeometryNode>();
 	pGeomNode->AddVertexBuffer(pVertexBuffer);
 	pGeomNode->SetPrimitiveType(EPrimitiveType::EPrimType_TriangleStrip);
 	pGeomNode->SetPredefinedVertexLayout(EPredefinedVertexLayout::EPredefinedLayout_PT);
+	pGeomNode->SetBoundingBox(AxisAlignedBox(Vec3(-50.0f, -50.0f, 0.0f), Vec3(50.0f, 50.0f, 0.0f)));
 	if (pMtl != nullptr)
 		pGeomNode->SetMaterial(pMtl);
-
 	p3DEngine->RegisterNode(pGeomNode);
+
+	CCustomGeometryNode *pGeomNode1 = p3DEngine->CreateRenderNode<CCustomGeometryNode>();
+	pGeomNode1->AddVertexBuffer(pVertexBuffer);
+	pGeomNode1->SetPrimitiveType(EPrimitiveType::EPrimType_TriangleStrip);
+	pGeomNode1->SetPredefinedVertexLayout(EPredefinedVertexLayout::EPredefinedLayout_PT);
+	pGeomNode1->SetBoundingBox(AxisAlignedBox(Vec3(-50.0f, -50.0f, 0.0f), Vec3(50.0f, 50.0f, 0.0f)));
+	if (pMtl != nullptr)
+		pGeomNode1->SetMaterial(pMtl);
+	p3DEngine->RegisterNode(pGeomNode1);
 }
 
 

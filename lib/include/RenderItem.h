@@ -96,10 +96,8 @@ struct ShaderObject
 struct ShaderResources;
 struct RenderItem
 {
-	union {
-		float m_Distance;
-		ldword m_nSortVal;
-	};
+	float m_Distance = 0.0f;
+	ldword m_nSortVal;
 
 	RenderObject *m_pRenderObj = nullptr;
 	ShaderObject *m_pVSShaderObj = nullptr;

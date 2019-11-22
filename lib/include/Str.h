@@ -280,3 +280,20 @@ inline void String::EnsureAllocated(size_type nSize) {
 	if (nSize > m_nCapacity)
 		Reallocate(nSize);
 }
+
+template <class T>
+inline String ToString(T t) { return String(); }
+
+template <>
+inline String ToString<int>(int i) { 
+	char buffer[CSTR_MAX];
+	sprintf(buffer, "%d", i);
+	return String(buffer);
+}
+
+template <>
+inline String ToString<float>(float f) {
+	char buffer[CSTR_MAX];
+	sprintf(buffer, "%f", f);
+	return String(buffer);
+}

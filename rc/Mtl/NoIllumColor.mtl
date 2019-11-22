@@ -2,6 +2,7 @@ Material NoIllumColor
 {
     Pass
     {
+        ShadingModel NoIllum
         VertexShader VS_NoIllumColor
         {
             AutoShaderParam WorldViewProjectionMatrix

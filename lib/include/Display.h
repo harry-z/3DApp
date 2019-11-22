@@ -10,6 +10,7 @@ public:
 	virtual bool Initialize() = 0;
 	virtual void Move(int x, int y) { m_nClientLeft = x; m_nClientTop = y; }
 	virtual void Resize(dword w, dword h) { m_nClientWidth = w; m_nClientHeight = h; }
+	virtual bool IsActive() { return true; }
 	inline void GetPosition(int &x, int &y) const { x = m_nLeft; y = m_nTop; }
 	inline void GetDimension(dword &w, dword &h) const { w = m_nWidth; h = m_nHeight; }
 	inline void GetClientPosition(int &x, int &y) const { x = m_nClientLeft; y = m_nClientTop; }

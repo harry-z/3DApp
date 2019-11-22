@@ -136,6 +136,14 @@ enum class EDeviceState {
 	EDevState_InternalError
 };
 
+enum EShadingModel : char {
+	ESM_Unknown = -1,
+	ESM_NoIllum = 0, 
+	ESM_NoIllumTranslucent,
+	ESM_Illum,
+	ESM_IllumTranslucent
+};
+
 #define MTL_MAX_TEXLAYER_COUNT 8
 
 #define RENDER_PATH_FORWARD_SHADING 1

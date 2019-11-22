@@ -17,19 +17,37 @@ VSOutputP4TC2 VS_NoIllum(VSInputP3TC2 Input)
 }
 
 float3 Albedo;
+float Alpha;
 sampler2D AlbedoTexture;
 
 float4 PS_NoIllumColor() : COLOR0
 {
-	return NoIllum(Albedo);
+	return NoIllumOpaque(Albedo);
 }
 
 float4 PS_NoIllum(VSOutputP4TC2 Input) : COLOR0
 {
-	return NoIllum(tex2D(AlbedoTexture, TEXCOORD_ELEM(Input, 0)).xyz);
+	return NoIllumOpaque(tex2D(AlbedoTexture, TEXCOORD_ELEM(Input, 0)).xyz);
 }
 
 float4 PS_NoIllumBlended(VSOutputP4TC2 Input) : COLOR0
 {
-	return NoIllum(tex2D(AlbedoTexture, TEXCOORD_ELEM(Input, 0)).xyz * Albedo);
+	return NoIllumOpaque(tex2D(AlbedoTexture, TEXCOORD_ELEM(Input, 0)).xyz * Albedo);
+}
+
+float4 PS_NoIllumColorTranslucent() : COLOR0
+{
+	return NoIllum(Albedo, Alpha);
+}
+
+float4 PS_NoIllumTranslucent(VSOutputP4TC2 Input) : COLOR0
+{
+	float4 c = tex2D(AlbedoTexture, TEXCOORD_ELEM(Input, 0));
+	return NoIllum(c.xyz, c.w * Alpha);
+}
+
+float4 PS_NoIllumBlendedTranslucent(VSOutputP4TC2 Input) : COLOR0
+{
+	float4 c = tex2D(AlbedoTexture, TEXCOORD_ELEM(Input, 0));
+	return NoIllum(c.xyz * Albedo, c.w * Alpha);
 }

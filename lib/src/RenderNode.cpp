@@ -1,5 +1,6 @@
 #include "RenderNode.h"
 #include "RenderItem.h"
+#include "Camera.h"
 
 void IRenderNode::UpdateWSBoundingBox()
 {
@@ -27,7 +28,16 @@ void IRenderNode::PreRenderInternal(CCamera *pCamera, EPreRenderMode mode, struc
 				pRenderItem = RenderItem::AddItem(EForwardShading_ShaderBatch_SceneDepth);
 				pRenderItem->m_pRenderObj = pRenderObj;
 
-				pRenderItem = RenderItem::AddItem(EForwardShading_ShaderBatch_Opaque);
+				if (Pass->IsTranslucentPass())
+				{
+					pRenderItem = RenderItem::AddItem(EForwardShading_ShaderBatch_Transluent);
+					pRenderItem->m_Distance = (m_pTransform->GetTranslation() - pCamera->GetEye()).SquareLength();
+				}
+				else
+				{
+					pRenderItem = RenderItem::AddItem(EForwardShading_ShaderBatch_Opaque);
+				}
+
 				pRenderItem->m_pRenderObj = pRenderObj;
 				pRenderItem->m_pVSShaderObj = Pass->GetVertexShaderRef()->GetShaderObject();
 				pRenderItem->m_pPSShaderObj = Pass->GetPixelShaderRef()->GetShaderObject();

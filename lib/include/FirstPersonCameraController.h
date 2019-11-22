@@ -12,6 +12,8 @@ public:
     , m_MovingState(0)
     , m_LastX(0)
     , m_LastY(0)
+    , m_RotX(0.0f)
+    , m_RotY(0.0f)
     {
         
     }
@@ -22,6 +24,9 @@ public:
 
     virtual const char* Name() const override { return FIRST_PERSON_CAMERA_CONTROLLER; }
     virtual void Update() override;
+
+private:
+    void RotateCamera();
 
 private:
     enum EState : byte
@@ -45,4 +50,5 @@ private:
     byte m_MovingState;
 
     dword m_LastX, m_LastY;
+    float m_RotX, m_RotY;
 };

@@ -19,7 +19,7 @@ public:
 	void SetPrimitiveType(EPrimitiveType PrimType);
 	void AddVertexBuffer(IHardwareBuffer *pVertexBuffer);
 	void SetIndexBuffer(IHardwareBuffer *pIndexBuffer);
-
+	void SetBoundingBox(const AxisAlignedBox &bbox);
 	void SetMaterial(CMaterial *pMaterial);
 
 protected:

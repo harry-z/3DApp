@@ -2,13 +2,16 @@ Material NoIllum
 {
     Pass
     {
+        ShadingModel NoIllum
+
         Texture Texture/BingWallpaper-2017-11-04.png Enable
 
         VertexShader VS_NoIllum
         {
             AutoShaderParam WorldViewProjectionMatrix
         }
-        PixelShader PS_NoIllum
-        {}
+        PixelShader PS_NoIllumTranslucent
+        {
+        }
     }
 }

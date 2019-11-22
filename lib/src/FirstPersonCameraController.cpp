@@ -5,46 +5,56 @@
 
 void CFirstPersonCameraController::OnMouseMove(dword x, dword y) 
 {
-    static bool bFirstTime = true;
+    // static bool bFirstTime = true;
 
-    dword w, h;
-    Global::m_pDisplay->GetClientDimension(w, h);
-    w /= 2; h /= 2;
+    // dword w, h;
+    // Global::m_pDisplay->GetClientDimension(w, h);
+    // w /= 2; h /= 2;
 
-    if (bFirstTime)
-    {
-        BIT_ADD(m_State, EState_Rotating);
-        bFirstTime = false;
-    }
-    else
-    {
-        if (BIT_CHECK(m_State, EState_Rotating)) {
-            int nDeltaX = (int)(w - x);
-            int nDeltaY = (int)(h - y);
-            const Vec3 &eye = m_pCamera->GetEye();
-            const Vec3 &lookat = m_pCamera->GetLookat();
-            Vec3 dir = lookat - eye;
-            dir.Normalize();
-            Vec3 up(0.0f, 1.0f, 0.0f);
-            bool bHorizontal = abs(nDeltaX) >= abs(nDeltaY);
-            if (bHorizontal) {
-                Quat rot(up, nDeltaX * 0.05f);
-                dir = rot * dir;
-            }
-            else {
-                Vec3 right = up.Cross(dir);
-                right.Normalize();
-                Quat rot(right, nDeltaY * 0.05f);
-                dir = rot * dir;
-            }
-            m_pCamera->SetLookat(lookat + dir * 1.0f);
-        }
-    }
+    // if (bFirstTime)
+    // {
+    //     BIT_ADD(m_State, EState_Rotating);
+    //     bFirstTime = false;
+    // }
+    // else
+    // {
+    //     if (BIT_CHECK(m_State, EState_Rotating)) {
+    //         int nDeltaX = (int)(x - w);
+    //         int nDeltaY = (int)(y - h);
+    //         float fDeltaRadX = nDeltaX * PI / 180.0f * 0.1f;
+    //         float fDeltaRadY = nDeltaY * PI / 180.0f * 0.1f;
+    //         m_RotX += fDeltaRadX;
+    //         m_RotY += fDeltaRadY;
+    //         float RotY = Clamp<float>(m_RotY, -1.5f, 1.5f);
+    //         Quat qRotHorizontal(Vec3::s_UnitY, m_RotX);
+    //         Vec3 vForward = qRotHorizontal * Vec3::s_UnitZ;
+    //         Vec3 vRight = Vec3::s_UnitY.Cross(vForward);
+    //         Quat qRotVertical(vRight, RotY);
+    //         Vec3 vDir = qRotVertical * vForward;
+    //         // const Vec3 &eye = m_pCamera->GetEye();
+    //         const Vec3 &lookat = m_pCamera->GetLookat();
+    //         // Vec3 dir = lookat - eye;
+    //         // dir.Normalize();
+    //         // Vec3 up(0.0f, 1.0f, 0.0f);
+    //         // bool bHorizontal = abs(nDeltaX) >= abs(nDeltaY);
+    //         // if (bHorizontal) {
+    //         //     Quat rot(up, nDeltaX * 0.05f);
+    //         //     dir = rot * dir;
+    //         // }
+    //         // else {
+    //         //     Vec3 right = up.Cross(dir);
+    //         //     right.Normalize();
+    //         //     Quat rot(right, nDeltaY * 0.05f);
+    //         //     dir = rot * dir;
+    //         // }
+    //         m_pCamera->SetLookat(lookat + vDir * 1.0f);
+    //     }
+    // }
 
-    int dx, dy;
-    Global::m_pDisplay->GetClientPosition(dx, dy);
-    Global::m_pPlatform->SetCursorPos(dx + (int)w, dy + (int)h);
-    m_LastX = x; m_LastY = y;
+    // int dx, dy;
+    // Global::m_pDisplay->GetClientPosition(dx, dy);
+    // Global::m_pPlatform->SetCursorPos(dx + (int)w, dy + (int)h);
+    // m_LastX = x; m_LastY = y;
 }
 
 void CFirstPersonCameraController::OnKeyDown(EKeyCode KeyCode)
@@ -99,6 +109,8 @@ void CFirstPersonCameraController::OnKeyUp(EKeyCode KeyCode)
 
 void CFirstPersonCameraController::Update() 
 {
+    RotateCamera();
+    
     if (m_MovingState > 0) 
     {
         Vec3 eye = m_pCamera->GetEye();
@@ -122,4 +134,42 @@ void CFirstPersonCameraController::Update()
         m_pCamera->SetEye(eye);
         m_pCamera->SetLookat(eye + dir * length);
     }
+}
+
+void CFirstPersonCameraController::RotateCamera()
+{
+    static bool bFirstTime = true;
+
+    IPlatform * __restrict pPlatform = Global::m_pPlatform;
+
+    int w, h;
+    pPlatform->GetDesktopDimension(w, h);
+    w = w >> 1;
+    h = h >> 1;
+
+    if (bFirstTime)
+    {
+        bFirstTime = false;
+    }
+    else
+    {
+        int x, y;
+        pPlatform->GetCursorPos(x, y);
+        int nDeltaX = (int)(x - w);
+        int nDeltaY = (int)(y - h);
+        float fDeltaRadX = nDeltaX * PI / 180.0f * 0.1f;
+        float fDeltaRadY = nDeltaY * PI / 180.0f * 0.1f;
+        m_RotX += fDeltaRadX;
+        m_RotY += fDeltaRadY;
+        float RotY = Clamp<float>(m_RotY, -1.5f, 1.5f);
+        Quat qRotHorizontal(Vec3::s_UnitY, m_RotX);
+        Vec3 vForward = qRotHorizontal * Vec3::s_UnitZ;
+        Vec3 vRight = Vec3::s_UnitY.Cross(vForward);
+        Quat qRotVertical(vRight, RotY);
+        Vec3 vDir = qRotVertical * vForward;
+        const Vec3 &eye = m_pCamera->GetEye();
+        m_pCamera->SetLookat(eye + vDir * 1.0f);
+    }
+    
+    pPlatform->SetCursorPos(w, h);
 }

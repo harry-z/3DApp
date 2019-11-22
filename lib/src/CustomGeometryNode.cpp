@@ -98,6 +98,11 @@ void CCustomGeometryNode::SetIndexBuffer(IHardwareBuffer *pIndexBuffer)
 	AddInternalFlag(RN_FLAG_INTERNAL_GEOMETRY_DIRTY);
 }
 
+void CCustomGeometryNode::SetBoundingBox(const AxisAlignedBox &bbox)
+{
+	*m_pBoundingBox = bbox;
+}
+
 void CCustomGeometryNode::SetMaterial(CMaterial *pMaterial)
 {
 	m_MtlPtr = pMaterial;

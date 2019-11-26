@@ -50,6 +50,9 @@ void CTestScene::InitSample()
 	pGeomNode1->SetBoundingBox(AxisAlignedBox(Vec3(-50.0f, -50.0f, 0.0f), Vec3(50.0f, 50.0f, 0.0f)));
 	if (pMtl != nullptr)
 		pGeomNode1->SetMaterial(pMtl);
+	Matrix4 mt;
+	mt.SetTranslation(Vec3(0.0f, 0.0f, -5.0f));
+	pGeomNode1->SetTransform(mt);
 	p3DEngine->RegisterNode(pGeomNode1);
 }
 

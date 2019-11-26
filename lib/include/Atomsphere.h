@@ -7,14 +7,14 @@ constexpr int TRANSMITTANCE_TEXTURE_HEIGHT = 64;
 struct DensityProfileLayer
 {
     DensityProfileLayer()
-    : m_Width(0.0f)
-    , m_ExpTerm(0.0f)
-    , m_ExpScale(0.0f)
-    , m_LinearTerm(0.0f)
-    , m_ConstantTerm(0.0f)
+    : m_Width(0.0)
+    , m_ExpTerm(0.0)
+    , m_ExpScale(0.0)
+    , m_LinearTerm(0.0)
+    , m_ConstantTerm(0.0)
     {}
 
-    DensityProfileLayer(float Width, float ExpTerm, float ExpScale, float LinearTerm, float ConstantTerm)
+    DensityProfileLayer(double Width, double ExpTerm, double ExpScale, double LinearTerm, double ConstantTerm)
     : m_Width(Width)
     , m_ExpTerm(ExpTerm)
     , m_ExpScale(ExpScale)
@@ -22,31 +22,31 @@ struct DensityProfileLayer
     , m_ConstantTerm(ConstantTerm)
     {}
 
-    float m_Width;
-    float m_ExpTerm;
-    float m_ExpScale;
-    float m_LinearTerm;
-    float m_ConstantTerm;
+    double m_Width;
+    double m_ExpTerm;
+    double m_ExpScale;
+    double m_LinearTerm;
+    double m_ConstantTerm;
 };
 
 struct AtmosphereParams
 {
-    CArray<float> m_arrWaveLength;
-    CArray<float> m_arrSolarIrradiance;
+    CArray<double> m_arrWaveLength;
+    CArray<double> m_arrSolarIrradiance;
     CArray<DensityProfileLayer> m_arrRayleighDensity;
-    CArray<float> m_arrRayleighScattering;
+    CArray<double> m_arrRayleighScattering;
     CArray<DensityProfileLayer> m_arrMieDensity;
-    CArray<float> m_arrMieScattering;
-    CArray<float> m_arrMieExtinction;
+    CArray<double> m_arrMieScattering;
+    CArray<double> m_arrMieExtinction;
     CArray<DensityProfileLayer> m_arrAbsorptionDensity;
-    CArray<float> m_arrAbsorptionExtinction;
-    CArray<float> m_arrGroundAlbedo;
-    float m_SunAngularRadius;
-    float m_BottomRadius;
-    float m_TopRadius;
-    float m_MiePhaseFunctionG;
-    float m_MaxSunZenithAngle;
-    float m_LengthUnitInMeters;
+    CArray<double> m_arrAbsorptionExtinction;
+    CArray<double> m_arrGroundAlbedo;
+    double m_SunAngularRadius;
+    double m_BottomRadius;
+    double m_TopRadius;
+    double m_MiePhaseFunctionG;
+    double m_MaxSunZenithAngle;
+    double m_LengthUnitInMeters;
 };
 
 class IAtmosphereRenderer

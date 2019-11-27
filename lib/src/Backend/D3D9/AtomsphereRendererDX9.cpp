@@ -19,9 +19,11 @@ bool CAtomsphereRendererDX9::Init(const AtmosphereParams &params)
         nullptr);
     if (FAILED(hr))
         return false;
+
+    String szShaderHeader = ShaderHeader(params);
 }
 
-float CAtomsphereRendererDX9::Interpolate(const CArray<float> &arrWaveLength, const CArray<float> &arrWaveLengthFunction, float WaveLength) const
+double CAtomsphereRendererDX9::Interpolate(const CArray<double> &arrWaveLength, const CArray<double> &arrWaveLengthFunction, double WaveLength) const
 {
     if (WaveLength < arrWaveLength[0])
         return arrWaveLengthFunction[0];
@@ -29,8 +31,8 @@ float CAtomsphereRendererDX9::Interpolate(const CArray<float> &arrWaveLength, co
     {
         if (WaveLength < arrWaveLength[i + 1])
         {
-            float u = (WaveLength - arrWaveLength[i]) / (arrWaveLength[i + 1] - arrWaveLength[i]);
-            return arrWaveLengthFunction[i] * (1.0f - u) + arrWaveLengthFunction[i + 1] * u;
+            double u = (WaveLength - arrWaveLength[i]) / (arrWaveLength[i + 1] - arrWaveLength[i]);
+            return arrWaveLengthFunction[i] * (1.0 - u) + arrWaveLengthFunction[i + 1] * u;
         }
     }
     return arrWaveLengthFunction[arrWaveLengthFunction.Num() - 1];

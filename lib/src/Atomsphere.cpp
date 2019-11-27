@@ -10,6 +10,14 @@ CAtmosphere::CAtmosphere()
 #endif
 }
 
+CAtmosphere::~CAtmosphere()
+{
+#ifdef RENDERAPI_DX9
+    CAtomsphereRendererDX9 *pRendererDX9 = static_cast<CAtomsphereRendererDX9*>(m_pRenderer);
+    DeleteObject(pRendererDX9);
+#endif
+}
+
 bool CAtmosphere::Init()
 {
     constexpr int LambdaMin = 360;
@@ -22,6 +30,7 @@ bool CAtmosphere::Init()
     constexpr double MieAngstromAlpha = 0.0;
     constexpr double MieAngstromBeta = 5.328e-3;
     constexpr double MieSingleScatteringAlbedo = 0.9;
+    constexpr double GroundAlbedo = 0.1;
     // http://www.iup.uni-bremen.de/gruppen/molspec/databases
     constexpr double OzoneCrossSection[48] = {
         1.18e-27, 2.182e-28, 2.818e-28, 6.636e-28, 1.527e-27, 2.763e-27, 5.52e-27,
@@ -36,6 +45,7 @@ bool CAtmosphere::Init()
     int bUseOzone = 1;
     int bUseRayleighScattering = 1;
     int bUseMieScattering = 1;
+    int bUseHalfPrecision = 1;
 
     AtmosphereParams params;
     params.m_SunAngularRadius = 0.00935 / 2.0;
@@ -61,15 +71,24 @@ bool CAtmosphere::Init()
         0.0,
         -1.0 / 15000.0, 
         8.0 / 3.0);
-    for (int l = LambdaMin; l <= LambdaMax; ++l)
+    params.m_MiePhaseFunctionG = 0.8;
+    params.m_MaxSunZenithAngle = ((bUseHalfPrecision == 1) ? 102.0 : 120.0) / 180.0 * PI;
+    params.m_LengthUnitInMeters = 1000.0;
+    for (int l = LambdaMin; l <= LambdaMax; l += 10)
     {
         double lambda = 1e-3 * l;
         double mie = MieAngstromBeta / MieScaleHeight * pow(lambda, -MieAngstromAlpha);
-        params.m_arrWaveLength.Add(l);
-        params.m_arrRayleighScattering.Add(Rayleigh * pow(lambda, -4.0));
-        params.m_arrMieScattering.Add(mie * MieSingleScatteringAlbedo);
+        double WaveLength = (double)l;
+        params.m_arrWaveLength.Add(WaveLength);
+        double RayleighScattering = Rayleigh * pow(lambda, -4.0);
+        params.m_arrRayleighScattering.Add(RayleighScattering);
+        double MieScattering = mie * MieSingleScatteringAlbedo;
+        params.m_arrMieScattering.Add(MieScattering);
         params.m_arrMieExtinction.Add(mie);
-        params.m_arrAbsorptionExtinction.Add(MaxOzoneNumberDensity * OzoneCrossSection[(l - LambdaMin) / 10] * bUseOzone);
+        double AbsorptionExtinction = MaxOzoneNumberDensity * OzoneCrossSection[(l - LambdaMin) / 10] * bUseOzone;
+        params.m_arrAbsorptionExtinction.Add(AbsorptionExtinction);
+        double GroundA = GroundAlbedo;
+        params.m_arrGroundAlbedo.Add(GroundA);
     }
 
     return m_pRenderer->Init(params);

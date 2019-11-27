@@ -51,7 +51,8 @@ void CTestScene::InitSample()
 	if (pMtl != nullptr)
 		pGeomNode1->SetMaterial(pMtl);
 	Matrix4 mt;
-	mt.SetTranslation(Vec3(0.0f, 0.0f, -5.0f));
+	mt.MakeIdentity();
+	mt.SetTranslation(Vec3(0.0f, 0.0f, -10.0f));
 	pGeomNode1->SetTransform(mt);
 	p3DEngine->RegisterNode(pGeomNode1);
 }

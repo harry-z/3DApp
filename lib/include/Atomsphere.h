@@ -60,6 +60,7 @@ class CAtmosphere
 {
 public:
     CAtmosphere();
+    ~CAtmosphere();
     bool Init();
 
 private:

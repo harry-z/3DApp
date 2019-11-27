@@ -297,3 +297,10 @@ inline String ToString<float>(float f) {
 	sprintf(buffer, "%f", f);
 	return String(buffer);
 }
+
+template <>
+inline String ToString<double>(double f) {
+	char buffer[CSTR_MAX];
+	sprintf(buffer, "%f", f);
+	return String(buffer);
+}

@@ -1,4 +1,5 @@
 #include "3DEngine.h"
+#include "Atomsphere.h"
 #include "JobSystem.h"
 #include "RenderItem.h"
 #include "RenderStage.h"
@@ -194,7 +195,8 @@ bool C3DEngine::Initialize()
     pJobSystem->Initialize();
     Global::m_pJobSystem = pJobSystem;
 
-    
+    CAtmosphere Atmosphere;
+    Atmosphere.Init();
 
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize 3DEngine");
     return true;

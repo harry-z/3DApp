@@ -7,6 +7,7 @@
 #define RN_FLAG_ALWAYSVISIBLE					0x0008
 
 #define RN_FLAG_INTERNAL_GEOMETRY_DIRTY         0x0001
+#define RN_FLAG_INTERNAL_BBOX_DIRTY             0x0002
 
 #define DECLARE_NODE_TYPE(Type) \
     static ERNType S_GetType() { return (Type); }
@@ -30,6 +31,7 @@ public:
 
     inline void SetTransform(const Matrix4 &transform) {
 		*m_pTransform = transform;
+        BIT_ADD(m_nInternalFlag, RN_FLAG_INTERNAL_BBOX_DIRTY);
 	}
 	inline const Matrix4& GetTransform() const { return *m_pTransform; }
 	inline const AxisAlignedBox& GetWSBox() const { return *m_pBoundingBox; }

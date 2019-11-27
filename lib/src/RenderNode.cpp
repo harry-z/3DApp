@@ -4,8 +4,12 @@
 
 void IRenderNode::UpdateWSBoundingBox()
 {
-    assert(m_pBoundingBox != nullptr);
-    m_pBoundingBox->Transform(*m_pTransform);
+	if (BIT_CHECK(m_nInternalFlag, RN_FLAG_INTERNAL_BBOX_DIRTY))
+	{
+		assert(m_pBoundingBox != nullptr);
+    	m_pBoundingBox->Transform(*m_pTransform);
+		BIT_REMOVE(m_nInternalFlag, RN_FLAG_INTERNAL_BBOX_DIRTY);
+	}
 }
 
 void IRenderNode::PreRenderInternal(CCamera *pCamera, EPreRenderMode mode, struct RenderObject *pRenderObj, CMaterial *pMtl)

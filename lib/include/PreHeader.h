@@ -105,40 +105,6 @@ typedef unsigned int dword;
 typedef unsigned short word;
 typedef unsigned char byte;
 
-template <class T>
-struct GetValueType {
-	typedef T ValType;
-};
-
-template <class T>
-struct GetPtrType {
-	typedef T* PtrType;
-};
-
-template <class T>
-struct GetCPtrType {
-	typedef const T* CPtrType;
-};
-
-template <class T>
-struct GetReferenceType {
-	typedef T& RType;
-};
-
-template <class T>
-struct GetConstRefType {
-	typedef const T& RType;
-};
-
-template <class T>
-struct TypeTraits {
-	typedef typename GetValueType<T>::ValType _ValueType;
-	typedef typename GetPtrType<T>::PtrType _PointerType;
-	typedef typename GetCPtrType<T>::CPtrType _ConstPointerType;
-	typedef typename GetReferenceType<T>::RType _RefType;
-	typedef typename GetConstRefType<T>::RType _ConstRefType;
-};
-
 // And
 template <class... Types>
 struct TAnd;
@@ -290,6 +256,40 @@ public:
 template <class Result>
 class TEnableIf<false, Result>
 {};
+
+template <class T>
+struct GetValueType {
+	typedef T ValType;
+};
+
+template <class T>
+struct GetPtrType {
+	typedef T* PtrType;
+};
+
+template <class T>
+struct GetCPtrType {
+	typedef const T* CPtrType;
+};
+
+template <class T>
+struct GetReferenceType {
+	typedef T& RType;
+};
+
+template <class T>
+struct GetConstRefType {
+	typedef const T& RType;
+};
+
+template <class T>
+struct TypeTraits {
+	typedef typename GetValueType<T>::ValType _ValueType;
+	typedef typename GetPtrType<T>::PtrType _PointerType;
+	typedef typename GetCPtrType<T>::CPtrType _ConstPointerType;
+	typedef typename GetReferenceType<T>::RType _RefType;
+	typedef typename GetConstRefType<T>::RType _ConstRefType;
+};
 
 class CNoneCopyable {
 public:

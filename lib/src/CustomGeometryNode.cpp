@@ -101,6 +101,7 @@ void CCustomGeometryNode::SetIndexBuffer(IHardwareBuffer *pIndexBuffer)
 void CCustomGeometryNode::SetBoundingBox(const AxisAlignedBox &bbox)
 {
 	*m_pBoundingBox = bbox;
+	BIT_ADD(m_nInternalFlag, RN_FLAG_INTERNAL_BBOX_DIRTY);
 }
 
 void CCustomGeometryNode::SetMaterial(CMaterial *pMaterial)

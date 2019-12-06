@@ -45,90 +45,90 @@ String CAtomsphereRendererDX9::ShaderHeader(const AtmosphereParams &params) cons
         return String(szParam);
     };
 
-    String szHeader = String("const int TRANSMITTANCE_TEXTURE_WIDTH = ") +
-        ToString(TRANSMITTANCE_TEXTURE_WIDTH) + 
-        ";\nconst int TRANSMITTANCE_TEXTURE_HEIGHT = " +
-        ToString(TRANSMITTANCE_TEXTURE_HEIGHT) +
-        ";\n" + 
-        String(
-            "struct DensityProfileLayer {\n" \
-            "float width;\n" \
-            "float exp_term;\n" \
-            "float exp_scale;\n" \
-            "float linear_term;\n" \
-            "float constant_term;};\n" \
+    // String szHeader = String("const int TRANSMITTANCE_TEXTURE_WIDTH = ") +
+    //     ToString(TRANSMITTANCE_TEXTURE_WIDTH) + 
+    //     ";\nconst int TRANSMITTANCE_TEXTURE_HEIGHT = " +
+    //     ToString(TRANSMITTANCE_TEXTURE_HEIGHT) +
+    //     ";\n" + 
+    //     String(
+    //         "struct DensityProfileLayer {\n" \
+    //         "float width;\n" \
+    //         "float exp_term;\n" \
+    //         "float exp_scale;\n" \
+    //         "float linear_term;\n" \
+    //         "float constant_term;};\n" \
 
-            "struct DensityProfile {\n" \
-            "DensityProfileLayer layers[2];};\n" \
+    //         "struct DensityProfile {\n" \
+    //         "DensityProfileLayer layers[2];};\n" \
 
-            "struct AtmosphereParameters {\n" \
-            "float sun_angular_radius;\n" \
-            "float bottom_radius;\n" \
-            "float top_radius;\n" \
-            "DensityProfile rayleigh_density;\n" \
-            "float3 rayleigh_scattering;\n" \
-            "DensityProfile mie_density;\n" \
-            "float3 mie_scattering;\n" \
-            "float3 mie_extinction;\n" \
-            "float mie_phase_function_g;\n" \
-            "DensityProfile absorption_density;\n" \
-            "float3 absorption_extinction;\n" \
-            "float3 ground_albedo;\n" \
-            "float mu_s_min;};\n" \
+    //         "struct AtmosphereParameters {\n" \
+    //         "float sun_angular_radius;\n" \
+    //         "float bottom_radius;\n" \
+    //         "float top_radius;\n" \
+    //         "DensityProfile rayleigh_density;\n" \
+    //         "float3 rayleigh_scattering;\n" \
+    //         "DensityProfile mie_density;\n" \
+    //         "float3 mie_scattering;\n" \
+    //         "float3 mie_extinction;\n" \
+    //         "float mie_phase_function_g;\n" \
+    //         "DensityProfile absorption_density;\n" \
+    //         "float3 absorption_extinction;\n" \
+    //         "float3 ground_albedo;\n" \
+    //         "float mu_s_min;};\n" \
 
-            "void InitDensityProfileLayer(float width, float exp_term, float exp_scale, float linear_term, float constant_term, out DensityProfileLayer layer) {\n" \
-            "layer.width = width;\n" \
-            "layer.exp_term = exp_term;\n" \
-            "layer.exp_scale = exp_scale;\n" \
-            "layer.linear_term = linear_term;\n" \
-            "layer.constant_term = constant_term;}\n" \
+    //         "void InitDensityProfileLayer(float width, float exp_term, float exp_scale, float linear_term, float constant_term, out DensityProfileLayer layer) {\n" \
+    //         "layer.width = width;\n" \
+    //         "layer.exp_term = exp_term;\n" \
+    //         "layer.exp_scale = exp_scale;\n" \
+    //         "layer.linear_term = linear_term;\n" \
+    //         "layer.constant_term = constant_term;}\n" \
             
-            "float ClampCosine(float mu) {\n" \
-            "return clamp(mu, -1.0f, 1.0f);}\n" \
+    //         "float ClampCosine(float mu) {\n" \
+    //         "return clamp(mu, -1.0f, 1.0f);}\n" \
 
-            "float GetUnitRangeFromTextureCoord(float u, int texture_size) {\n" \
-            "return ((u - 0.5f / float(texture_size)) / (1.0f - 1.0f / float(texture_size)));}\n" \
+    //         "float GetUnitRangeFromTextureCoord(float u, int texture_size) {\n" \
+    //         "return ((u - 0.5f / float(texture_size)) / (1.0f - 1.0f / float(texture_size)));}\n" \
 
-            "float ClampDistance(float d) {\n" \
-            "return max(d, 0.0f);}\n" \
+    //         "float ClampDistance(float d) {\n" \
+    //         "return max(d, 0.0f);}\n" \
 
-            "float SafeSqrt(float a) {\n" \
-            "return sqrt(max(a, 0.0f));}\n" \
+    //         "float SafeSqrt(float a) {\n" \
+    //         "return sqrt(max(a, 0.0f));}\n" \
 
-            "float DistanceToTopAtmosphereBoundary(AtmosphereParameters params, float r, float mu) {\n" \
-            "float discriminant = r*r*(mu*mu-1.0f) + params.top_radius*params.top_radius;\n" \
-            "return ClampDistance(-r*mu + SafeSqrt(discriminant));}\n" \
+    //         "float DistanceToTopAtmosphereBoundary(AtmosphereParameters params, float r, float mu) {\n" \
+    //         "float discriminant = r*r*(mu*mu-1.0f) + params.top_radius*params.top_radius;\n" \
+    //         "return ClampDistance(-r*mu + SafeSqrt(discriminant));}\n" \
 
-            "float GetLayerDensity(DensityProfileLayer layer, float altitude) {\n" \
-            "float density = layer.exp_term * exp(layer.exp_scale * altitude) +\n" \
-            "layer.linear_term * altitude + layer.constant_term;\n" \
-            "return clamp(density, 0.0f, 1.0f);}\n" \
+    //         "float GetLayerDensity(DensityProfileLayer layer, float altitude) {\n" \
+    //         "float density = layer.exp_term * exp(layer.exp_scale * altitude) +\n" \
+    //         "layer.linear_term * altitude + layer.constant_term;\n" \
+    //         "return clamp(density, 0.0f, 1.0f);}\n" \
 
-            "float GetProfileDensity(DensityProfile profile, float altitude) {\n" \
-            "return altitude < profile.layers[0].width ?\n" \
-            "GetLayerDensity(profile.layers[0], altitude) : GetLayerDensity(profile.layers[1], altitude);}\n"
-        ) +
-        "void InitParams(out AtmosphereParameters params) {\n" +
-        "params.sun_angular_radius = " + ToString(params.m_SunAngularRadius) +
-        ";\nparams.bottom_radius = " + ToString(params.m_BottomRadius / params.m_LengthUnitInMeters) +
-        ";\nparams.top_radius = " + ToString(params.m_TopRadius / params.m_LengthUnitInMeters) +
-        ";\nparams.rayleigh_scattering = " + ToFloat3String(params, params.m_arrRayleighScattering, lambdas, params.m_LengthUnitInMeters) +
-        ";\nparams.mie_scattering = " + ToFloat3String(params, params.m_arrMieScattering, lambdas, params.m_LengthUnitInMeters) +
-        ";\nparams.mie_extinction = " + ToFloat3String(params, params.m_arrMieExtinction, lambdas, params.m_LengthUnitInMeters) +
-        ";\nparams.mie_phase_function_g = " + ToString(params.m_MiePhaseFunctionG) +
-        ";\nparams.absorption_extinction = " + ToFloat3String(params, params.m_arrAbsorptionExtinction, lambdas, params.m_LengthUnitInMeters) + 
-        ";\nparams.ground_albedo = " + ToFloat3String(params, params.m_arrGroundAlbedo, lambdas, 1.0) +
-        ";\nparams.mu_s_min = " + ToString(cos(params.m_MaxSunZenithAngle)) +
-        ";\nInitDensityProfileLayer(" + ToDensityProfileString(arrRayleighDensity[0]) + ",params.rayleigh_density.layers[0])" +
-        ";\nInitDensityProfileLayer(" + ToDensityProfileString(arrRayleighDensity[1]) + ",params.rayleigh_density.layers[1])" +
-        ";\nInitDensityProfileLayer(" + ToDensityProfileString(arrMieDensity[0]) + ",params.mie_density.layers[0])" +
-        ";\nInitDensityProfileLayer(" + ToDensityProfileString(arrMieDensity[1]) + ",params.mie_density.layers[1])" +
-        ";\nInitDensityProfileLayer(" + ToDensityProfileString(arrAbsorptionDensity[0]) + ",params.absorption_density.layers[0])" +
-        ";\nInitDensityProfileLayer(" + ToDensityProfileString(arrAbsorptionDensity[1]) + ",params.absorption_density.layers[1]);}\n"
-        ;
+    //         "float GetProfileDensity(DensityProfile profile, float altitude) {\n" \
+    //         "return altitude < profile.layers[0].width ?\n" \
+    //         "GetLayerDensity(profile.layers[0], altitude) : GetLayerDensity(profile.layers[1], altitude);}\n"
+    //     ) +
+    //     "void InitParams(out AtmosphereParameters params) {\n" +
+    //     "params.sun_angular_radius = " + ToString(params.m_SunAngularRadius) +
+    //     ";\nparams.bottom_radius = " + ToString(params.m_BottomRadius / params.m_LengthUnitInMeters) +
+    //     ";\nparams.top_radius = " + ToString(params.m_TopRadius / params.m_LengthUnitInMeters) +
+    //     ";\nparams.rayleigh_scattering = " + ToFloat3String(params, params.m_arrRayleighScattering, lambdas, params.m_LengthUnitInMeters) +
+    //     ";\nparams.mie_scattering = " + ToFloat3String(params, params.m_arrMieScattering, lambdas, params.m_LengthUnitInMeters) +
+    //     ";\nparams.mie_extinction = " + ToFloat3String(params, params.m_arrMieExtinction, lambdas, params.m_LengthUnitInMeters) +
+    //     ";\nparams.mie_phase_function_g = " + ToString(params.m_MiePhaseFunctionG) +
+    //     ";\nparams.absorption_extinction = " + ToFloat3String(params, params.m_arrAbsorptionExtinction, lambdas, params.m_LengthUnitInMeters) + 
+    //     ";\nparams.ground_albedo = " + ToFloat3String(params, params.m_arrGroundAlbedo, lambdas, 1.0) +
+    //     ";\nparams.mu_s_min = " + ToString(cos(params.m_MaxSunZenithAngle)) +
+    //     ";\nInitDensityProfileLayer(" + ToDensityProfileString(arrRayleighDensity[0]) + ",params.rayleigh_density.layers[0])" +
+    //     ";\nInitDensityProfileLayer(" + ToDensityProfileString(arrRayleighDensity[1]) + ",params.rayleigh_density.layers[1])" +
+    //     ";\nInitDensityProfileLayer(" + ToDensityProfileString(arrMieDensity[0]) + ",params.mie_density.layers[0])" +
+    //     ";\nInitDensityProfileLayer(" + ToDensityProfileString(arrMieDensity[1]) + ",params.mie_density.layers[1])" +
+    //     ";\nInitDensityProfileLayer(" + ToDensityProfileString(arrAbsorptionDensity[0]) + ",params.absorption_density.layers[0])" +
+    //     ";\nInitDensityProfileLayer(" + ToDensityProfileString(arrAbsorptionDensity[1]) + ",params.absorption_density.layers[1]);}\n"
+    //     ;
 
-    Global::m_pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, szHeader.c_str());
-    return szHeader;
+    // Global::m_pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, szHeader.c_str());
+    return String();
 }
 
 String CAtomsphereRendererDX9::TransmittanceShader() const

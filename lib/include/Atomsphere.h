@@ -34,13 +34,13 @@ struct AtmosphereParams
     CArray<double> m_arrWaveLength;
     CArray<double> m_arrSolarIrradiance;
     CArray<DensityProfileLayer> m_arrRayleighDensity;
-    CArray<double> m_arrRayleighScattering;
     CArray<DensityProfileLayer> m_arrMieDensity;
-    CArray<double> m_arrMieScattering;
-    CArray<double> m_arrMieExtinction;
     CArray<DensityProfileLayer> m_arrAbsorptionDensity;
-    CArray<double> m_arrAbsorptionExtinction;
-    CArray<double> m_arrGroundAlbedo;
+    Vec3d m_RayleighScattering;
+    Vec3d m_MieScattering;
+    Vec3d m_MieExtinction;
+    Vec3d m_AbsorptionExtinction;
+    Vec3d m_GroundAlbedo;
     double m_SunAngularRadius;
     double m_BottomRadius;
     double m_TopRadius;
@@ -61,7 +61,8 @@ class CAtmosphere
 public:
     CAtmosphere();
     ~CAtmosphere();
-    bool Init();
+    void Init();
+    void Precompute(const AtmosphereParams &params);
 
 private:
     IAtmosphereRenderer *m_pRenderer;

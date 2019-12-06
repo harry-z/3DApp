@@ -27,6 +27,19 @@ struct Vec2 {
 	static DLL_EXPORT const Vec2 s_UnitVector;
 };
 
+struct Vec2d
+{
+	double x, y;
+	Vec2d() : x(0.0), y(0.0) {}
+	Vec2d(double x_, double y_) : x(x_), y(y_) {}
+	Vec2d(double u) : x(u), y(u) {}
+	Vec2d(const Vec2d &other) : x(other.x), y(other.y) {}
+	Vec2d& operator= (const Vec2d &other) {
+		x = other.x; y = other.y;
+		return *this;
+	}
+};
+
 struct Vec3 {
 	float x, y, z;
 	
@@ -136,6 +149,42 @@ struct Vec3 {
 	static DLL_EXPORT const Vec3 s_UnitZ;
 	// (1, 1, 1)
 	static DLL_EXPORT const Vec3 s_UnitVector;
+};
+
+struct Vec3d
+{
+	double x, y, z;
+
+	Vec3d() : x(0.0), y(0.0), z(0.0) {}
+	Vec3d(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {}
+	Vec3d(double u) : x(u), y(u), z(u) {}
+	Vec3d(const Vec3d &other) : x(other.x), y(other.y), z(other.z) {}
+
+	Vec3d& operator= (const Vec3d &other) {
+		x = other.x; y = other.y; z = other.z;
+		return *this;
+	}
+
+	Vec3d& operator+= (const Vec3d &other) {
+		x += other.x; y += other.y; z += other.z;
+		return *this;
+	}
+	Vec3d operator+ (const Vec3d &other) const {
+		Vec3d result(x, y, z);
+		result += other;
+		return result;
+	}
+
+	Vec3d& operator*= (double scalar) {
+		x *= scalar; y *= scalar; z *= scalar;
+		return *this;
+	}
+
+	Vec3d operator* (double scalar) const {
+		Vec3d result(*this);
+		result *= scalar;
+		return result;
+	}
 };
 
 struct Vec4 {

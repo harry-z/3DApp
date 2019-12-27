@@ -211,3 +211,10 @@ struct Vec4 {
 	// (1, 1, 1, 1)
 	static DLL_EXPORT const Vec4 s_UnitVector;
 };
+
+struct Vec4d {
+	double x, y, z, w;
+	Vec4d() : x(0.0), y(0.0), z(0.0), w(0.0) {}
+	Vec4d(double x_, double y_, double z_, double w_)
+	: x(x_), y(y_), z(z_), w(w_) {}
+};

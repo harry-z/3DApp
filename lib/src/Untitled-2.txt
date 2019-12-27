@@ -1,0 +1,30 @@
+const float2 Unit2 = { 1.0f, 1.0f };
+const float3 Unit3 = { 1.0f, 1.0f, 1.0f };
+const float3 Zero3 = { 0.0f, 0.0f, 0.0f };
+
+float2 TextureDim;
+float4 TopBottomRadius; // Top, Bottom, Top^2, Bottom^2
+
+float4 GetRMuSFromIrradianceTextureUv(float2 UV)
+{
+    float4 MUS_R_Sqr;
+    float2 X_MUS_R = (UV - Unit2 / TextureDim * 0.5f) / (Unit2 - Unit2 / TextureDim);
+    MUS_R_Sqr.y = TopBottomRadius.y + X_MUS_R.y * (TopBottomRadius.x - TopBottomRadius.y);
+	MUS_R_Sqr.x = clamp(2.0f * X_MUS_R.x - 1.0f, -1.0f, 1.0f);
+    MUS_R_Sqr.zw = MUS_R_Sqr.xy * MUS_R_Sqr.xy;
+    return MUS_R_Sqr;
+}
+
+float3 ComputeDirectIrradiance(float4 MUS_R_Sqr)
+{
+    double alpha_s = params.m_SunAngularRadius;
+    double average_cosine_factor = mu_s < -alpha_s ? 0.0 : (mu_s > alpha_s ? mu_s :
+			(mu_s + alpha_s) * (mu_s + alpha_s) / (4.0 * alpha_s) );
+    return 
+}
+
+float4 ComputeDirectIrradianceTexture(float2 UV : TEXCOORD0) : COLOR0
+{
+    float4 MUS_R_Sqr = GetRMuSFromIrrdianceTextureUv(UV);
+    return float4(ComputeDirectIrradiance(MUS_R_Sqr), 1.0f);
+}

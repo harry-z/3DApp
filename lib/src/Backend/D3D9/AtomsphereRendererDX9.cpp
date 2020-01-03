@@ -47,6 +47,10 @@ bool CAtomsphereRendererDX9::Precompute(
     CHECK_ERROR(hr)
     hr = m_pTransmittance->GetSurfaceLevel(0, &m_pTransmittanceSurface);
     CHECK_ERROR(hr)
+    hr = g_pDevice9->CreateTexture(IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A32B32G32R32F, D3DPOOL_DEFAULT, &m_pIrradiance, nullptr);
+    CHECK_ERROR(hr)
+    hr = m_pIrradiance->GetSurfaceLevel(0, &m_pIrradianceSurface);
+    CHECK_ERROR(hr)
     hr = g_pDevice9->CreateDepthStencilSurface(TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT, D3DFMT_D32, D3DMULTISAMPLE_NONE, 0, TRUE, &m_pDSSurface, nullptr);
     CHECK_ERROR(hr)
 
@@ -68,8 +72,9 @@ bool CAtomsphereRendererDX9::Precompute(
     String szShaderHeader = ShaderHeader();
     String szVertexShader = VertexShader();
     String szTransmittanceShader = szShaderHeader + TransmittanceShader();
+    String szIrradianceShader = szShaderHeader + IrradianceShader();
 
-    ID3DXBuffer *pVertexShaderCode, pTransmittanceBufferCode, pErrorCode;
+    ID3DXBuffer *pVertexShaderCode, pErrorCode;
     hr = D3DXCompileShader(szVertexShader.c_str(), szVertexShader.length(), nullptr, nullptr, "DrawQuad", "vs_3_0", 0, &pVertexShaderCode, &pErrorCode, nullptr);
     SAFE_RELEASE(pErrorCode);
     CHECK_ERROR(hr)
@@ -77,11 +82,20 @@ bool CAtomsphereRendererDX9::Precompute(
     SAFE_RELEASE(pVertexShaderCode);
     CHECK_ERROR(hr)
 
+    ID3DXBuffer *pTransmittanceBufferCode;
     hr = D3DXCompileShader(szTransmittanceShader.c_str(), szTransmittanceShader.length(), nullptr, nullptr, "ComputeTransmittanceToTopAtmosphereBoundaryTexture", "ps_3_0", 0, &pTransmittanceBufferCode, &pErrorCode, &m_pTransmittanceShaderCode);
     SAFE_RELEASE(pErrorCode);
     CHECK_ERROR(hr)
     hr = g_pDevice9->CreatePixelShader((const DWORD*)pTransmittanceBufferCode->GetBufferPointer(), &m_pTransmittanceShader);
     SAFE_RELEASE(pTransmittanceBufferCode);
+    CHECK_ERROR(hr)
+
+    ID3DXBuffer *pIrradianceBufferCode;
+    hr = D3DXCompileShader(szIrradianceShader.c_str(), szIrradianceShader.length(), nullptr, nullptr, "ComputeDirectIrradianceTexture", "ps_3_0", 0, &pIrradianceBufferCode, &pErrorCode, &m_pIrradianceShaderCode);
+    SAFE_RELEASE(pErrorCode);
+    CHECK_ERROR(hr)
+    hr = g_pDevice9->CreatePixelShader((const DWORD*)pIrradianceBufferCode->GetBufferPointer(), &m_pIrradianceShader);
+    SAFE_RELEASE(pIrradianceBufferCode);
     CHECK_ERROR(hr)
     
     UINT nTextureDimIndex = GetConstantIndex(m_pTransmittanceShaderCode, "TextureDim");
@@ -185,10 +199,20 @@ bool CAtomsphereRendererDX9::Precompute(
 void CAtomsphereRendererDX9::Clean()
 {
     SAFE_RELEASE(m_pVertexShader);
+
     SAFE_RELEASE(m_pTransmittanceShader);
+    SAFE_RELEASE(m_pTransmittanceShaderCode);
+    SAFE_RELEASE(m_pIrradianceShader);
+    SAFE_RELEASE(m_pIrradianceShaderCode);
+
     SAFE_RELEASE(m_pTransmittance);
     SAFE_RELEASE(m_pTransmittanceSurface);
+    SAFE_RELEASE(m_pIrradiance);
+    SAFE_RELEASE(m_pIrradianceSurface);
     SAFE_RELEASE(m_pDSSurface);
+
+    SAFE_RELEASE(m_pVB);
+    SAFE_RELEASE(m_pVDecl);
 }
 
 double CAtomsphereRendererDX9::Interpolate(const CArray<double> &arrWaveLength, const CArray<double> &arrWaveLengthFunction, double WaveLength) const

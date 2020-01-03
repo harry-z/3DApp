@@ -21,16 +21,25 @@ private:
     String ShaderHeader() const;
     String VertexShader() const;
     String TransmittanceShader() const;
+    String IrradianceShader() const;
 
     double Interpolate(const CArray<double> &arrWaveLength, const CArray<double> &arrWaveLengthFunction, double WaveLength) const;
 
 private:
     IDirect3DVertexShader9 *m_pVertexShader = nullptr;
+    
     IDirect3DPixelShader9 *m_pTransmittanceShader = nullptr;
     ID3DXConstantTable *m_pTransmittanceShaderCode = nullptr;
+    IDirect3DPixelShader9 *m_pIrradianceShader = nullptr;
+    ID3DXConstantTable *m_pIrradianceShaderCode = nullptr;
+
     IDirect3DTexture9 *m_pTransmittance = nullptr;
     IDirect3DSurface9 *m_pTransmittanceSurface = nullptr;
+    IDirect3DTexture9 *m_pIrradiance = nullptr;
+    IDirect3DSurface9 *m_pIrradianceSurface = nullptr;
+
     IDirect3DSurface9 *m_pDSSurface = nullptr;
+
     IDirect3DVertexBuffer9 *m_pVB = nullptr;
     IDirect3DVertexDeclaration9 *m_pVDecl = nullptr;
 };

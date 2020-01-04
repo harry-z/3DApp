@@ -2,19 +2,28 @@
 #include "Atomsphere.h"
 #include "../../RendererStableHeader.h"
 
+#define CHECK_ERROR(hr) \
+    if (FAILED(hr)) \
+    { \
+        Clean(); \
+        return false; \
+    }
+
+#define CHECK_INDEX_ERROR(index) \
+    if (index == 0xFFFFFFFF) \
+    { \
+        Clean(); \
+        return false; \
+    }
+
+dword GetConstantIndex(ID3DXConstantTable *pConstTable, LPCSTR pszConstName);
+
 class CTextureDX9;
 class CAtomsphereRendererDX9 final : public IAtmosphereRenderer
 {
 public:
     virtual ~CAtomsphereRendererDX9();
-    virtual bool Precompute(
-        const Vec4d &TopBottomRadius,
-        const Vec3d &RayleighScattering,
-        const Vec3d &MieExtinction,
-        const Vec3d &AbsorptionExtinction,
-        const CArray<DensityProfileLayer> &RayleighDensity,
-        const CArray<DensityProfileLayer> &MieExtinctionDensity,
-        const CArray<DensityProfileLayer> &AbsorptionExtinctionDensity) override;
+    virtual bool Precompute(const AtmosphereParams &params) override;
 
 private:
     void Clean();
@@ -22,6 +31,9 @@ private:
     String VertexShader() const;
     String TransmittanceShader() const;
     String IrradianceShader() const;
+
+    bool ProcessTransmittanceTexture(const String &szShaderHeader, const AtmosphereParams &params);
+    bool ProcessIrradianceTexture(const String &szShaderHeader, const AtmosphereParams &params);
 
     double Interpolate(const CArray<double> &arrWaveLength, const CArray<double> &arrWaveLengthFunction, double WaveLength) const;
 

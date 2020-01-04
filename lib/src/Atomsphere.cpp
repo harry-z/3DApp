@@ -146,7 +146,7 @@ CAtmosphere::~CAtmosphere()
 #endif
 }
 
-void CAtmosphere::Precompute()
+bool CAtmosphere::Precompute()
 {
     constexpr int LambdaMin = 360;
     constexpr int LambdaMax = 830;
@@ -188,28 +188,27 @@ void CAtmosphere::Precompute()
     double SunAngularRadius = 0.00935 / 2.0;
     double BottomRadius = 6360000.0;
     double TopRadius = 6420000.0;
-    Vec4d TopBottomRadius(TopRadius, BottomRadius, TopRadius * TopRadius, BottomRadius * BottomRadius);
-    CArray<DensityProfileLayer> arrRayleighDensity;
-    arrRayleighDensity.Emplace(0.0, 
+    
+    AtmosphereParams params;
+    params.m_SunAngularRadius = SunAngularRadius;
+    params.m_arrRayleighDensity.Emplace(0.0, 
         1.0 * bUseRayleighScattering, 
         -1.0 / RayleighScaleHeight * bUseRayleighScattering, 
         0.0, 
         0.0);
-    arrRayleighDensity.Emplace(DensityProfileLayer());
-    CArray<DensityProfileLayer> arrMieDensity;
-    arrMieDensity.Emplace(0.0,
+    params.m_arrRayleighDensity.Emplace(DensityProfileLayer());
+    params.m_arrMieDensity.Emplace(0.0,
         1.0 * bUseMieScattering,
         -1.0 / MieScaleHeight * bUseMieScattering, 
         0.0,
         0.0);
-    arrMieDensity.Emplace(DensityProfileLayer());
-    CArray<DensityProfileLayer> arrAbsorptionDensity;
-    arrAbsorptionDensity.Emplace(25000.0, 
+    params.m_arrMieDensity.Emplace(DensityProfileLayer());
+    params.m_arrAbsorptionDensity.Emplace(25000.0, 
         0.0,
         0.0,
         1.0 / 15000.0, 
         -2.0 / 3.0);
-    arrAbsorptionDensity.Emplace(0.0,
+    params.m_arrAbsorptionDensity.Emplace(0.0,
         0.0,
         0.0,
         -1.0 / 15000.0, 
@@ -241,21 +240,16 @@ void CAtmosphere::Precompute()
         arrGroundAlbedo.Add(GroundA);
     }
 
-    Vec3d RayleighScattering = InterpolateVec3(arrWaveLength, arrRayleighScattering, lambdas, LengthUnitInMeters);
-    Vec3d MieScattering = InterpolateVec3(arrWaveLength, arrMieScattering, lambdas, LengthUnitInMeters);
-    Vec3d MieExtinction = InterpolateVec3(arrWaveLength, arrMieExtinction, lambdas, LengthUnitInMeters);
-    Vec3d AbsorptionExtinction = InterpolateVec3(arrWaveLength, arrAbsorptionExtinction, lambdas, LengthUnitInMeters);
-    Vec3d GroundAlbedo = InterpolateVec3(arrWaveLength, arrGroundAlbedo, lambdas, LengthUnitInMeters);
+    params.m_TopBottomRadius = Vec4d(TopRadius, BottomRadius, TopRadius * TopRadius, BottomRadius * BottomRadius);
+    params.m_RayleighScattering = InterpolateVec3(arrWaveLength, arrRayleighScattering, lambdas, LengthUnitInMeters);
+    // params.m_MieScattering = InterpolateVec3(arrWaveLength, arrMieScattering, lambdas, LengthUnitInMeters);
+    params.m_MieExtinction = InterpolateVec3(arrWaveLength, arrMieExtinction, lambdas, LengthUnitInMeters);
+    params.m_AbsorptionExtinction = InterpolateVec3(arrWaveLength, arrAbsorptionExtinction, lambdas, LengthUnitInMeters);
+    // Vec3d GroundAlbedo = InterpolateVec3(arrWaveLength, arrGroundAlbedo, lambdas, LengthUnitInMeters);
 
     
 
-    return m_pRenderer->Precompute(TopBottomRadius, 
-        RayleighScattering, 
-        MieExtinction, 
-        AbsorptionExtinction, 
-        arrRayleighDensity,
-        arrMieDensity,
-        arrAbsorptionDensity);
+    return m_pRenderer->Precompute(params);
 }
 
 // void CAtmosphere::Precompute(const AtmosphereParams &params)

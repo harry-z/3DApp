@@ -132,3 +132,4 @@ String CAtomsphereRendererDX9::IrradianceShader() const
         "return float4(ComputeDirectIrradiance(MUS_R_Sqr), 1.0f);}"
     );
 }
+

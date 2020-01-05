@@ -29,6 +29,7 @@ bool CAtomsphereRendererDX9::Precompute(const AtmosphereParams &params)
     CHECK_ERROR(hr)
     hr = m_pIrradiance->GetSurfaceLevel(0, &m_pIrradianceSurface);
     CHECK_ERROR(hr)
+    
     hr = g_pDevice9->CreateDepthStencilSurface(TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT, D3DFMT_D32, D3DMULTISAMPLE_NONE, 0, TRUE, &m_pDSSurface, nullptr);
     CHECK_ERROR(hr)
 
@@ -58,6 +59,12 @@ bool CAtomsphereRendererDX9::Precompute(const AtmosphereParams &params)
     SAFE_RELEASE(pVertexShaderCode);
     CHECK_ERROR(hr)
 
+    std::function<bool(const String&, const AtmosphereParams&)> ProcessFuncs[] = {
+        std::bind(&CAtomsphereRendererDX9::ProcessTransmittanceTexture, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&CAtomsphereRendererDX9::ProcessIrradianceTexture, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&CAtomsphereRendererDX9::ProcessSingleScatteringTexture, this, std::placeholders::_1, std::placeholders::_2)
+    };
+
     g_pDevice9->BeginScene();
 
     g_pDevice9->SetDepthStencilSurface(m_pDSSurface);
@@ -72,29 +79,49 @@ bool CAtomsphereRendererDX9::Precompute(const AtmosphereParams &params)
     g_pDevice9->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
     g_pDevice9->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
 
-    ProcessTransmittanceTexture(szShaderHeader, params);
-    ProcessIrradianceTexture(szShaderHeader, params);
+    dword nProcessFunc = 3;
+    bool bFinished = true;
+    for (dword i = 0; i < nProcessFunc; ++i)
+    {
+        if (!ProcessFuncs[i](szShaderHeader, params))
+        {
+            bFinished = false;
+            break;
+        }
+    }
 
     g_pDevice9->EndScene();
+
+    return bFinished;
 }
 
 void CAtomsphereRendererDX9::Clean()
 {
-    SAFE_RELEASE(m_pVertexShader);
+    SAFE_RELEASE(m_pVertexShader)
 
-    SAFE_RELEASE(m_pTransmittanceShader);
-    SAFE_RELEASE(m_pTransmittanceShaderCode);
-    SAFE_RELEASE(m_pIrradianceShader);
-    SAFE_RELEASE(m_pIrradianceShaderCode);
+    SAFE_RELEASE(m_pTransmittanceShader)
+    SAFE_RELEASE(m_pTransmittanceShaderCode)
+    SAFE_RELEASE(m_pIrradianceShader)
+    SAFE_RELEASE(m_pIrradianceShaderCode)
+    SAFE_RELEASE(m_pSingleScatteringShader)
+    SAFE_RELEASE(m_pSingleScatteringShaderCode)
 
-    SAFE_RELEASE(m_pTransmittance);
-    SAFE_RELEASE(m_pTransmittanceSurface);
-    SAFE_RELEASE(m_pIrradiance);
-    SAFE_RELEASE(m_pIrradianceSurface);
-    SAFE_RELEASE(m_pDSSurface);
+    SAFE_RELEASE(m_pTransmittance)
+    SAFE_RELEASE(m_pTransmittanceSurface)
+    SAFE_RELEASE(m_pIrradiance)
+    SAFE_RELEASE(m_pIrradianceSurface)
+    SAFE_RELEASE(m_pDeltaRayleighScattering)
+    SAFE_RELEASE(m_pDeltaRayleighScatteringSurface)
+    SAFE_RELEASE(m_pDeltaMieScattering)
+    SAFE_RELEASE(m_pDeltaMieScatteringSurface)
+    SAFE_RELEASE(m_pRayleighScattering)
+    SAFE_RELEASE(m_pRayleighScatteringSurface)
+    SAFE_RELEASE(m_pMieScattering)
+    SAFE_RELEASE(m_pMieScatteringSurface)
+    SAFE_RELEASE(m_pDSSurface)
 
-    SAFE_RELEASE(m_pVB);
-    SAFE_RELEASE(m_pVDecl);
+    SAFE_RELEASE(m_pVB)
+    SAFE_RELEASE(m_pVDecl)
 }
 
 double CAtomsphereRendererDX9::Interpolate(const CArray<double> &arrWaveLength, const CArray<double> &arrWaveLengthFunction, double WaveLength) const

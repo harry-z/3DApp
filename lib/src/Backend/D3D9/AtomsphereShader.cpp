@@ -133,3 +133,7 @@ String CAtomsphereRendererDX9::IrradianceShader() const
     );
 }
 
+String CAtomsphereRendererDX9::SingleScatteringShader() const
+{
+    return String();
+}

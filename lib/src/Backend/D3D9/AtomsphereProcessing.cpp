@@ -135,3 +135,16 @@ bool CAtomsphereRendererDX9::ProcessIrradianceTexture(const String &szShaderHead
 
     return true;
 }
+
+bool CAtomsphereRendererDX9::ProcessSingleScatteringTexture(const String &szShaderHeader, const AtmosphereParams &params)
+{
+    String szSingleScatteringShader = szShaderHeader + SingleScatteringShader();
+
+    ID3DXBuffer *pSingleScatteringBufferCode, *pErrorCode;
+    // HRESULT hr = D3DXCompileShader(szSingleScatteringShader.c_str(), szSingleScatteringShader.length(), nullptr, nullptr, "ComputeDirectIrradianceTexture", "ps_3_0", 0, &pSingleScatteringBufferCode, &pErrorCode, &m_pSingleScatteringShaderCode);
+    // SAFE_RELEASE(pErrorCode);
+    // CHECK_ERROR(hr)
+    // hr = g_pDevice9->CreatePixelShader((const DWORD*)pIrradianceBufferCode->GetBufferPointer(), &m_pIrradianceShader);
+    // SAFE_RELEASE(pIrradianceBufferCode);
+    // CHECK_ERROR(hr)    
+}

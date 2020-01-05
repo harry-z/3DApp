@@ -31,9 +31,11 @@ private:
     String VertexShader() const;
     String TransmittanceShader() const;
     String IrradianceShader() const;
+    String SingleScatteringShader() const;
 
     bool ProcessTransmittanceTexture(const String &szShaderHeader, const AtmosphereParams &params);
     bool ProcessIrradianceTexture(const String &szShaderHeader, const AtmosphereParams &params);
+    bool ProcessSingleScatteringTexture(const String &szShaderHeader, const AtmosphereParams &params);
 
     double Interpolate(const CArray<double> &arrWaveLength, const CArray<double> &arrWaveLengthFunction, double WaveLength) const;
 
@@ -44,11 +46,22 @@ private:
     ID3DXConstantTable *m_pTransmittanceShaderCode = nullptr;
     IDirect3DPixelShader9 *m_pIrradianceShader = nullptr;
     ID3DXConstantTable *m_pIrradianceShaderCode = nullptr;
+    IDirect3DPixelShader9 *m_pSingleScatteringShader = nullptr;
+    ID3DXConstantTable *m_pSingleScatteringShaderCode = nullptr;
 
     IDirect3DTexture9 *m_pTransmittance = nullptr;
     IDirect3DSurface9 *m_pTransmittanceSurface = nullptr;
     IDirect3DTexture9 *m_pIrradiance = nullptr;
     IDirect3DSurface9 *m_pIrradianceSurface = nullptr;
+
+    IDirect3DTexture9 *m_pDeltaRayleighScattering = nullptr;
+    IDirect3DSurface9 *m_pDeltaRayleighScatteringSurface = nullptr;
+    IDirect3DTexture9 *m_pDeltaMieScattering = nullptr;
+    IDirect3DSurface9 *m_pDeltaMieScatteringSurface = nullptr;
+    IDirect3DTexture9 *m_pRayleighScattering = nullptr;
+    IDirect3DSurface9 *m_pRayleighScatteringSurface = nullptr;
+    IDirect3DTexture9 *m_pMieScattering = nullptr;
+    IDirect3DSurface9 *m_pMieScatteringSurface = nullptr;
 
     IDirect3DSurface9 *m_pDSSurface = nullptr;
 

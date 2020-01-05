@@ -1,0 +1,49 @@
+const float2 Unit2 = { 1.0f, 1.0f };
+const float3 Unit3 = { 1.0f, 1.0f, 1.0f };
+const float3 Zero3 = { 0.0f, 0.0f, 0.0f };
+
+float4 TextureDim; // Irradiance Texture And Transmittance Texture
+float4 TopBottomRadius; // Top, Bottom, Top^2, Bottom^2
+float SunAngularRadius;
+
+sampler2D TransmittanceTexture;
+
+float4 GetRMuSFromIrradianceTextureUv(float2 UV)
+{
+    float4 MUS_R_Sqr;
+    float2 X_MUS_R = (UV - Unit2 / TextureDim.xy * 0.5f) / (Unit2 - Unit2 / TextureDim.xy);
+    MUS_R_Sqr.y = TopBottomRadius.y + X_MUS_R.y * (TopBottomRadius.x - TopBottomRadius.y);
+	MUS_R_Sqr.x = clamp(2.0f * X_MUS_R.x - 1.0f, -1.0f, 1.0f);
+    MUS_R_Sqr.zw = MUS_R_Sqr.xy * MUS_R_Sqr.xy;
+    return MUS_R_Sqr;
+}
+
+float2 GetTransmittanceTextureUvFromRMu(float4 MUS_R_Sqr)
+{
+    float H = sqrt(TopBottomRadius.z - TopBottomRadius.w);
+    float rho = SafeSqrt(MUS_R_Sqr.w - TopBottomRadius.w);
+    float3 d = DistanceToTopAtmosphereBoundary(MUS_R_Sqr);
+    float dMin = TopBottomRadius.x - MUS_R_Sqr.y;
+    float dMax = rho + H;
+    float2 X_MU_R = float2((d.x - dMin) / (dMax - dMin), rho / H);
+    return Unit2 * 0.5f / TextureDim.zw + X_MU_R * (Unit2 - (Unit2 / TextureDim.zw));
+}
+
+float3 GetTransmittanceToTopAtmosphereBoundary(float4 MUS_R_Sqr)
+{
+    float2 uv = GetTransmittanceTextureUvFromRMu(MUS_R_Sqr);
+    return tex2D(TransmittanceTexture, uv).xyz;
+}
+
+float3 ComputeDirectIrradiance(float4 MUS_R_Sqr)
+{
+    float Average_Cosine_Factor = MUS_R_Sqr.x < -SunAngularRadius ? 0.0 : (MUS_R_Sqr.x > SunAngularRadius ? MUS_R_Sqr.x :
+		(MUS_R_Sqr.x + SunAngularRadius) * (MUS_R_Sqr.x + SunAngularRadius) / (4.0f * SunAngularRadius));
+    return GetTransmittanceToTopAtmosphereBoundary(MUS_R_Sqr) * Average_Cosine_Factor * SunAngularRadius;
+}
+
+float4 ComputeDirectIrradianceTexture(float2 UV : TEXCOORD0) : COLOR0
+{
+    float4 MUS_R_Sqr = GetRMuSFromIrrdianceTextureUv(UV);
+    return float4(ComputeDirectIrradiance(MUS_R_Sqr), 1.0f);
+}

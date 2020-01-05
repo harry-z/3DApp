@@ -1,0 +1,2 @@
+HardMode Loading Time: 16.681355
+LogXR: HardMode Loading Time: 6.929146

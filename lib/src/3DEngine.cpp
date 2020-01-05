@@ -196,7 +196,7 @@ bool C3DEngine::Initialize()
     Global::m_pJobSystem = pJobSystem;
 
     CAtmosphere Atmosphere;
-    Atmosphere.Init();
+    Atmosphere.Precompute();
 
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize 3DEngine");
     return true;

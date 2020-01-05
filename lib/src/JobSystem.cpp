@@ -78,7 +78,7 @@ void CJobSystem::DestroyJob(Job *pJob)
 void CJobSystem::QueueJob(Job *pJob) 
 {
 	assert(pJob != nullptr);
-	// 通过轮询的方式实现简单的负载均衡
+	// 
 	std::lock_guard<std::mutex> slock(m_WorkerLock);
 	byte workerIndex = (word)(m_nWorkerIndex + 1) % m_nWorkerCount;
 	m_nWorkerIndex = workerIndex;
@@ -90,7 +90,7 @@ void CJobSystem::Update_MainThread(dword nFrameId)
 	if (m_nWorkerCount == 0)
 		return;
 	
-	// 首先决定本帧读取哪个工作线程的任务队列
+	// 
 	byte workerIndex = (byte)(nFrameId % m_nWorkerCount);
 	CWorker &worker = m_pWorkers[workerIndex];
 
@@ -105,7 +105,7 @@ void CJobSystem::Update_MainThread(dword nFrameId)
 	while (pTemp != nullptr) {
 		Job *pJob = pTemp->m_pOwner;
 		pTemp = pTemp->m_pNext;
-		if (!pJob->IsCanceled()) // 如果任务被取消了就不执行主线程的操作了
+		if (!pJob->IsCanceled()) // 
 			pJob->DoWork_MainThread();
 		pJob->OnJobFinished();
 		DestroyJob(pJob);

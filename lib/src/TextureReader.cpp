@@ -462,7 +462,7 @@ bool Fill_PNG_FILE_DESC(byte *pData, dword nLen, EAutoGenmip bAutoGenMipmap,
 		return false;
 	}
 
-	png_set_sig_bytes(png_ptr, 8); // 跳过PNG签名
+	png_set_sig_bytes(png_ptr, 8);
 
 	byte *pBufPtr = pData;
 	pBufPtr += 8;

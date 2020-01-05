@@ -25,11 +25,11 @@ public:
     struct MediumHeapEntry
     {
         Page *pPage;
-        MediumHeapEntry *Prev; // 前一个Entry
-        MediumHeapEntry *Next; // 下一个Entry
-        MediumHeapEntry *PrevFree; // 前一个Free Entry，当Entry为已分配时为nullptr
-        MediumHeapEntry *NextFree; // 后一个Free Entry，当Entry为已分配时为nullptr
-        dword nSize; // 整个Entry的大小
+        MediumHeapEntry *Prev; // 
+        MediumHeapEntry *Next; // 
+        MediumHeapEntry *PrevFree; // 
+        MediumHeapEntry *NextFree; // 
+        dword nSize; // 
         dword nFreeBlock; // 0 - Used Entry，1 - Free Entry
     };
 
@@ -53,23 +53,23 @@ private:
     void FreePage(Page *pPage);
     void FreePageReal(Page *pPage);
 
-    // SmallAllocate的Free链表
+    // 
     void * m_ppSmallFirstFree[256/ALIGN];
-    // SmallAllocate当前正在使用的页
+    // 
     Page * m_pSmallCurPage;
-    // SmallAllocate第一个已经被占满的页
+    // 
     Page * m_pSmallFirstUsedPage;
 
-    // MediumAllocate第一个未使用的页
+    // 
     Page * m_pMediumFirstFreePage;
-    // MediumAllocate最后一个未使用页
+    // 
     Page * m_pMediumLastFreePage;
-    // MediumAllocate第一个使用页
+    // 
     Page * m_pMediumFirstUsedPage;
-    // MediumAllocate临时交换页
+    // 
     Page * m_pSwapPage;
 
-    // LargeAllocate第一个使用页
+    // 
     Page * m_pLargeFirstUsedPage;
 
     dword m_nPageSize;

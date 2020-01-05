@@ -109,11 +109,8 @@ void* CFreelistAlloc::SmallAllocate(dword bytes)
     byte *pSmallBlock = (byte *)(m_ppSmallFirstFree[bytes/ALIGN - 1]);
     if (pSmallBlock != nullptr)
     {
-        // 获取下一个Block的地址
         uintptr_t *pNextLink = (uintptr_t *)(pSmallBlock + SMALL_HEADER_SIZE);
-        // 填入标记
         pSmallBlock[1] = SMALL_ALLOC;
-        // 将下一个Block的地址填入m_ppSmallFirstFree对应索引位置
         m_ppSmallFirstFree[bytes/ALIGN - 1] = (void *)(*pNextLink);
         return (void *)pNextLink;
     }
@@ -122,17 +119,14 @@ void* CFreelistAlloc::SmallAllocate(dword bytes)
     if (bytes >= nBytesLeft)
     {
         // CurrentPage -> FirstUsedPage -> ... -> LastUsedPage
-        // 将当前页设置为第一个使用页
         m_pSmallCurPage->pNext = m_pSmallFirstUsedPage;
         m_pSmallFirstUsedPage = m_pSmallCurPage;
-        // 重新分配一个当前页
         m_pSmallCurPage = AllocatePage(m_nPageSize);
         assert(m_pSmallCurPage != nullptr);
         m_nSmallCurPageOffset = ALIGN_SIZE(0);
     }
 
     pSmallBlock = ((byte *)m_pSmallCurPage->pData) + m_nSmallCurPageOffset;
-    // 保存在m_ppSmallFirstFree数组中的索引
     pSmallBlock[0] = (byte)(bytes/ALIGN - 1);
     pSmallBlock[1] = SMALL_ALLOC;
     m_nSmallCurPageOffset += (bytes + SMALL_HEADER_SIZE);
@@ -153,9 +147,7 @@ void CFreelistAlloc::SmallFree(void *p)
         return;
     }
 
-    // 将SmallFirstFree当前的头地址存入p的头四个字节中
     *pAddress = (uintptr_t)m_ppSmallFirstFree[idx];
-    // 将SmallFirstFree的头换成当前释放的内存指针
     m_ppSmallFirstFree[idx] = pOrigin;
 }
 
@@ -188,7 +180,6 @@ void* CFreelistAlloc::MediumAllocate(dword bytes)
 
         MediumHeapEntry *e = (MediumHeapEntry *)(pPage->pFirstFree);
         e->pPage = pPage;
-        // HeapEntry的Size包含了HeapEntry自身的大小
         e->nSize = m_nPageSize & ~(ALIGN - 1);
         e->nFreeBlock = 1;
         e->Prev = nullptr;
@@ -199,7 +190,6 @@ void* CFreelistAlloc::MediumAllocate(dword bytes)
 
     void *pData = MediumAllocateFromPage(pPage, nSizeNeeded);
 
-    // pPage的剩余容量不够一个最小的MediumHeap
     if (pPage->nLargetFree < MEDIUM_SMALLEST_SIZE)
     {
         if (pPage == m_pMediumLastFreePage)
@@ -212,7 +202,6 @@ void* CFreelistAlloc::MediumAllocate(dword bytes)
         if (pPage->pNext)
             pPage->pNext->pPrev = pPage->pPrev;
 
-        // pPage设置为MediumFirstUsed
         pPage->pPrev = nullptr;
         pPage->pNext = m_pMediumFirstUsedPage;
         if (pPage->pNext)
@@ -221,25 +210,20 @@ void* CFreelistAlloc::MediumAllocate(dword bytes)
         return pData;
     }
 
-    // 调整Medium的Free链表的顺序，将pPage调整到MediumFirstFreePage的位置
-    // 下次再开始遍历链表时能够加快速度
     if (pPage != m_pMediumFirstFreePage)
     {
-        // 如果pPage不等于FirstFreePage，以下三个指针必定不是nullptr
         assert(m_pMediumLastFreePage);
         assert(m_pMediumFirstFreePage);
         assert(pPage->pPrev);
 
-        // 调整后顺序为
-        // pPage -> ... -> LastFree -> FirstFree -> ... -> pPage->Prev
-        // 将现在的FirstFree连接到LastFree后面
+        // 
         m_pMediumLastFreePage->pNext = m_pMediumFirstFreePage;
         m_pMediumFirstFreePage->pPrev = m_pMediumLastFreePage;
-        // 将LastFree设置为pPage的上一个Page
+
         m_pMediumLastFreePage = pPage->pPrev;
         pPage->pPrev->pNext = nullptr;
         pPage->pPrev = nullptr;
-        // 将FirstFree设置为pPage
+
         m_pMediumFirstFreePage = pPage;
     }
 
@@ -255,11 +239,10 @@ void* CFreelistAlloc::MediumAllocateFromPage(Page *pPage, dword nSizeNeeded)
 
     MediumHeapEntry *pNw = nullptr;
 
-    // pBest的剩余空间除了分配nSizeNeeded之外还够一个最小的MediumHeap
     if (pBest->nSize >= nSizeNeeded + MEDIUM_SMALLEST_SIZE)
     {
-        // Best是Page的FirstFree
-        // Best的Next是最近一次分配的MediumHeap
+        // 
+        // 
         pNw = (MediumHeapEntry *)(((byte *)pBest) + pBest->nSize - nSizeNeeded);
         pNw->pPage = pPage;
         pNw->Prev = pBest;
@@ -274,10 +257,10 @@ void* CFreelistAlloc::MediumAllocateFromPage(Page *pPage, dword nSizeNeeded)
 
         pPage->nLargetFree = pBest->nSize;
     }
-    else // 如果Best的剩余空间不够再多一个最小的MediumHeap
+    else // 
     {
-        // Best作为要分配的MediumHeap返回
-        // Best把自己从Free链表中摘出去
+        // 
+        // 
         if (pBest->PrevFree != nullptr)
             pBest->PrevFree->NextFree = pBest->NextFree;
         else
@@ -312,10 +295,10 @@ void CFreelistAlloc::MediumFree(void *p)
 
     if (e_Prev && e_Prev->nFreeBlock == 1)
     {
-        // 前一个HeapEntry是可以合并的
-        // 因为e是正在释放的Entry，所以其PrevFree和NextFree全都是nullptr
-        // 只将Entry链表关系维护好即可
-        // Free链表仍然维护的是e_Prev的PrevFree和NextFree
+        // 
+        // 
+        // 
+        // 
         e_Prev->nSize += e->nSize;
         e_Prev->Next = e->Next;
         if (e->Next)
@@ -324,8 +307,8 @@ void CFreelistAlloc::MediumFree(void *p)
     }
     else
     {
-        // 前一个Entry不能合并
-        // 由于e是正在释放的Entry，没有PrevFree和NextFree信息，故将其放到Free链表的头部
+        // 
+        // 
         e->PrevFree = nullptr;
         e->NextFree = (MediumHeapEntry *)pPage->pFirstFree;
         if (e->NextFree)
@@ -343,20 +326,20 @@ void CFreelistAlloc::MediumFree(void *p)
 
     if (e_Next && e_Next->nFreeBlock == 1)
     {
-        // 下一个Entry可以被合并
+        // 
         e->nSize += e_Next->nSize;
         e->Next = e_Next->Next;
         if (e_Next->Next)
             e_Next->Next->Prev = e;
 
-        // 由于下一个Entry要被合并起来了，而且这个Entry本身是FreeBlock，所以要更新Free链表关系
+        // 
         if (e_Next->PrevFree)
             e_Next->PrevFree->NextFree = e_Next->NextFree;
         else
         {
-            // 如果PrevFree为空那么Next就是Page的FirstFree
+            // 
             assert(e_Next == pPage->pFirstFree);
-            // 将Page的FirstFree设置为Next的NextFree
+            // 
             pPage->pFirstFree = e_Next->NextFree;
         }
 
@@ -371,17 +354,17 @@ void CFreelistAlloc::MediumFree(void *p)
 
     if (e->nSize > pPage->nLargetFree)
     {
-        // 当前释放的Entry比Page最大的FreeBlock还要大
+        // 
         assert(e != pPage->pFirstFree);
         pPage->nLargetFree = e->nSize;
 
-        // 将e先从Free链表中摘掉
+        // 
         if (e->PrevFree)
             e->PrevFree->NextFree = e->NextFree;
         if (e->NextFree)
             e->NextFree->PrevFree = e->PrevFree;
 
-        // 将e的NextFree设置为当前的FirstFree
+        // 
         e->NextFree = (MediumHeapEntry *)pPage->pFirstFree;
         e->PrevFree = nullptr;
         if (e->NextFree)
@@ -452,19 +435,19 @@ CFreelistAlloc::Page* CFreelistAlloc::AllocatePage(dword nPageSize)
     }
     else
     {
-        // 实际Page需分配的总数
+        // 
         dword nTotalSize = nPageSize + sizeof(Page);
-        // 多分配ALIGN-1，是为了保证pData能够正确对齐
-        // 内存布局为[Page][nPageSize]
-        // pData指向nPageSize的起点，需要保证pData是对齐的，即pPage + sizeof(Page)要保证对齐
-        // 最坏情况需要把pData的起始向后移动ALIGN-1个字节
+        // 
+        // 
+        // 
+        // 
         pPage = (Page *)::malloc(nTotalSize + ALIGN - 1);
         if (pPage == nullptr)
         {
             assert(0 && "Malloc failure for page");
             return nullptr;
         }
-        // 对齐pData
+
         pPage->pData = (void *)ALIGN_SIZE( (uintptr_t)(((byte *)pPage) + sizeof(Page)) );
         pPage->nDataSize = nTotalSize - sizeof(Page);
         pPage->pFirstFree = nullptr;

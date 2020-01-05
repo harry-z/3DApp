@@ -67,7 +67,7 @@ struct TEXTURE_FILE_DESC {
 	word nHeight;
 	union {
 		byte nDepth;
-		byte nFace; // CubeMap面标记
+		byte nFace;
 	};
 	byte nMipLevel;
 	byte *pData;

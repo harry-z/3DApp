@@ -1,3 +1,9 @@
+struct VSInputP2TC2
+{
+	float2 Position : POSITION;
+	float2 Texcoord0 : TEXCOORD0;
+};
+
 struct VSInputP3
 {
 	float3 Position : POSITION;
@@ -28,6 +34,8 @@ struct VSOutputP4TC3
 
 #define POSITION_ELEM(Struct) Struct.Position
 #define TEXCOORD_ELEM(Struct, Channel) Struct.Texcoord##Channel
+
+
 
 float4x4 WorldViewProjectionMatrix;
 float4x4 WorldViewMatrix;

@@ -22,6 +22,7 @@ class CTextureDX9;
 class CAtomsphereRendererDX9 final : public IAtmosphereRenderer
 {
 public:
+    CAtomsphereRendererDX9();
     virtual ~CAtomsphereRendererDX9();
     virtual bool Precompute(const AtmosphereParams &params) override;
 
@@ -54,14 +55,14 @@ private:
     IDirect3DTexture9 *m_pIrradiance = nullptr;
     IDirect3DSurface9 *m_pIrradianceSurface = nullptr;
 
-    IDirect3DTexture9 *m_pDeltaRayleighScattering = nullptr;
-    IDirect3DSurface9 *m_pDeltaRayleighScatteringSurface = nullptr;
-    IDirect3DTexture9 *m_pDeltaMieScattering = nullptr;
-    IDirect3DSurface9 *m_pDeltaMieScatteringSurface = nullptr;
-    IDirect3DTexture9 *m_pRayleighScattering = nullptr;
-    IDirect3DSurface9 *m_pRayleighScatteringSurface = nullptr;
-    IDirect3DTexture9 *m_pMieScattering = nullptr;
-    IDirect3DSurface9 *m_pMieScatteringSurface = nullptr;
+    IDirect3DVolumeTexture9 *m_pDeltaRayleighScattering = nullptr;
+    IDirect3DSurface9 *m_ppDeltaRayleighScatteringSurface[SCATTERING_TEXTURE_DEPTH];
+    IDirect3DVolumeTexture9 *m_pDeltaMieScattering = nullptr;
+    IDirect3DSurface9 *m_ppDeltaMieScatteringSurface[SCATTERING_TEXTURE_DEPTH];
+    IDirect3DVolumeTexture9 *m_pRayleighScattering = nullptr;
+    IDirect3DSurface9 *m_ppRayleighScatteringSurface[SCATTERING_TEXTURE_DEPTH];
+    IDirect3DVolumeTexture9 *m_pMieScattering = nullptr;
+    IDirect3DSurface9 *m_ppMieScatteringSurface[SCATTERING_TEXTURE_DEPTH];
 
     IDirect3DSurface9 *m_pDSSurface = nullptr;
 

@@ -26,16 +26,18 @@ String CAtomsphereRendererDX9::VertexShader() const
         "struct VSOutput {\n" \
         "float4 Position : POSITION;\n" \
         "float2 Texcoord : TEXCOORD0;};\n" \
-        "VSOutput DrawQuad(float2 Position : POSITION){\n" \
+        "VSOutput DrawQuad(float2 Position : POSITION, float2 Texcoord : TEXCOORD0){\n" \
         "VSOutput o;\n" \
         "o.Position = float4(Position, 0.0f, 1.0f);\n" \
-        "o.Texcoord = (Position * float2(1.0f, -1.0f) + float2(1.0f, 1.0f)) * 0.5f;\n" \
+        "o.Texcoord = Texcoord;\n" \
         "return o;}"
     );
 }
 
 String CAtomsphereRendererDX9::TransmittanceShader() const
 {
+    // mu - cos(theta) theta: 某个特定高度位置和光线方向的夹角(天顶角)
+    // r - 高度 
     return String(
         "const int SAMPLE_COUNT = 500;\n"\
         "float2 TextureDim;\n" \
@@ -68,6 +70,7 @@ String CAtomsphereRendererDX9::TransmittanceShader() const
         "float d_max = rho + H;\n" \
         "float d = d_min + X_MU_R.x * (d_max - d_min);\n" \
         "MU_R_Sqr.x = d == 0.0f ? 1.0f : (H * H - rho * rho - d * d) / (2.0f * MU_R_Sqr.y * d);\n" \
+        "MU_R_Sqr.x = clamp(MU_R_Sqr.x, -1.0f, 1.0f);\n" \
         "MU_R_Sqr.zw = MU_R_Sqr.xy * MU_R_Sqr.xy;\n" \
         "return MU_R_Sqr;}\n" \
 

@@ -67,3 +67,24 @@ Shader PS_NoIllumBlendedTranslucent
     EntryPoint PS_NoIllumBlendedTranslucent
     File NoIllum.hlsl
 }
+
+Shader VS_FullScreenQuad
+{
+    Type Vertex
+    EntryPoint VS_FullScreenQuad
+    File FullScreenQuad.hlsl
+}
+
+Shader PS_ComputeTransmittance
+{
+    Type Pixel
+    EntryPoint PS_ComputeTransmittance
+    File Transmittance.hlsl
+}
+
+Shader PS_ComputeDirectIrradiance
+{
+    Type Pixel
+    EntryPoint PS_ComputeDirectIrradiance
+    File Irradiance.hlsl
+}

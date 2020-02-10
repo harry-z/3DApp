@@ -1,10 +1,13 @@
-const float2 Unit2 = { 1.0f, 1.0f };
-const float3 Unit3 = { 1.0f, 1.0f, 1.0f };
-const float3 Zero3 = { 0.0f, 0.0f, 0.0f };
+#include "Common.h"
+#include "VertexLib.h"
+#include "PixelLib.h"
+
 const int SAMPLE_COUNT = 500;
 
+// Transmittance texture dimension
 float2 TextureDim;
-float4 TopBottomRadius; // Top, Bottom, Top^2, Bottom^2
+// Atmosphere top radius, bottom radius, Top^2, Bottom^2
+float4 TopBottomRadius; 
 float3 RayleighScattering;
 float3 MieExtinction;
 float3 AbsorptionExtinction;
@@ -13,8 +16,6 @@ float3 RMAExpScale[2];
 float3 RMALinearTerm[2];
 float3 RMAConstTerm[2];
 float3 RMAWidth;
-
-
 
 float3 DistanceToTopAtmosphereBoundary(float4 MU_R_Sqr)
 {
@@ -37,13 +38,17 @@ float3 GetProfileDensity(float3 altitude)
 float4 GetRMuFromTransmittanceTextureUv(float2 UV)
 {
     float4 MU_R_Sqr;
+    // Shrink 0.5 texel
     float2 X_MU_R = (UV - Unit2 / TextureDim * 0.5f) / (Unit2 - Unit2 / TextureDim);
-    float H = sqrt(TopBottomRadius.z - TopBottomRadius.w);
+    // Mapping UV to MU and R
+    float H = sqrt(TopBottomRadius.z - TopBottomRadius.w); 
     float rho = H * X_MU_R.y;
+    // Calculate r (height)
     MU_R_Sqr.y = sqrt(rho * rho + TopBottomRadius.w);
     float d_min = TopBottomRadius.x - MU_R_Sqr.y;
     float d_max = rho + H;
-    float d = d_min + X_MU_R.x * (d_max - d_min);
+    float d = lerp(d_min, d_max, X_MU_R.x);
+    // Calculate cos(theta)
     MU_R_Sqr.x = clamp(d == 0.0f ? 1.0f : (H * H - rho * rho - d * d) / (2.0f * MU_R_Sqr.y * d), -1.0f, 1.0f);
     MU_R_Sqr.zw = MU_R_Sqr.xy * MU_R_Sqr.xy;
     return MU_R_Sqr;
@@ -68,14 +73,16 @@ float3 ComputeOpticalLengthToTopAtmosphereBoundary(float4 MU_R_Sqr)
 float3 ComputeTransmittanceToTopAtmosphereBoundary(float4 MU_R_Sqr)
 {
     float3 OpticalLength = ComputeOpticalLengthToTopAtmosphereBoundary(MU_R_Sqr);
-    float3 Transmittance = RayleighScattering * OpticalLength.x + 
-        MieExtinction * OpticalLength.y + 
-        AbsorptionExtinction * OpticalLength.z;
+    float3 Transmittance = RayleighScattering * OpticalLength.xxx + 
+        MieExtinction * OpticalLength.yyy + 
+        AbsorptionExtinction * OpticalLength.zzz;
     return exp(-Transmittance);
 }
 
-float4 ComputeTransmittanceToTopAtmosphereBoundaryTexture(float2 UV : TEXCOORD0) : COLOR0
+PSSRTOutput PS_ComputeTransmittance(VSOutputP4TC2 Input)
 {
-    float4 MU_R_Sqr = GetRMuFromTransmittanceTextureUv(UV);
-    return float4(ComputeTransmittanceToTopAtmosphereBoundary(MU_R_Sqr), 1.0f);
+    PSSRTOutput SRTOutput;
+    float4 MU_R_Sqr = GetRMuFromTransmittanceTextureUv(TEXCOORD_ELEM(Input, 0));
+    OUTPUT_CHANNEL(SRTOutput, 0) = float4(ComputeTransmittanceToTopAtmosphereBoundary(MU_R_Sqr), 1.0f);
+    return SRTOutput;
 }

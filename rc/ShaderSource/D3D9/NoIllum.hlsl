@@ -1,4 +1,5 @@
 #include "VertexLib.h"
+#include "PixelLib.h"
 #include "ShadingModel.h"
 
 VSOutputP4 VS_NoIllumColor(VSInputP3 Input) 
@@ -20,34 +21,46 @@ float3 Albedo;
 float Alpha;
 sampler2D AlbedoTexture;
 
-float4 PS_NoIllumColor() : COLOR0
+PSSRTOutput PS_NoIllumColor()
 {
-	return NoIllumOpaque(Albedo);
+	PSSRTOutput SRTOutput;
+	OUTPUT_CHANNEL(SRTOutput, 0) = NoIllumOpaque(Albedo);
+	return SRTOutput;
 }
 
-float4 PS_NoIllum(VSOutputP4TC2 Input) : COLOR0
+PSSRTOutput PS_NoIllum(VSOutputP4TC2 Input)
 {
-	return NoIllumOpaque(tex2D(AlbedoTexture, TEXCOORD_ELEM(Input, 0)).xyz);
+	PSSRTOutput SRTOutput;
+	OUTPUT_CHANNEL(SRTOutput, 0) = NoIllumOpaque(tex2D(AlbedoTexture, TEXCOORD_ELEM(Input, 0)).xyz);
+	return SRTOutput;
 }
 
-float4 PS_NoIllumBlended(VSOutputP4TC2 Input) : COLOR0
+PSSRTOutput PS_NoIllumBlended(VSOutputP4TC2 Input)
 {
-	return NoIllumOpaque(tex2D(AlbedoTexture, TEXCOORD_ELEM(Input, 0)).xyz * Albedo);
+	PSSRTOutput SRTOutput;
+	OUTPUT_CHANNEL(SRTOutput, 0) = NoIllumOpaque(tex2D(AlbedoTexture, TEXCOORD_ELEM(Input, 0)).xyz * Albedo);
+	return SRTOutput;
 }
 
-float4 PS_NoIllumColorTranslucent() : COLOR0
+PSSRTOutput PS_NoIllumColorTranslucent()
 {
-	return NoIllum(Albedo, Alpha);
+	PSSRTOutput SRTOutput;
+	OUTPUT_CHANNEL(SRTOutput, 0) = NoIllum(Albedo, Alpha);
+	return SRTOutput;
 }
 
-float4 PS_NoIllumTranslucent(VSOutputP4TC2 Input) : COLOR0
+PSSRTOutput PS_NoIllumTranslucent(VSOutputP4TC2 Input)
 {
+	PSSRTOutput SRTOutput;
 	float4 c = tex2D(AlbedoTexture, TEXCOORD_ELEM(Input, 0));
-	return NoIllum(c.xyz, c.w * Alpha);
+	OUTPUT_CHANNEL(SRTOutput, 0) = NoIllum(c.xyz, c.w * Alpha);
+	return SRTOutput;
 }
 
-float4 PS_NoIllumBlendedTranslucent(VSOutputP4TC2 Input) : COLOR0
+PSSRTOutput PS_NoIllumBlendedTranslucent(VSOutputP4TC2 Input)
 {
+	PSSRTOutput SRTOutput;
 	float4 c = tex2D(AlbedoTexture, TEXCOORD_ELEM(Input, 0));
-	return NoIllum(c.xyz * Albedo, c.w * Alpha);
+	OUTPUT_CHANNEL(SRTOutput, 0) = NoIllum(c.xyz * Albedo, c.w * Alpha);
+	return SRTOutput;
 }

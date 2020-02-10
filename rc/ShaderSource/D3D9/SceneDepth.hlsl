@@ -1,4 +1,5 @@
 #include "VertexLib.h"
+#include "PixelLib.h"
 
 VSOutputP4TC3 VS_SceneDepth(VSInputP3 Input)
 {
@@ -8,7 +9,9 @@ VSOutputP4TC3 VS_SceneDepth(VSInputP3 Input)
 	return OutputP4TC3;		
 }
 
-float4 PS_SceneDepth(VSOutputP4TC3 Input) : COLOR0
+PSSRTOutput PS_SceneDepth(VSOutputP4TC3 Input)
 {
-	return float4(TEXCOORD_ELEM(Input, 0).z / (NearFarClip.y - NearFarClip.x), 0.0f, 0.0f, 1.0f);
+	PSSRTOutput SRTOutput;
+	OUTPUT_CHANNEL(SRTOutput, 0) = float4(TEXCOORD_ELEM(Input, 0).z / (NearFarClip.y - NearFarClip.x), 0.0f, 0.0f, 1.0f);
+	return SRTOutput;
 }

@@ -11,6 +11,10 @@
 #include "Backend/D3D9/ShaderDX9.h"
 #include "Backend/D3D9/TextureDX9.h"
 #include "Backend/D3D9/HardwareBufferDX9.h"
+#elif defined(RENDERAPI_DX11)
+#include "Backend/D3D11/RenderBackendDX11.h"
+#include "Backend/D3D11/ShaderDX11.h"
+#include "Backend/D3D11/TextureDX11.h"
 #endif
 
 #ifdef INPUTAPI_DINPUT
@@ -94,6 +98,22 @@ C3DEngine::~C3DEngine()
         CRenderBackendDX9 *pRenderBackendDX9 = static_cast<CRenderBackendDX9*>(Global::m_pRenderBackend);
         DELETE_TYPE(pRenderBackendDX9, CRenderBackendDX9);
     }
+#elif defined(RENDERAPI_DX11)
+    if (Global::m_pTextureManager)
+    {
+        CTextureManagerDX11 *pTextureManagerDX11 = static_cast<CTextureManagerDX11*>(Global::m_pTextureManager);
+        DELETE_TYPE(pTextureManagerDX11, CTextureManagerDX11);
+    }
+    if (Global::m_pShaderManager)
+    {
+        CShaderManagerDX11 *pShaderManagerDX11 = static_cast<CShaderManagerDX11*>(Global::m_pShaderManager);
+        DELETE_TYPE(pShaderManagerDX11, CShaderManagerDX11);
+    }
+    if (Global::m_pRenderBackend)
+    {
+        CRenderBackendDX11 *pRenderBackendDX11 = static_cast<CRenderBackendDX11*>(Global::m_pRenderBackend);
+        DELETE_TYPE(pRenderBackendDX11, CRenderBackendDX11);
+    }
 #endif
     Global::m_pHwBufferManager = nullptr;
     Global::m_pTextureManager = nullptr;
@@ -155,6 +175,11 @@ bool C3DEngine::Initialize()
     CShaderManager *pShaderManager = NEW_TYPE(CShaderManagerDX9);
     CTextureManager *pTextureManager = NEW_TYPE(CTextureManagerDX9);
     CHardwareBufferManager * pHwBufferManager = NEW_TYPE(CHardwareBufferManagerDX9);
+#elif defined(RENDERAPI_DX11)
+    IRenderBackend *pRenderBackend = NEW_TYPE(CRenderBackendDX11);
+    pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create RenderBackend D3D11");
+    CShaderManager *pShaderManager = NEW_TYPE(CShaderManagerDX11);
+    CTextureManager *pTextureManager = NEW_TYPE(CTextureManagerDX11);
 #endif
     Global::m_pRenderBackend = pRenderBackend;
     Global::m_pShaderManager = pShaderManager;
@@ -195,8 +220,8 @@ bool C3DEngine::Initialize()
     pJobSystem->Initialize();
     Global::m_pJobSystem = pJobSystem;
 
-    CAtmosphere Atmosphere;
-    Atmosphere.Precompute();
+    // CAtmosphere Atmosphere;
+    // Atmosphere.Precompute();
 
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize 3DEngine");
     return true;
@@ -283,7 +308,7 @@ void C3DEngine::Run()
         if (m_pCameraController != nullptr)
             m_pCameraController->Update();
 
-        pShaderManager->UpdateShaderConstantInfoPerFrame(m_pMainCamera);
+        pShaderManager->UpdateShaderUniformPerFrame(m_pMainCamera);
 
         Frame(nFrameId);
 
@@ -389,7 +414,7 @@ void C3DEngine::DestroyCameraController(ICameraController *pCameraController)
         }
         else if (strcmp(pCameraController->Name(), ORBIT_CAMERA_CONTROLLER) == 0)
         {
-            COrbitCameraController *pOrbitController = (COrbitCameraController *)pOrbitController;
+            COrbitCameraController *pOrbitController = (COrbitCameraController *)pCameraController;
             DELETE_TYPE(pOrbitController, COrbitCameraController);
         }
     }

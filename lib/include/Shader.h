@@ -37,28 +37,45 @@ struct AutoUpdatedShaderConstantIdStr
     static IdString s_NearFarClip;
 };
 
-struct ShaderConstantInfo
+struct ShaderParamInfo
 {
     IdString m_Name;
     EShaderConstantType m_Type;
-    dword m_RegisterCount;
+    dword m_nLengthInBytes;
 
-    ShaderConstantInfo()
+    ShaderParamInfo()
     : m_Type(EShaderConstantType::EShaderConstantType_Unknown)
-    , m_RegisterCount(0) {}
+    , m_nLengthInBytes(0) {}
 
-    ShaderConstantInfo(const String &szStr, EShaderConstantType Type, dword nCount)
+    ShaderParamInfo(const String &szStr, EShaderConstantType Type, dword nSizeInBytes)
     : m_Name(szStr)
     , m_Type(Type)
-    , m_RegisterCount(nCount) {}
+    , m_nLengthInBytes(nSizeInBytes) {}
 };
 
-struct AutoUpdatedConstant
+struct ShaderUniformInfo
 {
-    dword m_nConstantCount = 0;
+    ShaderParamInfo m_ParamInfo;
+    dword m_nRegisterIndex;
+    dword m_nOffsetInBytes;
+
+    ShaderUniformInfo()
+    : m_nRegisterIndex(0xFFFFFFFF)
+    , m_nOffsetInBytes(0)
+    {}
+    ShaderUniformInfo(const String &szStr, EShaderConstantType Type, dword nRegisterIndex, dword nLengthInBytes, dword nOffsetInBytes)
+    : m_ParamInfo(szStr, Type, nLengthInBytes)
+    , m_nRegisterIndex(nRegisterIndex)
+    , m_nOffsetInBytes(nOffsetInBytes)
+    {}
+};
+
+struct AutoUpdatedUniform
+{
+    dword m_nSizeInByte = 0;
     byte *m_pData = nullptr;
 
-    ~AutoUpdatedConstant()
+    ~AutoUpdatedUniform()
     {
         if (m_pData != nullptr)
         {
@@ -70,18 +87,24 @@ struct AutoUpdatedConstant
 class CShader 
 {
 public:
-	virtual bool Load(EShaderType eType, const byte *pszShaderByteCode) = 0;
-    virtual dword GetConstantIndexByName(const IdString &szName) const = 0;
+	virtual bool Load(EShaderType eType, const byte *pszShaderByteCode, dword nCodeSize) = 0;
+    virtual const ShaderUniformInfo& GetUniformInfoByName(const IdString &szName) const = 0;
     inline word GetId() const { return m_nId; } 
     inline EShaderType GetShaderType() const { return m_Type; }
+    inline dword GetShaderByteCodeLength() const { return m_nByteCodeLen; }
+    inline const byte* GetShaderByteCode() const { return m_pByteCode; }
 
 protected:
     CShader() {}
 	virtual ~CShader() {}
+    virtual bool FillVariableMap(LPCVOID pFunction, dword nCodeSize) = 0;
 
 protected:
 	word m_nId;
     EShaderType m_Type = EShaderType::EShaderType_Unknown;
+    dword m_nByteCodeLen = 0;
+    byte *m_pByteCode = nullptr;
+    CMap<IdString, ShaderUniformInfo> m_VariableMap;
 };
 
 class CCamera;
@@ -102,13 +125,10 @@ public:
     CShader* GetDefaultVertexShader() { return m_pDefaultVertexShader; }
     CShader* GetDefaultPixelShader() { return m_pDefaultPixelShader; }
 
-    bool IsAutoUpdatedShaderConstant(const IdString &idStr) const;
-    const ShaderConstantInfo* FindAutoUpdatedShaderConstantInfo(const IdString &idStr) const;
+    AutoUpdatedUniform& GetAutoUpdatedUniform(EAutoUpdatedConstant Constant);
+    const AutoUpdatedUniform& GetAutoUpdatedUniform(EAutoUpdatedConstant Constant) const;
 
-    AutoUpdatedConstant& GetAutoUpdatedConstant(EAutoUpdatedConstant Constant);
-    const AutoUpdatedConstant& GetAutoUpdatedConstant(EAutoUpdatedConstant AutoUpdatedConstant) const;
-
-    void UpdateShaderConstantInfoPerFrame(CCamera *pCamera);
+    void UpdateShaderUniformPerFrame(CCamera *pCamera);
 
 private:
     void InitializeAutoShaderConstantMap();
@@ -116,9 +136,7 @@ private:
 protected:
     using ShaderMap = CMap<IdString, CShader*>;
     ShaderMap m_ShaderMap;
-    using AutoUpdatedShaderConstantMap = CMap<IdString, ShaderConstantInfo>;
-    AutoUpdatedShaderConstantMap m_AutoUpdatedShaderConstMap;
-    using AutoUpdatedConstants = CArray<AutoUpdatedConstant>;
+    using AutoUpdatedConstants = CArray<AutoUpdatedUniform>;
     AutoUpdatedConstants m_AutoUpdatedConstants;
     using ShaderArr = CArray<CShader*>;
     ShaderArr m_ShaderArr;

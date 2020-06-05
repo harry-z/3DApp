@@ -62,6 +62,7 @@ public:
 	virtual void DestroyVertexBuffer(IHardwareBuffer *pVertexBuffer) override;
 	virtual void DestroyIndexBuffer(IHardwareBuffer *pIndexBuffer) override;
 
+	virtual IVertexLayout* GetOrCreatePredefinedVertexLayout(EPredefinedVertexLayout PredefinedLayout, const byte *pShaderByteCode, dword nShaderByteCodeLen) override;
 	virtual IVertexLayout* CreateVertexLayout(const String &szName, const CArray<VertexElement> &arrElem) override;
 
 	D3DFORMAT GetIndexFormat(dword nStride) const;

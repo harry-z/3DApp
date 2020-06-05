@@ -214,6 +214,33 @@ public:
 	}
     CMap<String, char*> *m_pMapShaderFiles = nullptr;
 };
+#elif defined(RENDERAPI_DX11)
+#include <d3dcompiler.h>
+class CD3DIncludeHandler final : public ID3DInclude
+{
+public:
+    CD3DIncludeHandler(const CMap<String, char*> *pMapShaderFiles) 
+    : m_pMapShaderFiles(const_cast<CMap<String, char*>*>(pMapShaderFiles)) {}
+
+    STDMETHOD(Open)(THIS_ D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID *ppData, UINT *pBytes) {
+		if (m_pMapShaderFiles != nullptr) {
+            CMap<String, char*>::_MyIterType FileContentConstIter = m_pMapShaderFiles->Find(String(pFileName));
+            if (FileContentConstIter)
+            {
+                *ppData = FileContentConstIter.Value();
+                *pBytes = strlen(FileContentConstIter.Value());
+                return S_OK;
+            }
+        }
+		return S_FALSE;
+	}
+
+	STDMETHOD(Close)(THIS_ LPCVOID pData) {
+		(void)pData;
+		return S_OK;
+	}
+    CMap<String, char*> *m_pMapShaderFiles = nullptr;
+};
 #endif
 
 bool CompileAndCacheAllShaders(const CMap<String, char*> &arrShaderFiles, const CArray<ShaderEntry> &arrShaderEntries)
@@ -305,6 +332,93 @@ bool CompileAndCacheAllShaders(const CMap<String, char*> &arrShaderFiles, const 
                 else
                 {
                     std::cout << "Shader " << ShaderEntry.m_ShaderName.c_str() << " compile error: " << (char *)pByteError->GetBufferPointer() << std::endl;
+                    SAFE_RELEASE(pByteError);
+                }
+            }
+        }
+
+        if (bShaderCached)
+            std::cout << "Shader cached: " << ShaderEntry.m_ShaderName.c_str() << std::endl;
+        else
+            std::cout << "Shader not cached: " << ShaderEntry.m_ShaderName.c_str() << std::endl;
+    }
+
+#elif defined(RENDERAPI_DX11)
+    UINT nFlag = 0;
+
+#ifdef SHADER_DEBUGGING
+    BIT_ADD(nFlag, (D3DCOMPILE_DEBUG | D3DCOMPILE_OPTIMIZATION_LEVEL0));
+#endif
+
+    CD3DIncludeHandler IncludeHandler(&arrShaderFiles);
+    ID3DBlob *pByteCode = nullptr, *pByteError = nullptr;
+
+    for (const auto &ShaderEntry : arrShaderEntries) {
+        // 准备 Macro
+        CArray<D3D_SHADER_MACRO> D3DMacros;
+        D3D_SHADER_MACRO D3DMacro;
+        for (const auto &ShaderMacro : ShaderEntry.m_ShaderMacros) {
+            String::size_type pos = ShaderMacro.find_first_of("=");
+            if (pos != String::npos)
+                D3DMacro.Name = ShaderMacro.substr(0, pos).c_str();
+            else
+                D3DMacro.Name = ShaderMacro.c_str();
+            D3DMacro.Definition = "1";
+            D3DMacros.Emplace(std::move(D3DMacro));
+        }
+        D3DMacro.Name = 0;
+        D3DMacro.Definition = 0;
+        D3DMacros.Emplace(std::move(D3DMacro));
+
+        bool bShaderCached = false;
+        if (ShaderEntry.m_ShaderType != EShaderType::EShaderType_Unknown) {
+            String szProfile;
+            if (ShaderEntry.m_ShaderType == EShaderType::EShaderType_Vertex)
+                szProfile = "vs_5_0";
+            else if (ShaderEntry.m_ShaderType == EShaderType::EShaderType_Pixel)
+                szProfile = "ps_5_0";
+
+            // 找到相应的Shader文件
+            CMap<String, char*>::_MyConstIterType ShaderCodeConstIter = arrShaderFiles.Find(ShaderEntry.m_ShaderFile);
+            if (ShaderCodeConstIter) {
+                HRESULT hr = D3DCompile(ShaderCodeConstIter.Value(), 
+                    strlen(ShaderCodeConstIter.Value()), 
+                    D3DMacros.Data(), 
+                    &IncludeHandler, 
+                    ShaderEntry.m_EntryPoint.c_str(), 
+                    szProfile.c_str(), 
+                    nFlag,  
+                    0,
+                    &pByteCode, 
+                    &pByteError);
+                if (SUCCEEDED(hr))
+                {
+                    // 编译成功，写入缓存文件
+                    dword nSize = ShaderEntry.m_ShaderName.length() + 1 + sizeof(byte) + pByteCode->GetBufferSize() + sizeof(dword);
+                    byte *pBuffer = (byte*)MEMALLOC(nSize);
+                    byte *pBufferStart = pBuffer;
+
+                    // 写入Shader名称
+                    AddString(pBuffer, ShaderEntry.m_ShaderName);
+                    // 写入Shader类型
+                    byte nShaderType = (byte)ShaderEntry.m_ShaderType;
+                    AddBytes(pBuffer, &nShaderType, 1);
+                    // 写入ShaderByteCode长度
+                    dword nByteCodeSize = (dword)pByteCode->GetBufferSize();
+                    AddDwords(pBuffer, &nByteCodeSize, 1);
+                    // 写入ShaderByteCode
+                    AddBytes(pBuffer, (byte *)pByteCode->GetBufferPointer(), pByteCode->GetBufferSize());
+
+                    arrShaderBuffer.Emplace(pBufferStart, nSize);
+
+                    SAFE_RELEASE(pByteCode);
+
+                    bShaderCached = true;
+                }
+                else
+                {
+                    std::cout << "Shader " << ShaderEntry.m_ShaderName.c_str() << " compile error: " << (char *)pByteError->GetBufferPointer() << std::endl;
+                    SAFE_RELEASE(pByteError);
                 }
             }
         }
@@ -342,6 +456,9 @@ bool CShaderPrecacher::Precache()
 #ifdef RENDERAPI_DX9
     ShaderFilePath = "ShaderSource/D3D9";
     ShaderIndexFilePath = "ShaderSource/D3D9/Shaders.idx";
+#elif defined(RENDERAPI_DX11)
+    ShaderFilePath = "ShaderSource/D3D11";
+    ShaderIndexFilePath = "ShaderSource/D3D11/Shaders.idx";
 #endif
 
     std::cout << "Start reading all shader files..." << std::endl;

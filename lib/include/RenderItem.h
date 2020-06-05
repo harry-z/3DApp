@@ -63,8 +63,9 @@ struct RenderObject
 struct ShaderVariable
 {
 	EShaderConstantType m_Type;
-	word m_nStartRegister;
-	word m_nUsedRegister;
+	dword m_nRegisterIndex;
+    dword m_nLengthInBytes;
+    dword m_nOffsetInBytes;
 	void *m_pData = nullptr;
 };
 

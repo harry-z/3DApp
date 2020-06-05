@@ -17,52 +17,41 @@ IdString AutoUpdatedShaderConstantIdStr::s_CamPos(CAMERA_POSITION);
 IdString AutoUpdatedShaderConstantIdStr::s_CamDir(CAMERA_DIRECTION);
 IdString AutoUpdatedShaderConstantIdStr::s_NearFarClip(NEAR_FAR_CLIP);
 
-#define INIT_AUTO_UPDATED_CONSTANT(AutoUpdatedConstantType, ConstantType, ConstantCount) \
-    ConstantType *p##AutoUpdatedConstantType##Data = (ConstantType *)MEMALLOC(sizeof(ConstantType) * ConstantCount); \
-    m_AutoUpdatedConstants[(dword)AutoUpdatedConstantType].m_nConstantCount = ConstantCount; \
-    m_AutoUpdatedConstants[(dword)AutoUpdatedConstantType].m_pData = (byte *)p##AutoUpdatedConstantType##Data;
+#define INIT_AUTO_UPDATED_CONSTANT(AutoUpdatedConstantType, SizeInByte) \
+    byte *p##AutoUpdatedConstantType##Data = (byte *)MEMALLOC((SizeInByte)); \
+    m_AutoUpdatedConstants[(dword)AutoUpdatedConstantType].m_nSizeInByte = (SizeInByte); \
+    m_AutoUpdatedConstants[(dword)AutoUpdatedConstantType].m_pData = p##AutoUpdatedConstantType##Data;
 
 void CShaderManager::InitializeAutoShaderConstantMap()
 {
     m_AutoUpdatedConstants.Reserve((dword)EAutoUpdatedConstant_Num);
     m_AutoUpdatedConstants.SetNum((dword)EAutoUpdatedConstant_Num);
-    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_View, float, 16);
-    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_ViewProj, float, 16);
-    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_InvView, float, 16);
-    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_InvViewProj, float, 16);
-    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_Proj, float, 16);
-    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_InvProj, float, 16);
-    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_CamPos, float, 3);
-    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_CamDir, float, 3);
-    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_NearFar, float, 2);
+    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_View, sizeof(float) * 16);
+    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_ViewProj, sizeof(float) * 16);
+    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_InvView, sizeof(float) * 16);
+    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_InvViewProj, sizeof(float) * 16);
+    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_Proj, sizeof(float) * 16);
+    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_InvProj, sizeof(float) * 16);
+    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_CamPos, sizeof(float) * 3);
+    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_CamDir, sizeof(float) * 3);
+    INIT_AUTO_UPDATED_CONSTANT(EAutoUpdatedConstant_NearFar, sizeof(float) * 2);
 }
 
-bool CShaderManager::IsAutoUpdatedShaderConstant(const IdString &idStr) const
-{
-    return (bool)(m_AutoUpdatedShaderConstMap.Find(idStr));
-}
-
-const ShaderConstantInfo* CShaderManager::FindAutoUpdatedShaderConstantInfo(const IdString &idStr) const
-{
-    AutoUpdatedShaderConstantMap::_MyConstIterType CIter = m_AutoUpdatedShaderConstMap.Find(idStr);
-    return CIter ? &CIter.Value() : nullptr;
-}
-
-AutoUpdatedConstant& CShaderManager::GetAutoUpdatedConstant(EAutoUpdatedConstant Constant)
+AutoUpdatedUniform& CShaderManager::GetAutoUpdatedUniform(EAutoUpdatedConstant Constant)
 {
     dword nIndex = (dword)Constant;
     assert(m_AutoUpdatedConstants.IsValidIndex(nIndex));
     return m_AutoUpdatedConstants[nIndex];
 }
 
-const AutoUpdatedConstant& CShaderManager::GetAutoUpdatedConstant(EAutoUpdatedConstant Constant) const
+const AutoUpdatedUniform& CShaderManager::GetAutoUpdatedUniform(EAutoUpdatedConstant Constant) const
 {
     dword nIndex = (dword)Constant;
     assert(m_AutoUpdatedConstants.IsValidIndex(nIndex));
     return m_AutoUpdatedConstants[nIndex];   
 }
 
-void CShaderManager::UpdateShaderConstantInfoPerFrame(CCamera *pCamera)
+void CShaderManager::UpdateShaderUniformPerFrame(CCamera *pCamera)
 {
     bool bViewConstNeedUpdate = pCamera->IsViewMatrixShaderConstNeedUpdate();
     bool bProjConstNeedUpdate = pCamera->IsProjectionMatrixShaderConstNeedUpdate();
@@ -77,33 +66,33 @@ void CShaderManager::UpdateShaderConstantInfoPerFrame(CCamera *pCamera)
 
         if (bViewConstNeedUpdate)
         {
-            AutoUpdatedConstant &ViewConstant = GetAutoUpdatedConstant(EAutoUpdatedConstant_View);
-            memcpy(ViewConstant.m_pData, ViewMatrix.m, sizeof(float) * ViewConstant.m_nConstantCount);
+            AutoUpdatedUniform &ViewConstant = GetAutoUpdatedUniform(EAutoUpdatedConstant_View);
+            memcpy(ViewConstant.m_pData, ViewMatrix.m, ViewConstant.m_nSizeInByte);
 
-            AutoUpdatedConstant &InvViewConstant = GetAutoUpdatedConstant(EAutoUpdatedConstant_InvView);
-            memcpy(InvViewConstant.m_pData, InvViewMatrix.m, sizeof(float) * InvViewConstant.m_nConstantCount);
+            AutoUpdatedUniform &InvViewConstant = GetAutoUpdatedUniform(EAutoUpdatedConstant_InvView);
+            memcpy(InvViewConstant.m_pData, InvViewMatrix.m, InvViewConstant.m_nSizeInByte);
 
             const Vec3 &Eye = pCamera->GetEye();
-            AutoUpdatedConstant &CamPosConstant = GetAutoUpdatedConstant(EAutoUpdatedConstant_CamPos);
-            memcpy(CamPosConstant.m_pData, &Eye.x, sizeof(float) * CamPosConstant.m_nConstantCount);
+            AutoUpdatedUniform &CamPosConstant = GetAutoUpdatedUniform(EAutoUpdatedConstant_CamPos);
+            memcpy(CamPosConstant.m_pData, &Eye.x, CamPosConstant.m_nSizeInByte);
 
             const Vec3 &Lookat = pCamera->GetLookat();
             Vec3 Dir = Lookat - Eye; Dir.Normalize();
-            AutoUpdatedConstant &CamDirConstant = GetAutoUpdatedConstant(EAutoUpdatedConstant_CamDir);
-            memcpy(CamDirConstant.m_pData, &Dir.x, sizeof(float) * CamDirConstant.m_nConstantCount);
+            AutoUpdatedUniform &CamDirConstant = GetAutoUpdatedUniform(EAutoUpdatedConstant_CamDir);
+            memcpy(CamDirConstant.m_pData, &Dir.x, CamDirConstant.m_nSizeInByte);
 
             pCamera->ViewMatrixShaderConstUpdated();    
         }
 
         if (bProjConstNeedUpdate)
         {
-            AutoUpdatedConstant &ProjConstant = GetAutoUpdatedConstant(EAutoUpdatedConstant_Proj);
-            memcpy(ProjConstant.m_pData, ProjMatrix.m, sizeof(float) * ProjConstant.m_nConstantCount);
+            AutoUpdatedUniform &ProjConstant = GetAutoUpdatedUniform(EAutoUpdatedConstant_Proj);
+            memcpy(ProjConstant.m_pData, ProjMatrix.m, ProjConstant.m_nSizeInByte);
 
-            AutoUpdatedConstant &InvProjConstant = GetAutoUpdatedConstant(EAutoUpdatedConstant_InvProj);
-            memcpy(InvProjConstant.m_pData, InvProjMatrix.m, sizeof(float) * InvProjConstant.m_nConstantCount);
+            AutoUpdatedUniform &InvProjConstant = GetAutoUpdatedUniform(EAutoUpdatedConstant_InvProj);
+            memcpy(InvProjConstant.m_pData, InvProjMatrix.m, InvProjConstant.m_nSizeInByte);
 
-            AutoUpdatedConstant &NearFar = GetAutoUpdatedConstant(EAutoUpdatedConstant_NearFar);
+            AutoUpdatedUniform &NearFar = GetAutoUpdatedUniform(EAutoUpdatedConstant_NearFar);
             float *pf = (float *)NearFar.m_pData;
             *pf = pCamera->GetNearClip();
             *(pf + 1) = pCamera->GetFarClip();
@@ -111,10 +100,10 @@ void CShaderManager::UpdateShaderConstantInfoPerFrame(CCamera *pCamera)
             pCamera->ProjectionMatrixShaderConstUpdated();
         }
 
-        AutoUpdatedConstant &ViewProjConstant = GetAutoUpdatedConstant(EAutoUpdatedConstant_ViewProj);
-        memcpy(ViewProjConstant.m_pData, ViewProjMatrix.m, sizeof(float) * ViewProjConstant.m_nConstantCount);
+        AutoUpdatedUniform &ViewProjConstant = GetAutoUpdatedUniform(EAutoUpdatedConstant_ViewProj);
+        memcpy(ViewProjConstant.m_pData, ViewProjMatrix.m, ViewProjConstant.m_nSizeInByte);
 
-        AutoUpdatedConstant &InvViewProjConstant = GetAutoUpdatedConstant(EAutoUpdatedConstant_InvViewProj);
-        memcpy(InvViewProjConstant.m_pData, InvViewProjMatrix.m, sizeof(float) * InvViewProjConstant.m_nConstantCount);
+        AutoUpdatedUniform &InvViewProjConstant = GetAutoUpdatedUniform(EAutoUpdatedConstant_InvViewProj);
+        memcpy(InvViewProjConstant.m_pData, InvViewProjMatrix.m, InvViewProjConstant.m_nSizeInByte);
     }
 }

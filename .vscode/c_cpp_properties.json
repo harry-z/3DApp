@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Win32 Debug",
+            "name": "Win32 Debug D3D9",
             "includePath": [
                 "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.10240.0/ucrt",
@@ -17,6 +17,30 @@
                 "PLATFORM_WIN",
                 "TRACE_MEMORY_ALLOCATION",
                 "RENDERAPI_DX9",
+                "INPUTAPI_DINPUT"
+            ],
+            "windowsSdkVersion": "10.0.17134.0",
+            "cStandard": "c99",
+            "cppStandard": "c++11",
+            "intelliSenseMode": "msvc-x64"
+        },
+        {
+            "name": "Win32 Debug D3D11",
+            "includePath": [
+                "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
+                "C:/Program Files (x86)/Windows Kits/10/Include/10.0.10240.0/ucrt",
+                "${workspaceFolder}/lib/include",
+                "${workspaceFolder}/lib/dependencies",
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/lib/src/Backend/D3D11",
+                "${workspaceFolder}/lib/src/Backend/DInput",
+                "${workspaceFolder}/lib/src/Windows"
+            ],
+            "defines": [
+                "_DEBUG",
+                "PLATFORM_WIN",
+                "TRACE_MEMORY_ALLOCATION",
+                "RENDERAPI_DX11",
                 "INPUTAPI_DINPUT"
             ],
             "windowsSdkVersion": "10.0.17134.0",

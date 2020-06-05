@@ -3,26 +3,6 @@
 #include "Backend/D3D9/AtomsphereRendererDX9.h"
 #endif
 
-// inline double ClampCosine(double mu)
-// {
-//     return Clamp<double>(mu, -1.0, 1.0);
-// }
-
-// inline double GetUnitRangeFromTextureCoord(double u, int texture_size)
-// {
-//     return ((u - 0.5 / (double)(texture_size)) / (1.0 - 1.0 / (double)(texture_size)));
-// }
-
-// inline double ClampDistance(double d)
-// {
-//     return max(d, 0.0);
-// }
-
-// inline double SafeSqrt(double sqr)
-// {
-//     return sqrt(max(sqr, 0.0));
-// }
-
 inline double Interpolate(const CArray<double> &arrWaveLength, const CArray<double> &arrWaveLengthFunction, double WaveLength)
 {
     if (WaveLength < arrWaveLength[0])

@@ -5,11 +5,11 @@
 #include "Texture.h"
 #include "ScriptParser.h"
 
-struct ShaderConstantBuffer
+struct ShaderUniformBuffer
 {
-    ShaderConstantInfo m_Info;
+    ShaderParamInfo m_Info;
     byte *m_pData = nullptr;
-    ~ShaderConstantBuffer()
+    ~ShaderUniformBuffer()
     {
         if (m_pData != nullptr)
         {
@@ -25,7 +25,7 @@ public:
     friend class CPass;
 
     bool AddShaderConstantInfo(const CArray<String> &arrParam);
-    inline const CArray<ShaderConstantBuffer>& GetShaderConstantBuffer() const { return m_arrShaderConstInfo; }
+    inline const CArray<ShaderUniformBuffer>& GetShaderConstantBuffer() const { return m_arrShaderConstInfo; }
 
     bool AddAutoShaderConstantInfo(const String &szParamName);
     inline const CArray<IdString>& GetAutoShaderConstantInfo() const { return m_arrAutoShaderConstInfo; }
@@ -39,14 +39,14 @@ public:
 private:
     CShaderRef(EShaderType Type, word Id);
     ~CShaderRef();
-    bool CheckParamIsValid(const CArray<String> &arrParam, OUT EShaderConstantType &Type, OUT dword &nTotalElem, OUT dword &nElemCount) const;
+    bool CheckParamIsValid(const CArray<String> &arrParam, OUT EShaderConstantType &Type, OUT dword &nTotalElem) const;
     void GetShaderConstantTypeAndCount(const String &szTypeName, OUT EShaderConstantType &Type, OUT dword &nElemCount) const;
 
     std::atomic_bool m_Compiled;
     word m_RefId = 0xFFFF;
     EShaderType m_ShaderType;
     ShaderObject *m_pShaderObj = nullptr;
-    CArray<ShaderConstantBuffer> m_arrShaderConstInfo;
+    CArray<ShaderUniformBuffer> m_arrShaderConstInfo;
     CArray<IdString> m_arrAutoShaderConstInfo;
 };
 

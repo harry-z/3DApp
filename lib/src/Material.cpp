@@ -30,53 +30,51 @@ bool CShaderRef::AddShaderConstantInfo(const CArray<String> &arrParam)
 {
 	EShaderConstantType Type;
 	dword nElemCount, nTotalElem;
-	if (!CheckParamIsValid(arrParam, Type, nTotalElem, nElemCount))
+	if (!CheckParamIsValid(arrParam, Type, nTotalElem))
 		return false;
-	dword nRegisterCount = nTotalElem / nElemCount;
-	dword nSkip = 4 - nElemCount;
 	switch (Type)
 	{
 		case EShaderConstantType::EShaderConstantType_Float:
 		{
-			byte *pConstantInfoData = (byte *)MEMALLOC(sizeof(float) * 4 * nRegisterCount); 
-			memset(pConstantInfoData, 0, sizeof(float) * 4 * nRegisterCount);
+			byte *pConstantInfoData = (byte *)MEMALLOC(sizeof(float) * nTotalElem); 
+			memset(pConstantInfoData, 0, sizeof(float) * nTotalElem);
 			float *pTypedDest = (float *)pConstantInfoData;
-			for (dword i = 0; i < nRegisterCount; ++i, pTypedDest += nSkip)
-			{
-				for (dword j = 0; j < nElemCount; ++j)
-					*pTypedDest++ = atof(arrParam[2 + i * nElemCount + j].c_str());
-			}
+			for (dword i = 0; i < nTotalElem; ++i)
+				*pTypedDest++ = atof(arrParam[2 + i].c_str());
 
-			ShaderConstantBuffer *pConstantBuffer = m_arrShaderConstInfo.AddIndex(1);
-			new (pConstantBuffer) ShaderConstantBuffer;
+			ShaderUniformBuffer *pConstantBuffer = m_arrShaderConstInfo.AddIndex(1);
+			new (pConstantBuffer) ShaderUniformBuffer;
 			pConstantBuffer->m_Info.m_Name = IdString(arrParam[0]);
-			pConstantBuffer->m_Info.m_RegisterCount = nRegisterCount;
+			pConstantBuffer->m_Info.m_nLengthInBytes = sizeof(float) * nTotalElem;
 			pConstantBuffer->m_Info.m_Type = EShaderConstantType::EShaderConstantType_Float;
 			pConstantBuffer->m_pData = pConstantInfoData;
 			break;
 		}
 		case EShaderConstantType::EShaderConstantType_Int:
 		{
-			byte *pConstantInfoData = (byte *)MEMALLOC(sizeof(int) * 4 * nRegisterCount); 
-			memset(pConstantInfoData, 0, sizeof(int) * 4 * nRegisterCount);
+			byte *pConstantInfoData = (byte *)MEMALLOC(sizeof(int) * nTotalElem); 
+			memset(pConstantInfoData, 0, sizeof(int) * nTotalElem);
 			int *pTypedDest = (int *)pConstantInfoData;
-			for (dword i = 0; i < nRegisterCount; ++i, pTypedDest += nSkip)
-			{
-				for (dword j = 0; j < nElemCount; ++j)
-					*pTypedDest++ = atoi(arrParam[2 + i * nElemCount + j].c_str());
-			}
+			for (dword i = 0; i < nTotalElem; ++i)
+				*pTypedDest++ = atoi(arrParam[2 + i].c_str());
 
-			ShaderConstantBuffer ConstantBuffer;
-			ConstantBuffer.m_Info.m_Name = IdString(arrParam[0]);
-			ConstantBuffer.m_Info.m_RegisterCount = nRegisterCount;
-			ConstantBuffer.m_Info.m_Type = EShaderConstantType::EShaderConstantType_Int;
-			ConstantBuffer.m_pData = pConstantInfoData;
-			m_arrShaderConstInfo.Add(ConstantBuffer);
+			ShaderUniformBuffer *pConstantBuffer = m_arrShaderConstInfo.AddIndex(1);
+			new (pConstantBuffer) ShaderUniformBuffer;
+			pConstantBuffer->m_Info.m_Name = IdString(arrParam[0]);
+			pConstantBuffer->m_Info.m_nLengthInBytes = sizeof(int) * nTotalElem;
+			pConstantBuffer->m_Info.m_Type = EShaderConstantType::EShaderConstantType_Int;
+			pConstantBuffer->m_pData = pConstantInfoData;
 			break;	
 		}
 		default:
 			return false;
 	}
+	return true;
+}
+
+bool CShaderRef::AddAutoShaderConstantInfo(const String &szParamName)
+{
+	m_arrAutoShaderConstInfo.Emplace(szParamName);
 	return true;
 }
 
@@ -106,14 +104,18 @@ ldword CShaderRef::Compile()
 
 	assert(pShader != nullptr);
 
-	const CArray<ShaderConstantBuffer> &arrShaderConstBuffer = GetShaderConstantBuffer();
+	const CArray<ShaderUniformBuffer> &arrShaderConstBuffer = GetShaderConstantBuffer();
 	m_pShaderObj->m_arrShaderVar.Reserve(arrShaderConstBuffer.Num());
 	for (const auto &ConstantBuffer : arrShaderConstBuffer)
 	{
 		ShaderVariable *pShaderVar = m_pShaderObj->m_arrShaderVar.AddIndex(1);
-		pShaderVar->m_Type = ConstantBuffer.m_Info.m_Type;
-		pShaderVar->m_nStartRegister = pShader->GetConstantIndexByName(ConstantBuffer.m_Info.m_Name);
-		pShaderVar->m_nUsedRegister = ConstantBuffer.m_Info.m_RegisterCount;
+		const ShaderUniformInfo &UniformInfo = pShader->GetUniformInfoByName(ConstantBuffer.m_Info.m_Name);
+		assert(ConstantBuffer.m_Info.m_Type == UniformInfo.m_ParamInfo.m_Type && 
+			ConstantBuffer.m_Info.m_nLengthInBytes == UniformInfo.m_ParamInfo.m_nLengthInBytes);
+		pShaderVar->m_Type = UniformInfo.m_ParamInfo.m_Type;
+		pShaderVar->m_nLengthInBytes = UniformInfo.m_ParamInfo.m_nLengthInBytes;
+		pShaderVar->m_nRegisterIndex = UniformInfo.m_nRegisterIndex;
+		pShaderVar->m_nOffsetInBytes = UniformInfo.m_nOffsetInBytes;
 		pShaderVar->m_pData = ConstantBuffer.m_pData;
 	}
 
@@ -124,17 +126,11 @@ ldword CShaderRef::Compile()
 	return g_ShaderRefMask & m_RefId;
 }
 
-bool CShaderRef::AddAutoShaderConstantInfo(const String &szParamName)
-{
-	m_arrAutoShaderConstInfo.Emplace(szParamName);
-	return true;
-}
-
-bool CShaderRef::CheckParamIsValid(const CArray<String> &arrParam, OUT EShaderConstantType &Type, OUT dword &nTotalElem, OUT dword &nElemCount) const
+bool CShaderRef::CheckParamIsValid(const CArray<String> &arrParam, OUT EShaderConstantType &Type, OUT dword &nTotalElem) const
 {
 	Type = EShaderConstantType::EShaderConstantType_Unknown;
 	nTotalElem = 0;
-	nElemCount = 0;
+	dword nElemCount = 0;
 
 	if (arrParam.Num() <= 2)
 		return false;

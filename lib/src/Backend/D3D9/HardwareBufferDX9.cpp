@@ -180,7 +180,7 @@ bool CVertexLayoutDX9::Build(const VertexElement *pArrElem, dword nElemCount)
 	CVertexLayoutDX9 *pVertexLayout = NEW_TYPE(CVertexLayoutDX9); \
 	if (!pVertexLayout->Build(Elems, n)) \
 		return false; \
-	m_arrPredefinedVertexLayout[(dword)(Predefined)] = pVertexLayout; \
+	m_ppPredefinedVertexLayout[(dword)(Predefined)] = pVertexLayout; \
 	}
 
 #define ADD_VERTEX_ELEM(Index, Usage, Offset, Type, Semantic, ElemIndex) \
@@ -197,12 +197,12 @@ CHardwareBufferManagerDX9::CHardwareBufferManagerDX9()
 
 CHardwareBufferManagerDX9::~CHardwareBufferManagerDX9()
 {
-	for (auto &PredefinedLayout : m_arrPredefinedVertexLayout)
+	for (dword i = 0; i < (dword)EPredefinedVertexLayout::EPredefinedLayout_Count; ++i)
 	{
-		CVertexLayoutDX9 *pVertexLayoutDx9 = (CVertexLayoutDX9*)PredefinedLayout;
+		CVertexLayoutDX9 *pVertexLayoutDx9 = static_cast<CVertexLayoutDX9*>(m_ppPredefinedVertexLayout[i]);
 		DELETE_TYPE(pVertexLayoutDx9, CVertexLayoutDX9);
 	}
-	m_arrPredefinedVertexLayout.Clear();
+	DeleteObjectArray(m_ppPredefinedVertexLayout, (dword)EPredefinedVertexLayout::EPredefinedLayout_Count);
 
 	VertexLayoutMap::_MyIterType Iter = m_VertexLayoutMap.CreateIterator();
 	for (; Iter; ++Iter)
@@ -215,8 +215,9 @@ CHardwareBufferManagerDX9::~CHardwareBufferManagerDX9()
 
 bool CHardwareBufferManagerDX9::Initialize()
 {
-	m_arrPredefinedVertexLayout.Reserve((dword)EPredefinedVertexLayout::EPredefinedLayout_Count);
-	m_arrPredefinedVertexLayout.SetNum((dword)EPredefinedVertexLayout::EPredefinedLayout_Count);
+	// m_arrPredefinedVertexLayout.Reserve((dword)EPredefinedVertexLayout::EPredefinedLayout_Count);
+	// m_arrPredefinedVertexLayout.SetNum((dword)EPredefinedVertexLayout::EPredefinedLayout_Count);
+	m_ppPredefinedVertexLayout = NewObjectArray<IVertexLayout*>((dword)EPredefinedVertexLayout::EPredefinedLayout_Count);
 
 	BEGIN_VERTEX_ELEM_DECL(1)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
@@ -383,6 +384,12 @@ void CHardwareBufferManagerDX9::DestroyIndexBuffer(IHardwareBuffer *pIndexBuffer
 	}
 	pIndexBuffer9->~CIndexBufferDX9();
 	m_HardwareBufferPool.Free(pIndexBuffer9);
+}
+
+IVertexLayout* CHardwareBufferManagerDX9::GetOrCreatePredefinedVertexLayout(EPredefinedVertexLayout PredefinedLayout, const byte *pShaderByteCode, dword nShaderByteCodeLen)
+{
+	dword nIndex = (dword)PredefinedLayout;
+	return (nIndex < (dword)EPredefinedVertexLayout::EPredefinedLayout_Count) ? m_ppPredefinedVertexLayout[nIndex] : nullptr;
 }
 
 IVertexLayout* CHardwareBufferManagerDX9::CreateVertexLayout(const String &szName, const CArray<VertexElement> &arrElem)

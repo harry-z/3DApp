@@ -47,12 +47,13 @@ public:
 	virtual void DestroyVertexBuffer(IHardwareBuffer *pVertexBuffer) = 0;
 	virtual void DestroyIndexBuffer(IHardwareBuffer *pIndexBuffer) = 0;
 
-	IVertexLayout* GetPredefinedVertexLayout(EPredefinedVertexLayout PredefinedLayout);
+	virtual IVertexLayout* GetOrCreatePredefinedVertexLayout(EPredefinedVertexLayout PredefinedLayout, const byte *pShaderByteCode, dword nShaderByteCodeLen) = 0;
 	virtual IVertexLayout* CreateVertexLayout(const String &szName, const CArray<VertexElement> &arrElem) = 0;
 	IVertexLayout* GetVertexLayout(const String &szName);
 
 protected:
-	CArray<IVertexLayout*> m_arrPredefinedVertexLayout;
+	// CArray<IVertexLayout*> m_arrPredefinedVertexLayout;
+	IVertexLayout **m_ppPredefinedVertexLayout;
 	using VertexLayoutMap = CMap<IdString, IVertexLayout*>;
 	VertexLayoutMap m_VertexLayoutMap;
 };

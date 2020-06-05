@@ -20,19 +20,19 @@ CShaderDX9::~CShaderDX9() {
     }
 }
 
-bool CShaderDX9::Load(EShaderType eType, const byte *pszShaderByteCode) {
+bool CShaderDX9::Load(EShaderType eType, const byte *pszShaderByteCode, dword nCodeSize) {
     if (eType != EShaderType::EShaderType_Unknown && pszShaderByteCode != nullptr) {
         m_Type = eType;
         switch (m_Type) {
             case EShaderType::EShaderType_Vertex:
             {
                 HRESULT hr = g_pDevice9->CreateVertexShader((const DWORD*)pszShaderByteCode, &m_Shader.m_pVertexShader);
-                return SUCCEEDED(hr) && FillConstantMap((const DWORD*)pszShaderByteCode);
+                return SUCCEEDED(hr) && FillVariableMap(pszShaderByteCode, nCodeSize);
             }
             case EShaderType::EShaderType_Pixel:
             {
                 HRESULT hr = g_pDevice9->CreatePixelShader((const DWORD*)pszShaderByteCode, &m_Shader.m_pPixelShader);
-                return SUCCEEDED(hr) && FillConstantMap((const DWORD*)pszShaderByteCode);
+                return SUCCEEDED(hr) && FillVariableMap(pszShaderByteCode, nCodeSize);
             }
             default:
                 return false;
@@ -44,39 +44,50 @@ bool CShaderDX9::Load(EShaderType eType, const byte *pszShaderByteCode) {
     }
 }
 
-bool CShaderDX9::FillConstantMap(const DWORD *pFunction)
+bool CShaderDX9::FillVariableMap(LPCVOID pFunction, dword nCodeSize)
 {
     ID3DXConstantTable *pConstTable;
-    HRESULT hr = D3DXGetShaderConstantTable(pFunction, &pConstTable);
-    if (FAILED(hr))
-        return false;
-    D3DXCONSTANTTABLE_DESC ConstTableDesc;
-    hr = pConstTable->GetDesc(&ConstTableDesc);
-    if (FAILED(hr))
+    HRESULT hr = D3DXGetShaderConstantTable((const DWORD*)pFunction, &pConstTable);
+    if (SUCCEEDED(hr))
     {
-        SAFE_RELEASE(pConstTable);
-        return false;
-    }
-    for (UINT i = 0; i < ConstTableDesc.Constants; ++i)
-    {
-        D3DXHANDLE hConst = pConstTable->GetConstant(NULL, i);
-        D3DXCONSTANT_DESC ConstDesc;
-        UINT n;
-        hr = pConstTable->GetConstantDesc(hConst, &ConstDesc, &n);
-        if (SUCCEEDED(hr))
+        struct Reflector {
+            ID3DXConstantTable *m_pConstTable = nullptr;
+            ~Reflector() {
+                SAFE_RELEASE(m_pConstTable);
+            }
+        } Ref;
+        Ref.m_pConstTable = pConstTable;
+
+        D3DXCONSTANTTABLE_DESC ConstTableDesc;
+        hr = pConstTable->GetDesc(&ConstTableDesc);
+        if (FAILED(hr))
         {
-            m_ConstantMap.Insert(IdString(ConstDesc.Name), ConstDesc.RegisterIndex);
+            return false;
         }
+        for (UINT i = 0; i < ConstTableDesc.Constants; ++i)
+        {
+            D3DXHANDLE hConst = pConstTable->GetConstant(NULL, i);
+            D3DXCONSTANT_DESC ConstDesc;
+            UINT n;
+            hr = pConstTable->GetConstantDesc(hConst, &ConstDesc, &n);
+            if (SUCCEEDED(hr))
+            {
+                m_VariableMap.Insert(IdString(ConstDesc.Name), 
+                    ShaderVariableInfo(ConstDesc.Name, MappingShaderConstantType(ConstDesc.Type), ConstDesc.RegisterIndex, ConstDesc.Bytes, 0)
+                );
+            }
+        }
+        return true;
     }
-    SAFE_RELEASE(pConstTable);
-    return true;
+    else
+        return false;
 }
 
-dword CShaderDX9::GetConstantIndexByName(const IdString &szName) const
-{
-    CMap<IdString, dword>::_MyConstIterType CIter = m_ConstantMap.Find(szName);
-    return CIter ? CIter.Value() : 0xFFFFFFFF;
-}
+// dword CShaderDX9::GetConstantIndexByName(const IdString &szName) const
+// {
+//     CMap<IdString, dword>::_MyConstIterType CIter = m_ConstantMap.Find(szName);
+//     return CIter ? CIter.Value() : 0xFFFFFFFF;
+// }
 
 CShaderManagerDX9::~CShaderManagerDX9() {
     m_ShaderMap.Clear();
@@ -179,7 +190,7 @@ bool CShaderManagerDX9::LoadShaders() {
             byte *pByteCode = static_cast<byte *>(MEMALLOC(nShaderByteCodeLen));
             GetBytes(pBuffer, pByteCode, nShaderByteCodeLen);
             CShaderDX9 *pShaderDX9 = NEW_TYPE(CShaderDX9);
-            if (pShaderDX9->Load((EShaderType)nShaderType, pByteCode)) {
+            if (pShaderDX9->Load((EShaderType)nShaderType, pByteCode, nShaderByteCodeLen)) {
                 pShaderDX9->m_nId = nShaderId++;
                 m_ShaderMap.Insert(IdString(szShaderName), pShaderDX9);
                 m_ShaderArr.Emplace(pShaderDX9);
@@ -219,5 +230,18 @@ void CRenderBackendDX9::SetShader(CShader *pShader)
             m_pD3DDevice9->SetPixelShader(pShaderDX9->m_Shader.m_pPixelShader);
             break;
         }
+    }
+}
+
+EShaderConstantType MappingShaderConstantType(D3DXPARAMETER_TYPE d3dType)
+{
+    switch (d3dType)
+    {
+        case D3DXPT_FLOAT:
+            return EShaderConstantType::EShaderConstantType_Float;
+        case D3DXPT_INT:
+            return EShaderConstantType::EShaderConstantType_Int;
+        default:
+            return EShaderConstantType::EShaderConstantType_Unknown;
     }
 }

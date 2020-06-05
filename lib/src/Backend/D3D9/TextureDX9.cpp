@@ -84,16 +84,19 @@ void CTextureDX9::UpdateBuffer(const byte *pBuffer) {
 	assert(BIT_CHECK(m_TexType, ETextureType_1D) || BIT_CHECK(m_TexType, ETextureType_2D));
 	assert(m_Usage == (byte)ETextureUsage::ETextureUsage_Dynamic);
 
-	LPDIRECT3DTEXTURE9 pStagingTexture;
-	g_pDevice9->CreateTexture(m_nWidth, 1, 1, 0, PixelFormatToD3DFORMAT(m_Format), D3DPOOL_SYSTEMMEM, &pStagingTexture, NULL);
-	dword nBytes, nRowBytes, nRows;
-	GetSurfaceInfo(m_nWidth, m_nHeight, 1, m_Format, &nBytes, &nRowBytes, &nRows);
-	D3DLOCKED_RECT d3dlocked_rect;
-	pStagingTexture->LockRect(0, &d3dlocked_rect, NULL, 0);
-	memcpy(d3dlocked_rect.pBits, pBuffer, nBytes);
-	pStagingTexture->UnlockRect(0);
-	g_pDevice9->UpdateTexture(pStagingTexture, m_Texture.m_pTexture);
-	SAFE_RELEASE(pStagingTexture);
+	if (IsCreatedOrLoaded())
+	{
+		LPDIRECT3DTEXTURE9 pStagingTexture;
+		g_pDevice9->CreateTexture(m_nWidth, m_nHeight, 1, 0, PixelFormatToD3DFORMAT(m_Format), D3DPOOL_SYSTEMMEM, &pStagingTexture, NULL);
+		dword nBytes, nRowBytes, nRows;
+		GetSurfaceInfo(m_nWidth, m_nHeight, 1, m_Format, &nBytes, &nRowBytes, &nRows);
+		D3DLOCKED_RECT d3dlocked_rect;
+		pStagingTexture->LockRect(0, &d3dlocked_rect, NULL, 0);
+		memcpy(d3dlocked_rect.pBits, pBuffer, nBytes);
+		pStagingTexture->UnlockRect(0);
+		g_pDevice9->UpdateTexture(pStagingTexture, m_Texture.m_pTexture);
+		SAFE_RELEASE(pStagingTexture);
+	}
 }
 
 void CTextureDX9::Create(const String &sName, word nWidth, word nHeight, 
@@ -105,6 +108,7 @@ void CTextureDX9::Create(const String &sName, word nWidth, word nHeight,
 	D3DFORMAT d3d_fmt = PixelFormatToD3DFORMAT(ePixelFormat);
 	if (d3d_fmt != D3DFMT_UNKNOWN) {
 		if (eTextureType == ETextureType_1D) {
+			nHeight = 1;
 			if (eTextureUsage == ETextureUsage::ETextureUsage_Dynamic ||
 				eTextureUsage == ETextureUsage::ETextureUsage_DynamicFixedSize) // 一维只允许创建Dynamic类型的纹理
 				hr = g_pDevice9->CreateTexture(nWidth, nHeight, 1, D3DUSAGE_DYNAMIC, d3d_fmt, D3DPOOL_DEFAULT, &m_Texture.m_pTexture, NULL);

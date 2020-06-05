@@ -12,6 +12,13 @@
 	extern IDirect3DDevice9 *g_pDevice9;
 	extern D3DCAPS9 *g_pCaps9;
 
+#elif defined(RENDERAPI_DX11)
+	#include <d3d11.h>
+	#include <d3dcompiler.h>
+
+	extern ID3D11Device *g_pDevice11;
+	extern ID3D11DeviceContext *g_pDeviceContext11;
+
 // #elif defined(RENDERAPI_GLES20) || defined(RENDERAPI_GLES20_EMU)
 
 // #ifdef RENDERAPI_GLES20

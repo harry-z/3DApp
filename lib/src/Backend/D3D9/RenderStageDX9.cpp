@@ -32,9 +32,9 @@ void RenderStageDX9_SetShaderConstants(ShaderObject *pShaderObject, SetConstantF
     for (const auto &Variable : pShaderObject->m_arrShaderVar)
     {
         if (Variable.m_Type == EShaderConstantType::EShaderConstantType_Float)
-            (*pFuncF)(Variable.m_nStartRegister, (CONST FLOAT*)Variable.m_pData, Variable.m_nUsedRegister);
+            (*pFuncF)(Variable.m_nRegisterIndex, (CONST FLOAT*)Variable.m_pData, Variable.m_nLengthInBytes / (sizeof(float) * 4));
         else if (Variable.m_Type == EShaderConstantType::EShaderConstantType_Int)
-            (*pFuncI)(Variable.m_nStartRegister, (CONST INT*)Variable.m_pData, Variable.m_nUsedRegister);
+            (*pFuncI)(Variable.m_nRegisterIndex, (CONST INT*)Variable.m_pData, Variable.m_nLengthInBytes / (sizeof(int) * 4));
     }
 }
 
@@ -43,74 +43,74 @@ void RenderStageDX9_SetShaderAutoConstants(ShaderObject *pShaderObject, Matrix4 
     CShaderManager * __restrict pShaderManager = Global::m_pShaderManager;
     for (const auto &AutoVariable : pShaderObject->m_arrAutoShaderVar)
     {
-        dword nIndex = pShader->GetConstantIndexByName(AutoVariable);
+        const ShaderVariableInfo &VariableInfo = pShader->GetUniformInfoByName(AutoVariable);
         if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_WorldMatrix)
-            (*pFuncF)(nIndex, pWorldTransform->m, 4);
+            (*pFuncF)(VariableInfo.m_nRegisterIndex, pWorldTransform->m, 4);
         else if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_WorldViewMatrix)
         {
-            AutoUpdatedConstant &ViewConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_View);
+            AutoUpdatedUniform &ViewConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_View);
             Matrix4 V((float *)ViewConstant.m_pData);
-            (*pFuncF)(nIndex, ((*pWorldTransform) * V).m, 4);
+            (*pFuncF)(VariableInfo.m_nRegisterIndex, ((*pWorldTransform) * V).m, 4);
         }
         else if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_WorldViewProjMatrix)
         {
-            AutoUpdatedConstant &ViewProjConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_ViewProj);
+            AutoUpdatedUniform &ViewProjConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_ViewProj);
             Matrix4 VP((float *)ViewProjConstant.m_pData);
-            (*pFuncF)(nIndex, ((*pWorldTransform) * VP).m, 4);
+            (*pFuncF)(VariableInfo.m_nRegisterIndex, ((*pWorldTransform) * VP).m, 4);
         }
         else if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_InvWorldMatrix)
         {
             Matrix4 InvW = pWorldTransform->GetInverse();
-            (*pFuncF)(nIndex, InvW.m, 4);
+            (*pFuncF)(VariableInfo.m_nRegisterIndex, InvW.m, 4);
         }
         else if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_InvWorldViewMatrix)
         {
-            AutoUpdatedConstant &InvViewConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_InvView);
+            AutoUpdatedUniform &InvViewConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_InvView);
             Matrix4 InvV((float *)InvViewConstant.m_pData);
             Matrix4 InvW = pWorldTransform->GetInverse();
-            (*pFuncF)(nIndex, (InvV * InvW).m, 4);
+            (*pFuncF)(VariableInfo.m_nRegisterIndex, (InvV * InvW).m, 4);
         }
         else if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_InvWorldViewProjMatrix)
         {
-            AutoUpdatedConstant &InvViewProjConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_InvViewProj);
+            AutoUpdatedUniform &InvViewProjConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_InvViewProj);
             Matrix4 InvVP((float *)InvViewProjConstant.m_pData);
             Matrix4 InvW = pWorldTransform->GetInverse();
-            (*pFuncF)(nIndex, (InvVP * InvW).m, 4);
+            (*pFuncF)(VariableInfo.m_nRegisterIndex, (InvVP * InvW).m, 4);
         }
         else if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_ViewMatrix)
         {
-            AutoUpdatedConstant &ViewConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_View);
-            (*pFuncF)(nIndex, (CONST FLOAT*)ViewConstant.m_pData, 4);
+            AutoUpdatedUniform &ViewConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_View);
+            (*pFuncF)(VariableInfo.m_nRegisterIndex, (CONST FLOAT*)ViewConstant.m_pData, 4);
         }
         else if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_ViewProjMatrix)
         {
-            AutoUpdatedConstant &ViewProjConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_ViewProj);
-            (*pFuncF)(nIndex, (CONST FLOAT*)ViewProjConstant.m_pData, 4);
+            AutoUpdatedUniform &ViewProjConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_ViewProj);
+            (*pFuncF)(VariableInfo.m_nRegisterIndex, (CONST FLOAT*)ViewProjConstant.m_pData, 4);
         }
         else if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_ProjMatrix)
         {
-            AutoUpdatedConstant &ProjConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_Proj);
-            (*pFuncF)(nIndex, (CONST FLOAT*)ProjConstant.m_pData, 4);
+            AutoUpdatedUniform &ProjConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_Proj);
+            (*pFuncF)(VariableInfo.m_nRegisterIndex, (CONST FLOAT*)ProjConstant.m_pData, 4);
         }
         else if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_InvProjMatrix)
         {
-            AutoUpdatedConstant &InvProjConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_InvProj);
-            (*pFuncF)(nIndex, (CONST FLOAT*)InvProjConstant.m_pData, 4);
+            AutoUpdatedUniform &InvProjConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_InvProj);
+            (*pFuncF)(VariableInfo.m_nRegisterIndex, (CONST FLOAT*)InvProjConstant.m_pData, 4);
         }
         else if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_CamPos)
         {
-            AutoUpdatedConstant &CamPosConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_CamPos);
-            (*pFuncF)(nIndex, (CONST FLOAT*)CamPosConstant.m_pData, 1);
+            AutoUpdatedUniform &CamPosConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_CamPos);
+            (*pFuncF)(VariableInfo.m_nRegisterIndex, (CONST FLOAT*)CamPosConstant.m_pData, 1);
         }
         else if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_CamDir)
         {
-            AutoUpdatedConstant &CamDirConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_CamDir);
-            (*pFuncF)(nIndex, (CONST FLOAT*)CamDirConstant.m_pData, 1);
+            AutoUpdatedUniform &CamDirConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_CamDir);
+            (*pFuncF)(VariableInfo.m_nRegisterIndex, (CONST FLOAT*)CamDirConstant.m_pData, 1);
         }
         else if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_NearFarClip)
         {
-            AutoUpdatedConstant &NearFarConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_NearFar);
-            (*pFuncF)(nIndex, (CONST FLOAT*)NearFarConstant.m_pData, 1);
+            AutoUpdatedUniform &NearFarConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_NearFar);
+            (*pFuncF)(VariableInfo.m_nRegisterIndex, (CONST FLOAT*)NearFarConstant.m_pData, 1);
         }
     }
 }

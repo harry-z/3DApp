@@ -31,9 +31,9 @@ void CRenderStageDX9_SceneDepth::Render(CCamera *pCamera)
             pRenderBackend->ClearTarget(EClearFlag_Color | EClearFlag_Depth | EClearFlag_Stencil, D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0);
             pRenderBackend->m_Cache.m_nCurrentRenderTarget = InternalTextures::s_pViewDepth->GetID();
 
-            const AutoUpdatedConstant &ViewProjConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_ViewProj);
+            const AutoUpdatedUniform &ViewProjConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_ViewProj);
             Matrix4 VP((float *)ViewProjConstant.m_pData);
-            const AutoUpdatedConstant &ViewConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_View);
+            const AutoUpdatedUniform &ViewConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_View);
             Matrix4 V((float *)ViewConstant.m_pData);
 
             pRenderBackend->SetShader(pVertexShader);
@@ -44,7 +44,7 @@ void CRenderStageDX9_SceneDepth::Render(CCamera *pCamera)
             pRenderBackend->SetShader(pPixelShader);
             pRenderBackend->m_Cache.m_nCurrentPS = pPixelShader->GetId();
             dword nNearFarIndex = pPixelShader->GetConstantIndexByName(AutoUpdatedShaderConstantIdStr::s_NearFarClip);
-            const AutoUpdatedConstant &NearFarConstant = pShaderManager->GetAutoUpdatedConstant(EAutoUpdatedConstant_NearFar);
+            const AutoUpdatedUniform &NearFarConstant = pShaderManager->GetAutoUpdatedUniform(EAutoUpdatedConstant_NearFar);
             g_pDevice9->SetPixelShaderConstantF(nNearFarIndex, (float*)NearFarConstant.m_pData, 1);
 
             g_pDevice9->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESS);

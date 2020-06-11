@@ -15,6 +15,7 @@
 #include "Backend/D3D11/RenderBackendDX11.h"
 #include "Backend/D3D11/ShaderDX11.h"
 #include "Backend/D3D11/TextureDX11.h"
+#include "Backend/D3D11/HardwareBufferDX11.h"
 #endif
 
 #ifdef INPUTAPI_DINPUT
@@ -99,6 +100,11 @@ C3DEngine::~C3DEngine()
         DELETE_TYPE(pRenderBackendDX9, CRenderBackendDX9);
     }
 #elif defined(RENDERAPI_DX11)
+    if (Global::m_pHwBufferManager)
+    {
+        CHardwareBufferManagerDX11 *pHwBufferManagerDX11 = static_cast<CHardwareBufferManagerDX11*>(Global::m_pHwBufferManager);
+        DELETE_TYPE(pHwBufferManagerDX11, CHardwareBufferManagerDX11);
+    }
     if (Global::m_pTextureManager)
     {
         CTextureManagerDX11 *pTextureManagerDX11 = static_cast<CTextureManagerDX11*>(Global::m_pTextureManager);
@@ -174,12 +180,13 @@ bool C3DEngine::Initialize()
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create RenderBackend D3D9");
     CShaderManager *pShaderManager = NEW_TYPE(CShaderManagerDX9);
     CTextureManager *pTextureManager = NEW_TYPE(CTextureManagerDX9);
-    CHardwareBufferManager * pHwBufferManager = NEW_TYPE(CHardwareBufferManagerDX9);
+    CHardwareBufferManager *pHwBufferManager = NEW_TYPE(CHardwareBufferManagerDX9);
 #elif defined(RENDERAPI_DX11)
     IRenderBackend *pRenderBackend = NEW_TYPE(CRenderBackendDX11);
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create RenderBackend D3D11");
     CShaderManager *pShaderManager = NEW_TYPE(CShaderManagerDX11);
     CTextureManager *pTextureManager = NEW_TYPE(CTextureManagerDX11);
+    CHardwareBufferManager *pHwBufferManager = NEW_TYPE(CHardwareBufferManagerDX11);
 #endif
     Global::m_pRenderBackend = pRenderBackend;
     Global::m_pShaderManager = pShaderManager;

@@ -48,7 +48,7 @@ public:
 	virtual void DestroyIndexBuffer(IHardwareBuffer *pIndexBuffer) = 0;
 
 	virtual IVertexLayout* GetOrCreatePredefinedVertexLayout(EPredefinedVertexLayout PredefinedLayout, const byte *pShaderByteCode, dword nShaderByteCodeLen) = 0;
-	virtual IVertexLayout* CreateVertexLayout(const String &szName, const CArray<VertexElement> &arrElem) = 0;
+	virtual IVertexLayout* GetOrCreateVertexLayout(const String &szName, const CArray<VertexElement> &arrElem, const byte *pShaderByteCode, dword nShaderByteCodeLen) = 0;
 	IVertexLayout* GetVertexLayout(const String &szName);
 
 protected:

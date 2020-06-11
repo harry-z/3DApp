@@ -146,6 +146,150 @@
             "problemMatcher": [
                 "$msCompile"
             ]
+        },
+        {
+            "label": "VS2015 Win32 D3D11 Debug",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Visual Studio 14 2015", "Debug", "D3D11", "BuildVS2015" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2015 Win32 D3D11 Release",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Visual Studio 14 2015", "Release", "D3D11", "BuildVS2015" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2015 Win32 D3D11 RelWithDebInfo",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Visual Studio 14 2015", "RelWithDebInfo", "D3D11", "BuildVS2015" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2015 Win32 D3D11 MinSizeRel",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Visual Studio 14 2015", "MinSizeRel", "D3D11", "BuildVS2015" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2017 Win32 D3D11 Debug",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Visual Studio 15 2017", "Debug", "D3D11", "BuildVS2017" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2017 Win32 D3D11 Release",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Visual Studio 15 2017", "Release", "D3D11", "BuildVS2017" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2017 Win32 D3D11 RelWithDebInfo",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Visual Studio 15 2017", "RelWithDebInfo", "D3D11", "BuildVS2017" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "VS2017 Win32 D3D11 MinSizeRel",
+            "group": "build",
+            "type": "shell",
+            "args": [ "Visual Studio 15 2017", "MinSizeRel", "D3D11", "BuildVS2017" ],
+            "command": "${workspaceFolder}/BuildVS.bat",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ]
         }
     ]
 }

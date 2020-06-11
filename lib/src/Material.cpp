@@ -103,6 +103,7 @@ ldword CShaderRef::Compile()
 	}
 
 	assert(pShader != nullptr);
+	m_pShaderObj->m_pShader = pShader;
 
 	const CArray<ShaderUniformBuffer> &arrShaderConstBuffer = GetShaderConstantBuffer();
 	m_pShaderObj->m_arrShaderVar.Reserve(arrShaderConstBuffer.Num());
@@ -114,8 +115,8 @@ ldword CShaderRef::Compile()
 			ConstantBuffer.m_Info.m_nLengthInBytes == UniformInfo.m_ParamInfo.m_nLengthInBytes);
 		pShaderVar->m_Type = UniformInfo.m_ParamInfo.m_Type;
 		pShaderVar->m_nLengthInBytes = UniformInfo.m_ParamInfo.m_nLengthInBytes;
-		pShaderVar->m_nRegisterIndex = UniformInfo.m_nRegisterIndex;
 		pShaderVar->m_nOffsetInBytes = UniformInfo.m_nOffsetInBytes;
+		pShaderVar->m_nRegisterIndex = UniformInfo.m_nRegisterIndex;
 		pShaderVar->m_pData = ConstantBuffer.m_pData;
 	}
 

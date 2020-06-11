@@ -89,12 +89,12 @@ DXGI_FORMAT MappingTypeFormat(EVertexType Type)
     }
 }
 
-bool CVertexLayoutDX11::Build(const byte *pShaderByteCode, dword nByteCodeLength, const VertexElement *pArrElem, dword nElemCount)
+bool CVertexLayoutDX11::Build(const byte *pShaderByteCode, dword nByteCodeLength)
 {
-    D3D11_INPUT_ELEMENT_DESC *pElements11 = NewObjectArray<D3D11_INPUT_ELEMENT_DESC>(nElemCount);
-    for (dword i = 0; i < nElemCount; ++i)
+    D3D11_INPUT_ELEMENT_DESC *pElements11 = NewObjectArray<D3D11_INPUT_ELEMENT_DESC>(m_nElemCount);
+    for (dword i = 0; i < m_nElemCount; ++i)
     {
-        const auto &Elem = pArrElem[i];
+        const auto &Elem = m_pArrElem[i];
         auto &D3D11Elem = pElements11[i];
         MappingSemanticName(Elem.m_Semantic);
         D3D11Elem.SemanticName = MappingSemanticName(Elem.m_Semantic);
@@ -105,27 +105,27 @@ bool CVertexLayoutDX11::Build(const byte *pShaderByteCode, dword nByteCodeLength
         D3D11Elem.AlignedByteOffset = Elem.m_nOffset;
         D3D11Elem.InstanceDataStepRate = 0;
     }
-    HRESULT hr = g_pDevice11->CreateInputLayout(pElements11, nElemCount, pShaderByteCode, nByteCodeLength, &m_pInputLayout);
-    DeleteObjectArray(pElements11, nElemCount);
+    HRESULT hr = g_pDevice11->CreateInputLayout(pElements11, m_nElemCount, pShaderByteCode, nByteCodeLength, &m_pInputLayout);
+    DeleteObjectArray(pElements11, m_nElemCount);
     return SUCCEEDED(hr);
 }
 
 #define BEGIN_VERTEX_ELEM_DECL(n) { \
-    VertexElement Elems[n]; 
-
-#define END_VERTEX_ELEM_DECL(Predefined, n) \
 	CVertexLayoutDX11 *pVertexLayout = NEW_TYPE(CVertexLayoutDX11); \
-	if (!pVertexLayout->Build(Elems, n)) \
-		return false; \
-	m_arrPredefinedVertexLayout[(dword)(Predefined)] = pVertexLayout; \
+	pVertexLayout->m_pArrElem = NewObjectArray<VertexElement>(n); \
+	pVertexLayout->m_nElemCount = n;
+
+#define END_VERTEX_ELEM_DECL(Predefined) \
+	m_ppPredefinedVertexLayout[(dword)(Predefined)] = pVertexLayout; \
 	}
 
 #define ADD_VERTEX_ELEM(Index, Usage, Offset, Type, Semantic, ElemIndex) \
-    Elems[Index].m_VertexUsage = Usage; \
-    Elems[Index].m_nOffset = Offset; \
-    Elems[Index].m_VertexType = Type; \
-    Elems[Index].m_Semantic = Semantic; \
-    Elems[Index].m_nIndex = ElemIndex;
+	auto &Elem##Index = pVertexLayout->m_pArrElem[Index]; \
+    Elem##Index.m_VertexUsage = Usage; \
+    Elem##Index.m_nOffset = Offset; \
+    Elem##Index.m_VertexType = Type; \
+    Elem##Index.m_Semantic = Semantic; \
+    Elem##Index.m_nIndex = ElemIndex;
 
 CHardwareBufferManagerDX11::CHardwareBufferManagerDX11()
 {
@@ -134,52 +134,53 @@ CHardwareBufferManagerDX11::CHardwareBufferManagerDX11()
 
 CHardwareBufferManagerDX11::~CHardwareBufferManagerDX11()
 {
-	for (auto &PredefinedLayout : m_arrPredefinedVertexLayout)
+	for (dword i = 0; i < (dword)EPredefinedVertexLayout::EPredefinedLayout_Count; ++i)
 	{
-		CVertexBufferDX11 *pVertexLayoutDx11 = (CVertexBufferDX11*)PredefinedLayout;
-		DELETE_TYPE(pVertexLayoutDx11, CVertexBufferDX11);
+		CVertexLayoutDX11 *pVertexLayoutDx11 = static_cast<CVertexLayoutDX11*>(m_ppPredefinedVertexLayout[i]);
+		DELETE_TYPE(pVertexLayoutDx11, CVertexLayoutDX11);
 	}
-	m_arrPredefinedVertexLayout.Clear();
+	DeleteObjectArray(m_ppPredefinedVertexLayout, (dword)EPredefinedVertexLayout::EPredefinedLayout_Count);
 
 	VertexLayoutMap::_MyIterType Iter = m_VertexLayoutMap.CreateIterator();
 	for (; Iter; ++Iter)
 	{
-		CVertexBufferDX11 *pVertexLayoutDX11 = (CVertexBufferDX11*)Iter.Value();
-		DELETE_TYPE(pVertexLayoutDX11, CVertexBufferDX11);
+		CVertexLayoutDX11 *pVertexLayoutDX11 = (CVertexLayoutDX11*)Iter.Value();
+		DELETE_TYPE(pVertexLayoutDX11, CVertexLayoutDX11);
 	}
 	m_VertexLayoutMap.Clear();
 }
 
 bool CHardwareBufferManagerDX11::Initialize()
 {
-    m_arrPredefinedVertexLayout.Reserve((dword)EPredefinedVertexLayout::EPredefinedLayout_Count);
-	m_arrPredefinedVertexLayout.SetNum((dword)EPredefinedVertexLayout::EPredefinedLayout_Count);
+    // m_arrPredefinedVertexLayout.Reserve((dword)EPredefinedVertexLayout::EPredefinedLayout_Count);
+	// m_arrPredefinedVertexLayout.SetNum((dword)EPredefinedVertexLayout::EPredefinedLayout_Count);
+	m_ppPredefinedVertexLayout = NewObjectArray<IVertexLayout*>((dword)EPredefinedVertexLayout::EPredefinedLayout_Count);
 
 	BEGIN_VERTEX_ELEM_DECL(1)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
-	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_P, 1)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_P)
 
 	BEGIN_VERTEX_ELEM_DECL(2)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
 	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
-	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PT, 2)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PT)
 
 	BEGIN_VERTEX_ELEM_DECL(3)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
 	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
 	ADD_VERTEX_ELEM(2, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 5, EVertexType::EVertexType_Color, EVertexSemantic::EVertexSemantic_Color, 0)
-	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PTC, 3)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PTC)
 
 	BEGIN_VERTEX_ELEM_DECL(2)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
 	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Normal, 0)
-	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PN, 2)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PN)
 
 	BEGIN_VERTEX_ELEM_DECL(3)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
 	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Normal, 0)
 	ADD_VERTEX_ELEM(2, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 6, EVertexType::EVertexType_Color, EVertexSemantic::EVertexSemantic_Color, 0)
-	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNC, 3)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNC)
 
 	BEGIN_VERTEX_ELEM_DECL(3)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
@@ -230,4 +231,39 @@ bool CHardwareBufferManagerDX11::Initialize()
 	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PSHORT2T, 2)
 
 	return true;
+}
+
+IVertexLayout* CHardwareBufferManagerDX11::GetOrCreatePredefinedVertexLayout(EPredefinedVertexLayout PredefinedLayout, const byte *pShaderByteCode, dword nShaderByteCodeLen)
+{
+	dword nIndex = (dword)PredefinedLayout;
+	IVertexLayout *pVertexLayout = (nIndex < (dword)EPredefinedVertexLayout::EPredefinedLayout_Count) ? m_ppPredefinedVertexLayout[nIndex] : nullptr;
+	if (pVertexLayout != nullptr)	
+	{
+		CVertexLayoutDX11 *pVertexLayoutDX11 = static_cast<CVertexLayoutDX11*>(pVertexLayout);
+		if (pVertexLayoutDX11->m_pInputLayout == nullptr)
+		{
+			assert(pVertexLayoutDX11->Build(pShaderByteCode, nShaderByteCodeLen));
+		}
+		return pVertexLayout;
+	}
+	else
+		return nullptr;
+}
+
+IVertexLayout* CHardwareBufferManagerDX11::GetOrCreateVertexLayout(const String &szName, const CArray<VertexElement> &arrElem, const byte *pShaderByteCode, dword nShaderByteCodeLen)
+{
+	IdString idStr(szName);
+	VertexLayoutMap::_MyIterType Iter = m_VertexLayoutMap.Find(idStr);
+	if (Iter)
+		return Iter.Value();
+	CVertexLayoutDX11 *pVertexLayoutDX11 = NEW_TYPE(CVertexLayoutDX11);
+	pVertexLayoutDX11->m_pArrElem = NewObjectArray<VertexElement>(arrElem.Num());
+	memcpy(pVertexLayoutDX11->m_pArrElem, arrElem.Data(), sizeof(VertexElement) * arrElem.Num());
+	if (pVertexLayoutDX11->Build(pShaderByteCode, nShaderByteCodeLen))
+	{
+		m_VertexLayoutMap.Insert(idStr, pVertexLayoutDX11);
+		return pVertexLayoutDX11;
+	}
+	else
+		return nullptr;
 }

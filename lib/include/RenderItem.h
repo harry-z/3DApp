@@ -6,6 +6,7 @@
 class IHardwareBuffer;
 class IVertexLayout;
 class CTexture;
+class CShader;
 
 #if CURRENT_RENDER_PATH == RENDER_PATH_FORWARD_SHADING
 
@@ -73,6 +74,7 @@ struct ShaderObject
 {
 	CArray<ShaderVariable> m_arrShaderVar;
 	CArray<IdString> m_arrAutoShaderVar;
+	CShader *m_pShader = nullptr;
 
 	static CPool m_ShaderObjectPool;
 	static void Initialize() 

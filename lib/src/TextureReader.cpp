@@ -82,8 +82,8 @@ void SwizzleDataDDS(EPixelFormat eFormat, INOUT byte *pData, dword nDataSizeInBy
 	switch (eFormat)
 	{
 	// Swizzle RGB to BGR to be DXGI(1.0) supported
-	case EPixelFormat_A8R8G8B8:
-	case EPixelFormat_X8R8G8B8:
+	case EPixelFormat::EPixelFormat_A8R8G8B8:
+	case EPixelFormat::EPixelFormat_X8R8G8B8:
 	{
 		for (dword i = 0; i < nDataSizeInByte; i += 4)
 		{

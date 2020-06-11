@@ -1,5 +1,5 @@
 #pragma once
-#include "..\..\RenderStableHeader.h"
+#include "..\..\RendererStableHeader.h"
 #include "Display.h"
 #include "RenderBackend.h"
 
@@ -13,7 +13,7 @@ public:
 	virtual void Shutdown() override;
 
     virtual EDeviceState CheckDeviceState() override { return EDeviceState::EDevState_Ok; }
-    virtual void HandleDeviceLost() override {}
+    virtual bool HandleDeviceLost() override { return true; }
 
     virtual ERenderAPI GetRenderAPI() const override { return ERenderAPI::ERenderAPI_DX11; }
 

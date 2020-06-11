@@ -27,8 +27,12 @@ protected:
 
 private:
 	RenderObject *m_pRenderObj = nullptr;
-	IVertexLayout *m_pVertexLayout = nullptr;
 	IHardwareBuffer *m_pIndexBuffer = nullptr;
 	CArray<IHardwareBuffer*> m_arrVertexBuffer;
 	EPrimitiveType m_PrimitiveType = EPrimitiveType::EPrimType_PointList;
+	bool m_bUsingPredefinedLayout = true;
+	union {
+		EPredefinedVertexLayout Predefined;
+		IVertexLayout *Custom;
+	} m_VertexLayout;
 };

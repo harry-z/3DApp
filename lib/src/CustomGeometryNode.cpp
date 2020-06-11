@@ -11,8 +11,8 @@ void CCustomGeometryNode::PreRender(CCamera *pCamera, EPreRenderMode mode)
 {
 	if (CheckFlag(RN_FLAG_VISIBLE))
 	{
-		if (m_pVertexLayout == nullptr)
-			return;
+		// if (m_pVertexLayout == nullptr)
+		// 	return;
 		if (m_arrVertexBuffer.Num() == 0)
 			return;
 		for (auto &VertexBuffer : m_arrVertexBuffer)
@@ -30,7 +30,7 @@ void CCustomGeometryNode::PreRender(CCamera *pCamera, EPreRenderMode mode)
 		{
 			m_pRenderObj->m_arrHwBuffer = m_arrVertexBuffer;
 			m_pRenderObj->m_pIB = m_pIndexBuffer;
-			m_pRenderObj->m_pVertexLayout = m_pVertexLayout;
+			// m_pRenderObj->m_pVertexLayout = m_pVertexLayout;
 
 			m_pRenderObj->m_nVertexCount = m_arrVertexBuffer[0]->Count();
 			dword nPrimCount = 0;
@@ -57,6 +57,24 @@ void CCustomGeometryNode::PreRender(CCamera *pCamera, EPreRenderMode mode)
 		{
 			if (m_MtlPtr->Compile())
 			{
+				if (!m_bUsingPredefinedLayout)
+				{
+					assert(m_VertexLayout.Custom != nullptr);
+					m_pRenderObj->m_pVertexLayout = m_VertexLayout.Custom;
+				}
+				else
+				{
+					IVertexLayout *pVertexLayout = nullptr;
+					for (const auto &Pass : m_MtlPtr->GetPasses())
+					{
+						ShaderObject *pShaderObj = Pass->GetVertexShaderRef()->GetShaderObject();
+						pVertexLayout = Global::m_pHwBufferManager->GetOrCreatePredefinedVertexLayout(m_VertexLayout.Predefined, 
+							pShaderObj->m_pShader->GetShaderByteCode(), 
+							pShaderObj->m_pShader->GetShaderByteCodeLength());
+					}
+					assert(pVertexLayout != nullptr);
+					m_pRenderObj->m_pVertexLayout = pVertexLayout;
+				}
 				PreRenderInternal(pCamera, mode, m_pRenderObj, m_MtlPtr.Get());
 				return;
 			}
@@ -70,13 +88,16 @@ void CCustomGeometryNode::PreRender(CCamera *pCamera, EPreRenderMode mode)
 
 void CCustomGeometryNode::SetPredefinedVertexLayout(EPredefinedVertexLayout PredefinedLayout)
 {
-	m_pVertexLayout = Global::m_pHwBufferManager->GetPredefinedVertexLayout(PredefinedLayout);
+	m_bUsingPredefinedLayout = true;
+	m_VertexLayout.Predefined = PredefinedLayout;
+	// m_pVertexLayout = Global::m_pHwBufferManager->GetPredefinedVertexLayout(PredefinedLayout);
 	AddInternalFlag(RN_FLAG_INTERNAL_GEOMETRY_DIRTY);
 }
 
 void CCustomGeometryNode::SetVertexLayout(IVertexLayout *pVertexLayout)
 {
-	m_pVertexLayout = pVertexLayout;
+	m_bUsingPredefinedLayout = false;
+	m_VertexLayout.Custom = pVertexLayout;
 	AddInternalFlag(RN_FLAG_INTERNAL_GEOMETRY_DIRTY);
 }
 

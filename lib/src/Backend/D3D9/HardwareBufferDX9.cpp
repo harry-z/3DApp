@@ -392,7 +392,7 @@ IVertexLayout* CHardwareBufferManagerDX9::GetOrCreatePredefinedVertexLayout(EPre
 	return (nIndex < (dword)EPredefinedVertexLayout::EPredefinedLayout_Count) ? m_ppPredefinedVertexLayout[nIndex] : nullptr;
 }
 
-IVertexLayout* CHardwareBufferManagerDX9::CreateVertexLayout(const String &szName, const CArray<VertexElement> &arrElem)
+IVertexLayout* CHardwareBufferManagerDX9::GetOrCreateVertexLayout(const String &szName, const CArray<VertexElement> &arrElem, const byte *pShaderByteCode, dword nShaderByteCodeLen)
 {
 	IdString idStr(szName);
 	VertexLayoutMap::_MyIterType Iter = m_VertexLayoutMap.Find(idStr);

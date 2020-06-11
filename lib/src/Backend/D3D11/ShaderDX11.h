@@ -10,7 +10,7 @@ public:
     CShaderDX11();
     virtual ~CShaderDX11();
     virtual bool Load(EShaderType eType, const byte *pszShaderByteCode, dword nCodeSize) override;
-    virtual const ShaderVariableInfo& GetUniformInfoByName(const IdString &szName) const override;
+    virtual const ShaderUniformInfo& GetUniformInfoByName(const IdString &szName) const override;
     bool FillConstantMap(LPCVOID pFunction, dword nCodeSize);
 
     union {

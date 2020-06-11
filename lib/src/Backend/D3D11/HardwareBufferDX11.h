@@ -36,9 +36,12 @@ class CVertexLayoutDX11 final : public IVertexLayout
 {
 public:
 	virtual ~CVertexLayoutDX11();
-	bool Build(const byte *pShaderByteCode, dword nByteCodeLength, const VertexElement *pArrElem, dword nElemCount);
+	bool Build(const byte *pShaderByteCode, dword nByteCodeLength);
 
 	ID3D11InputLayout *m_pInputLayout = nullptr;
+
+	VertexElement *m_pArrElem;
+	dword m_nElemCount;
 };
 
 class CHardwareBufferManagerDX11 final : public CHardwareBufferManager {
@@ -54,7 +57,7 @@ public:
 	virtual void DestroyIndexBuffer(IHardwareBuffer *pIndexBuffer) override;
 
 	virtual IVertexLayout* GetOrCreatePredefinedVertexLayout(EPredefinedVertexLayout PredefinedLayout, const byte *pShaderByteCode, dword nShaderByteCodeLen) override;
-	virtual IVertexLayout* CreateVertexLayout(const String &szName, const CArray<VertexElement> &arrElem) override;
+	virtual IVertexLayout* GetOrCreateVertexLayout(const String &szName, const CArray<VertexElement> &arrElem, const byte *pShaderByteCode, dword nShaderByteCodeLen) override;
 
 	DXGI_FORMAT GetIndexFormat(dword nStride) const;
 

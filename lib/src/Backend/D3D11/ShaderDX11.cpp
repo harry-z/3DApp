@@ -43,7 +43,7 @@ bool CShaderDX11::Load(EShaderType eType, const byte *pszShaderByteCode, dword n
                 return false;
         }
         if (bResult) {
-            m_pByteCode = pszShaderByteCode;
+            m_pByteCode = const_cast<byte *>(pszShaderByteCode);
             m_nByteCodeLen = nCodeSize;
         }
     }
@@ -56,7 +56,7 @@ bool CShaderDX11::Load(EShaderType eType, const byte *pszShaderByteCode, dword n
 bool CShaderDX11::FillVariableMap(LPCVOID pFunction, dword nCodeSize)
 {
     ID3D11ShaderReflection *pShaderReflection = nullptr;
-    HRESULT hr = D3D11Reflect(pFunction, nCodeSize, &pShaderReflection);
+    HRESULT hr = D3DReflect(pFunction, nCodeSize, &pShaderReflection);
     if (SUCCEEDED(hr))
     {
         struct Reflector {

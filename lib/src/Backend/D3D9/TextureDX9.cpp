@@ -391,11 +391,14 @@ void CTextureManagerDX9::DestroyInstance(CTexture *pTexture) {
 	m_TexturePool.Free_mt(pTextureDX9);
 }
 
-void CRenderBackendDX9::SetTarget(CTexture *pColorBuffer, CTexture *pDepthStencilBuffer) {
-	CTextureDX9 *pRenderTarget9 = (CTextureDX9 *)pColorBuffer;
-	assert(pRenderTarget9->GetTextureUsage() == ETextureUsage::ETextureUsage_RenderTarget ||
-		pRenderTarget9->GetTextureUsage() == ETextureUsage::ETextureUsage_RenderTargetFixedSize);
-	m_pD3DDevice9->SetRenderTarget(0, pRenderTarget9->m_pSurface);
+void CRenderBackendDX9::SetTarget(dword nNumColorBuffers, CTexture **ppColorBuffer, CTexture *pDepthStencilBuffer) {
+	for (dword i = 0; i < nNumColorBuffers; ++i)
+	{
+		CTextureDX9 *pRenderTarget9 = (CTextureDX9 *)ppColorBuffer[i];
+		assert(pRenderTarget9->GetTextureUsage() == ETextureUsage::ETextureUsage_RenderTarget ||
+			pRenderTarget9->GetTextureUsage() == ETextureUsage::ETextureUsage_RenderTargetFixedSize);
+		m_pD3DDevice9->SetRenderTarget(i, pRenderTarget9->m_pSurface);
+	}
 
 	if (pDepthStencilBuffer) {
 		CTextureDX9 *pDepthStencil9 = (CTextureDX9 *)pDepthStencilBuffer;
@@ -406,8 +409,8 @@ void CRenderBackendDX9::SetTarget(CTexture *pColorBuffer, CTexture *pDepthStenci
 	
 	D3DVIEWPORT9 viewport;
 	ZeroMemory(&viewport, sizeof(D3DVIEWPORT9));
-	viewport.Width = pColorBuffer->GetWidth();
-	viewport.Height = pColorBuffer->GetHeight();
+	viewport.Width = ppColorBuffer[0]->GetWidth();
+	viewport.Height = ppColorBuffer[0]->GetHeight();
 	viewport.MaxZ = 1.0f;
 	m_pD3DDevice9->SetViewport(&viewport);
 }

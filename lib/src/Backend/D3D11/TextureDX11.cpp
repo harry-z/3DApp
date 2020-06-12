@@ -141,8 +141,8 @@ void CTextureDX11::Create(const String &sName, word nWidth, word nHeight,
             Desc.ArraySize = 1;
             Desc.Format = d3d_fmt;
             Desc.MiscFlags = 0;
-            Desc.SamplerDesc.Count = 1;
-            Desc.SamplerDesc.Quality = 0;
+            Desc.SampleDesc.Count = 1;
+            Desc.SampleDesc.Quality = 0;
 			if (eTextureUsage == ETextureUsage::ETextureUsage_Dynamic) // 创建Dynamic类型的二维纹理
             {
                 Desc.Usage = D3D11_USAGE_DYNAMIC;
@@ -162,7 +162,7 @@ void CTextureDX11::Create(const String &sName, word nWidth, word nHeight,
 					RTViewDesc.Format = d3d_fmt;
 					RTViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 					RTViewDesc.Texture2D.MipSlice = 0;
-					hr = m_pDevice11->CreateRenderTargetView(m_Texture.m_pTexture2D, &RTViewDesc, &m_pRTView);
+					hr = g_pDevice11->CreateRenderTargetView(m_Texture.m_pTexture2D, &RTViewDesc, &m_pRTView);
 				}
 				if (SUCCEEDED(hr))
 				{
@@ -171,7 +171,7 @@ void CTextureDX11::Create(const String &sName, word nWidth, word nHeight,
 					SRViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 					SRViewDesc.Texture2D.MostDetailedMip = 0;
 					SRViewDesc.Texture2D.MipLevels = 0;
-					hr = m_pDevice11->CreateShaderResourceView(m_Texture.m_pTexture2D, &SRViewDesc, &m_pSRView);
+					hr = g_pDevice11->CreateShaderResourceView(m_Texture.m_pTexture2D, &SRViewDesc, &m_pSRView);
 				}
 			}
 			else if (eTextureUsage == ETextureUsage::ETextureUsage_DepthStencil ||
@@ -187,7 +187,7 @@ void CTextureDX11::Create(const String &sName, word nWidth, word nHeight,
 					DSViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 					DSViewDesc.Flags = 0;
 					DSViewDesc.Texture2D.MipSlice = 0;
-					hr = m_pDevice11->CreateDepthStencilView(m_Texture.m_pTexture2D, &DSViewDesc, &m_pDSView);
+					hr = g_pDevice11->CreateDepthStencilView(m_Texture.m_pTexture2D, &DSViewDesc, &m_pDSView);
 				}
 			}
 		}
@@ -246,8 +246,8 @@ void CTextureDX11::Load(TEXTURE_FILE_DESC *pDesc, bool bGamma) {
 			Desc.BindFlags = bNeedAutoMipMap ? (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) : (D3D11_BIND_SHADER_RESOURCE);
 			Desc.CPUAccessFlags = 0;
 			Desc.MiscFlags = bNeedAutoMipmap ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
-			Desc.SamplerDesc.Count = 1;
-            Desc.SamplerDesc.Quality = 0;
+			Desc.SampleDesc.Count = 1;
+            Desc.SampleDesc.Quality = 0;
 			dword nNumBytes, nNumRowBytes, nNumRows;
 			GetSurfaceInfo(pDesc->nWidth, pDesc->nHeight, pDesc->nDepth, pDesc->eFormat, &nNumBytes, &nNumRowBytes, nNumRows);
 			D3D11_SUBRESOURCE_DATA SubRcData;
@@ -277,8 +277,8 @@ void CTextureDX11::Load(TEXTURE_FILE_DESC *pDesc, bool bGamma) {
 			Desc.BindFlags = bNeedAutoMipMap ? (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) : (D3D11_BIND_SHADER_RESOURCE);
 			Desc.CPUAccessFlags = 0;
 			Desc.MiscFlags = (bNeedAutoMipmap ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0) | D3D11_RESOURCE_MISC_TEXTURECUBE;
-			Desc.SamplerDesc.Count = 1;
-            Desc.SamplerDesc.Quality = 0;
+			Desc.SampleDesc.Count = 1;
+            Desc.SampleDesc.Quality = 0;
 			dword nNumBytes, nNumRowBytes, nNumRows;
 			GetSurfaceInfo(pDesc->nWidth, pDesc->nHeight, pDesc->nDepth, pDesc->eFormat, &nNumBytes, &nNumRowBytes, nNumRows);
 			D3D11_SUBRESOURCE_DATA SubRcData[6];
@@ -312,8 +312,8 @@ void CTextureDX11::Load(TEXTURE_FILE_DESC *pDesc, bool bGamma) {
 			Desc.BindFlags = bNeedAutoMipMap ? (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) : (D3D11_BIND_SHADER_RESOURCE);
 			Desc.CPUAccessFlags = 0;
 			Desc.MiscFlags = (bNeedAutoMipmap ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0) | D3D11_RESOURCE_MISC_TEXTURECUBE;
-			Desc.SamplerDesc.Count = 1;
-            Desc.SamplerDesc.Quality = 0;
+			Desc.SampleDesc.Count = 1;
+            Desc.SampleDesc.Quality = 0;
 			dword nNumBytes, nNumRowBytes, nNumRows;
 			GetSurfaceInfo(pDesc->nWidth, pDesc->nHeight, pDesc->nDepth, pDesc->eFormat, &nNumBytes, &nNumRowBytes, nNumRows);
 			D3D11_SUBRESOURCE_DATA SubRcData;
@@ -354,4 +354,40 @@ void CTextureManagerDX11::DestroyInstance(CTexture *pTexture) {
 	CTextureDX11 *pTextureDX11 = static_cast<CTextureDX11*>(pTexture);
 	pTextureDX11->~CTextureDX11();
 	m_TexturePool.Free_mt(pTextureDX11);
+}
+
+void CRenderBackendDX11::SetTarget(dword nNumColorBuffers, CTexture **ppColorBuffer, CTexture *pDepthStencilBuffer)
+{
+	if (nNumColorBuffers == 1)
+	{
+		CTextureDX11 *pTextureDX11 = (CTextureDX11 *)(ppColorBuffer[0]);
+		assert(pTextureDX11->GetTextureUsage() == ETextureUsage::ETextureUsage_RenderTarget || 
+			pTextureDX11->GetTextureUsage() == ETextureUsage::ETextureUsage_RenderTargetFixedSize);
+		CTextureDX11 *pDSTextureDX11 = (CTextureDX11 *)pDepthStencilBuffer;
+		assert(pDSTextureDX11->GetTextureUsage() == ETextureUsage::ETextureUsage_DepthStencil || 
+			pDSTextureDX11->GetTextureUsage() == ETextureUsage::ETextureUsage_DepthStencilFixedSize);
+		m_pD3DContext11->OMSetRenderTargets(1, &pTextureDX11->m_pRTView, m_pMainDS);
+	}
+	else
+	{
+		ID3D11RenderTargetView **ppRTViews = (ID3D11RenderTargetView **)g_pFrameAllocator->Allocate(sizeof(ID3D11RenderTargetView*) * nNumColorBuffers);
+		for (dword i = 0; i < nNumColorBuffers; ++i)
+		{
+			CTextureDX11 *pTextureDX11 = (CTextureDX11 *)(ppColorBuffer[0]);
+			assert(pTextureDX11->GetTextureUsage() == ETextureUsage::ETextureUsage_RenderTarget || 
+				pTextureDX11->GetTextureUsage() == ETextureUsage::ETextureUsage_RenderTargetFixedSize);
+			ppRTViews[i] = pTextureDX11->m_pRTView;
+		}
+		CTextureDX11 *pDSTextureDX11 = (CTextureDX11 *)pDepthStencilBuffer;
+		assert(pDSTextureDX11->GetTextureUsage() == ETextureUsage::ETextureUsage_DepthStencil || 
+			pDSTextureDX11->GetTextureUsage() == ETextureUsage::ETextureUsage_DepthStencilFixedSize);
+		m_pD3DContext11->OMSetRenderTargets(1, ppRTViews, m_pMainDS);
+		// DeleteObjectArray<ID3D11RenderTargetView*>(ppRTViews, nNumColorBuffers);
+	}
+}
+
+void CRenderBackendDX11::SetTexture(dword nSlot, CTexture *pTexture)
+{
+	CTextureDX11 *pTextureDX11 = (CTextureDX11 *)(pTexture);
+	m_pD3DContext11->PSSetShaderResources(nSlot, 1, &pTextureDX11->m_pSRView);
 }

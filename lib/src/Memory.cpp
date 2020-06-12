@@ -151,3 +151,48 @@ void ReportMemleaks() {
 		tmp = tmp->m_pNext;
 	}
 }
+
+CFrameAllocator *g_pFrameAllocator = nullptr;
+CFrameAllocator::CFrameAllocator()
+{
+	m_pFirstSection = NewObject<Section>();
+	m_pCurrentSection = m_pFirstSection;
+	g_pFrameAllocator = this;
+}
+
+CFrameAllocator::~CFrameAllocator()
+{
+	Section *pSection = m_pFirstSection;
+	while (pSection != nullptr)
+	{
+		Section *pTemp = pSection->m_pNext;
+		DeleteObject<Section>(pSection);
+		pSection = pTemp;
+	}
+	m_pFirstSection = m_pCurrentSection = nullptr;
+	g_pFrameAllocator = nullptr;
+}
+
+byte* CFrameAllocator::Allocate(dword nSize)
+{
+	dword nAlignedSize = ALIGN_SIZE(nSize);
+	assert(nAlignedSize < SectionSize);
+	if (!m_pCurrentSection->CanAllocate(nAlignedSize))
+	{
+		Section *pNewSection = NewObject<Section>();
+		m_pCurrentSection->m_pNext = pNewSection;
+		m_pCurrentSection = pNewSection;
+	}
+	return m_pCurrentSection->Allocate(nAlignedSize);
+}
+
+void CFrameAllocator::Reset()
+{
+	Section *pSection = m_pFirstSection;
+	while (pSection != nullptr)
+	{
+		pSection->Reset();
+		pSection = pSection->m_pNext;
+	}
+	m_pCurrentSection = m_pFirstSection;
+}

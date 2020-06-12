@@ -54,7 +54,7 @@ public:
 
 	virtual void ClearTarget(dword nFlag, dword color, float fDepth, byte stencil) override;
 	virtual void RestoreTarget() override;
-	virtual void SetTarget(CTexture *pColorBuffer, CTexture *pDepthStencilBuffer) override;
+	virtual void SetTarget(dword nNumColorBuffers, CTexture **ppColorBuffer, CTexture *pDepthStencilBuffer) override;
 
 	virtual void SetShader(CShader *pShader) override;
 
@@ -64,10 +64,8 @@ public:
 	virtual void SetVertexBuffers(const CArray<IHardwareBuffer*> &arrVertexBuffer) override;
 	virtual void SetIndexBuffer(IHardwareBuffer *pIndexBuffer) override;
 
-	virtual void Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nPrimitiveCount) override;
-	virtual void Draw(EPrimitiveType ePrimitiveType,
-		dword nVertexOffset, dword nVertexCount,
-		dword nIndexOffset, dword nPrimitiveCount) override;
+	virtual void Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nVertexCount, dword nPrimitiveCount) override;
+	virtual void Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nVertexCount, dword nIndexOffset, dword nIndexCount, dword nPrimitiveCount) override;
 
 	virtual Matrix4 ConvertProjectionMatrixByAPI(const Matrix4 &proj) const override { return proj; }
 

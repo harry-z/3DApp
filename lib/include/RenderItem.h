@@ -34,7 +34,7 @@ struct RenderObject
     IVertexLayout *m_pVertexLayout = nullptr;
     Matrix4 *m_pWorldTransform = nullptr;
 
-	dword m_nVertexCount;
+	// dword m_nVertexCount;
 	dword m_nPrimitiveCount;
 	EPrimitiveType m_PrimType;
 

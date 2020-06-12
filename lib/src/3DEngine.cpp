@@ -40,6 +40,8 @@ C3DEngine::C3DEngine()
 
     m_MatrixPool.Initialize(sizeof(Matrix4));
     m_AABBPool.Initialize(sizeof(AxisAlignedBox));
+
+    NewObject<CFrameAllocator>();
 }
 
 C3DEngine::~C3DEngine()
@@ -151,6 +153,8 @@ C3DEngine::~C3DEngine()
     ShaderResources::Uninitialize();
     ShaderObject::Uninitialize();
     RenderItem::Uninitialize();
+
+    DeleteObject<CFrameAllocator>(g_pFrameAllocator);
 }
 
 bool C3DEngine::Initialize() 
@@ -295,6 +299,7 @@ void C3DEngine::Run()
     IRenderBackend * __restrict pRenderBackend = Global::m_pRenderBackend;
     CInputListener * __restrict pInputListener = Global::m_pInputListener;
     CShaderManager * __restrict pShaderManager = Global::m_pShaderManager;
+    CFrameAllocator * __restrict pFrameAllocator = g_pFrameAllocator;
 
     dword nFrameId = 0;
     while (pDisplay->MessagePump())
@@ -309,6 +314,8 @@ void C3DEngine::Run()
 			if (!pRenderBackend->HandleDeviceLost())
 				return;
 		}
+
+        pFrameAllocator->Reset();
 
         pInputListener->Capture();
 
@@ -327,6 +334,8 @@ void C3DEngine::RunOneFrame(dword nFrameId)
 {
     IRenderBackend * __restrict pRenderBackend = Global::m_pRenderBackend;
     CInputListener * __restrict pInputListener = Global::m_pInputListener;
+    CShaderManager * __restrict pShaderManager = Global::m_pShaderManager;
+    CFrameAllocator * __restrict pFrameAllocator = g_pFrameAllocator;
 
     EDeviceState devState = pRenderBackend->CheckDeviceState();
     if (devState == EDeviceState::EDevState_Lost)
@@ -336,7 +345,14 @@ void C3DEngine::RunOneFrame(dword nFrameId)
             return;
     }
 
+    pFrameAllocator->Reset();
+
     pInputListener->Capture();
+
+    if (m_pCameraController != nullptr)
+        m_pCameraController->Update();
+
+    pShaderManager->UpdateShaderUniformPerFrame(m_pMainCamera);
 
     Frame(nFrameId);
 }

@@ -32,20 +32,21 @@ void CCustomGeometryNode::PreRender(CCamera *pCamera, EPreRenderMode mode)
 			m_pRenderObj->m_pIB = m_pIndexBuffer;
 			// m_pRenderObj->m_pVertexLayout = m_pVertexLayout;
 
-			m_pRenderObj->m_nVertexCount = m_arrVertexBuffer[0]->Count();
+			// m_pRenderObj->m_nVertexCount = m_arrVertexBuffer[0]->Count();
+			dword nVertexCount = m_arrVertexBuffer[0]->Count();
 			dword nPrimCount = 0;
 			switch (m_PrimitiveType) 
 			{
 			case EPrimitiveType::EPrimType_PointList:
-				nPrimCount = m_pRenderObj->m_nVertexCount;
+				nPrimCount = nVertexCount;
 			case EPrimitiveType::EPrimType_LineList:
-				nPrimCount = (m_pIndexBuffer ? m_pIndexBuffer->Count() : m_pRenderObj->m_nVertexCount) / 2;
+				nPrimCount = (m_pIndexBuffer ? m_pIndexBuffer->Count() : nVertexCount) / 2;
 			case EPrimitiveType::EPrimType_LineStrip:
-				nPrimCount = m_pRenderObj->m_nVertexCount - 1;
+				nPrimCount = nVertexCount - 1;
 			case EPrimitiveType::EPrimType_TriangleList:
-				nPrimCount = (m_pIndexBuffer ? m_pIndexBuffer->Count() : m_pRenderObj->m_nVertexCount) / 3;
+				nPrimCount = (m_pIndexBuffer ? m_pIndexBuffer->Count() : nVertexCount) / 3;
 			case EPrimitiveType::EPrimType_TriangleStrip:
-				nPrimCount = m_pRenderObj->m_nVertexCount - 2;
+				nPrimCount = nVertexCount - 2;
 			}
 			m_pRenderObj->m_nPrimitiveCount = nPrimCount;
 			m_pRenderObj->m_PrimType = m_PrimitiveType;

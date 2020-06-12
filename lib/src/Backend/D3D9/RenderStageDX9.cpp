@@ -171,10 +171,13 @@ void RenderStageDX9_SetGeometryData(RenderItem *pRI, IRenderBackend *pRenderBack
     if (pRI->m_pRenderObj->m_pIB != nullptr)
     {
         pRenderBackend->SetIndexBuffer(pRI->m_pRenderObj->m_pIB);
-        pRenderBackend->Draw(pRI->m_pRenderObj->m_PrimType, 0, pRI->m_pRenderObj->m_nVertexCount, 0, pRI->m_pRenderObj->m_nPrimitiveCount);
+        pRenderBackend->Draw(pRI->m_pRenderObj->m_PrimType, 
+            0, pRI->m_pRenderObj->m_arrHwBuffer[0]->Count(), 
+            0, pRI->m_pRenderObj->m_pIB->Count(), 
+            pRI->m_pRenderObj->m_nPrimitiveCount);
     }
     else
     {
-        pRenderBackend->Draw(pRI->m_pRenderObj->m_PrimType, 0, pRI->m_pRenderObj->m_nPrimitiveCount);
+        pRenderBackend->Draw(pRI->m_pRenderObj->m_PrimType, 0, pRI->m_pRenderObj->m_arrHwBuffer[0]->Count(), pRI->m_pRenderObj->m_nPrimitiveCount);
     }
 }

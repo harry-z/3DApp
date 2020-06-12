@@ -186,14 +186,12 @@ void CRenderBackendDX9::RestoreTarget() {
 	m_pD3DDevice9->SetViewport(&viewport);
 }
 
-void CRenderBackendDX9::Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nPrimitiveCount) {
+void CRenderBackendDX9::Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nVertexCount, dword nPrimitiveCount) {
 	m_pD3DDevice9->DrawPrimitive((D3DPRIMITIVETYPE)ePrimitiveType, nVertexOffset, nPrimitiveCount);
 }
 
-void CRenderBackendDX9::Draw(EPrimitiveType ePrimitiveType,
-	dword nVertexOffset, dword nVertexCount, dword nIndexOffset, dword nPrimitiveCount) {
-	m_pD3DDevice9->DrawIndexedPrimitive((D3DPRIMITIVETYPE)ePrimitiveType, 0, nVertexOffset, nVertexCount,
-		nIndexOffset, nPrimitiveCount);
+void CRenderBackendDX9::Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nVertexCount, dword nIndexOffset, dword nIndexCount, dword nPrimitiveCount) {
+	m_pD3DDevice9->DrawIndexedPrimitive((D3DPRIMITIVETYPE)ePrimitiveType, 0, nVertexOffset, nVertexCount, nIndexOffset, nPrimitiveCount);
 }
 
 void CRenderBackendDX9::OnDisplayResized(dword w, dword h) {

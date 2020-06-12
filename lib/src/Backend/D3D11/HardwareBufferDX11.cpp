@@ -1,4 +1,5 @@
 #include "HardwareBufferDX11.h"
+#include "RenderBackendDX11.h"
 
 CHardwareBufferDX11::~CHardwareBufferDX11()
 {
@@ -266,4 +267,32 @@ IVertexLayout* CHardwareBufferManagerDX11::GetOrCreateVertexLayout(const String 
 	}
 	else
 		return nullptr;
+}
+
+void CRenderBackendDX11::SetVertexLayout(IVertexLayout *pLayout)
+{
+	CVertexLayoutDX11 *pVertexLayoutDX11 = (CVertexLayoutDX11 *)pLayout;
+	m_pD3DContext11->IASetInputLayout(pVertexLayoutDX11->m_pInputLayout);
+}
+
+void CRenderBackendDX11::SetVertexBuffers(const CArray<IHardwareBuffer*> &arrVertexBuffer)
+{
+	dword nNumBuffers = arrVertexBuffer.Num();
+	ID3D11Buffer **pVBs = (ID3D11Buffer **)g_pFrameAllocator->Allocate(sizeof(ID3D11Buffer *) * nNumBuffers);
+	dword *pStrides = (dword *)g_pFrameAllocator->Allocate(sizeof(dword) * nNumBuffers);
+	dword *pOffsets = (dword *)g_pFrameAllocator->Allocate(sizeof(dword) * nNumBuffers);
+	for (dword i = 0; i < nNumBuffers; ++i)
+	{
+		CVertexBufferDX11 *pVBDX11 = (CVertexBufferDX11 *)arrVertexBuffer[i];
+		pVBs[i] = pVBDX11->m_pBuffer;
+		pStrides[i] = pVBDX11->Stride();
+		pOffsets[i] = 0;
+	}
+	m_pD3DContext11->IASetVertexBuffers(0, nNumBuffers, pVBs, pStrides, pOffsets);
+}
+
+void CRenderBackendDX11::SetIndexBuffer(IHardwareBuffer *pIndexBuffer)
+{
+	CIndexBufferDX11 *pIBDX11 = (CIndexBufferDX11 *)pIndexBuffer;
+	m_pD3DContext11->IASetIndexBuffer(pIBDX11->m_pBuffer, pIBDX11->Stride() == sizeof(dword) ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT, 0);
 }

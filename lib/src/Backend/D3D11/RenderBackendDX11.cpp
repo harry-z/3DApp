@@ -59,6 +59,30 @@ bool CRenderBackendDX11::Initialize(IDisplay *pDisplay)
     if (FAILED(hr))
         return false;
 
+    D3D11_TEXTURE2D_DESC Desc;
+    Desc.Width = nBackBufferWidth;
+    Desc.Height = nBackBufferHeight;
+    Desc.MipLevels = 1;
+    Desc.ArraySize = 1;
+    Desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    Desc.MiscFlags = 0;
+    Desc.Usage = D3D11_USAGE_DEFAULT;
+    Desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    Desc.CPUAccessFlags = 0;
+    Desc.SampleDesc.Count = 1;
+    Desc.SampleDesc.Quality = 0;
+    hr = m_pD3DDevice11->CreateTexture2D(&Desc, nullptr, &m_pMainDSTexture);
+    if (FAILED(hr))
+        return false;
+    D3D11_DEPTH_STENCIL_VIEW_DESC DSViewDesc;
+    DSViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    DSViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+    DSViewDesc.Flags = 0;
+    DSViewDesc.Texture2D.MipSlice = 0;
+    hr = m_pD3DDevice11->CreateDepthStencilView(m_pMainDSTexture, &DSViewDesc, &m_pMainDS);
+    if (FAILED(hr))
+        return false;
+
     pDisplayWindows->AddDisplayObserver(this);
 
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Initialize RenderBackend D3D11");
@@ -71,6 +95,8 @@ bool CRenderBackendDX11::Initialize(IDisplay *pDisplay)
 void CRenderBackendDX11::Shutdown()
 {
     SAFE_RELEASE(m_pMainRT);
+    SAFE_RELEASE(m_pMainDSTexture);
+    SAFE_RELEASE(m_pMainDS);
     SAFE_RELEASE(m_pD3DContext11);
     SAFE_RELEASE(m_pD3DDevice11);
     SAFE_RELEASE(m_pSwapChain);
@@ -93,11 +119,17 @@ void CRenderBackendDX11::ClearTarget(dword nFlag, dword color, float fDepth, byt
 
 void CRenderBackendDX11::RestoreTarget()
 {
-    m_pD3DContext11->OMSetRenderTargets(1, &m_pMainRT, nullptr);
+    m_pD3DContext11->OMSetRenderTargets(1, &m_pMainRT, m_pMainDS);
 }
 
-void CRenderBackendDX11::Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nPrimitiveCount)
+void CRenderBackendDX11::Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nVertexCount, dword nPrimitiveCount)
 {
     m_pD3DContext11->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)ePrimitiveType);
-    m_pD3DContext11->Draw()
+    m_pD3DContext11->Draw(nVertexCount, nVertexOffset);
+}
+
+void CRenderBackendDX11::Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nVertexCount, dword nIndexOffset, dword nIndexCount, dword nPrimitiveCount)
+{
+    m_pD3DContext11->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)ePrimitiveType);
+    m_pD3DContext11->DrawIndexed(nIndexCount, nIndexOffset, nVertexOffset);
 }

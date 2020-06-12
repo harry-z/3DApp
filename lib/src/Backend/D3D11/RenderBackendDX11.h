@@ -21,26 +21,29 @@ public:
 	virtual void RestoreTarget() override;
 	virtual void SetTarget(dword nNumColorBuffers, CTexture **ppColorBuffer, CTexture *pDepthStencilBuffer) override;
 
-    virtual void SetShader(CShader *pShader) override {};
+    virtual void SetShader(CShader *pShader) override;
 
-    virtual void SetTexture(dword nSlot, CTexture *pTexture) override {};
+    virtual void SetTexture(dword nSlot, CTexture *pTexture) override;
 
-    virtual void SetVertexLayout(IVertexLayout *pLayout) override {};
-    virtual void SetVertexBuffers(const CArray<IHardwareBuffer*> &arrVertexBuffer) override {};
-    virtual void SetIndexBuffer(IHardwareBuffer *pIndexBuffer) override {};
+    virtual void SetVertexLayout(IVertexLayout *pLayout) override;
+    virtual void SetVertexBuffers(const CArray<IHardwareBuffer*> &arrVertexBuffer) override;
+    virtual void SetIndexBuffer(IHardwareBuffer *pIndexBuffer) override;
 
-    virtual void Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nPrimitiveCount) override;
-    virtual void Draw(EPrimitiveType ePrimitiveType,
-        dword nVertexOffset, dword nVertexCount,
-        dword nIndexOffset, dword nPrimitiveCount) override;
+    virtual void Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nVertexCount, dword nPrimitiveCount) override;
+    virtual void Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nVertexCount, dword nIndexOffset, dword nIndexCount, dword nPrimitiveCount) override;
 
-    virtual Matrix4 ConvertProjectionMatrixByAPI(const Matrix4 &proj) const override;
+    virtual Matrix4 ConvertProjectionMatrixByAPI(const Matrix4 &proj) const override { return proj; }
+
+    // Method from IDisplay::IObserver
+	virtual void OnDisplayResized(dword w, dword h) override {}
 
 private:
     IDXGISwapChain *m_pSwapChain = nullptr;
     ID3D11Device *m_pD3DDevice11 = nullptr;
     ID3D11DeviceContext *m_pD3DContext11 = nullptr;
     ID3D11RenderTargetView *m_pMainRT = nullptr;
+    ID3D11Texture2D *m_pMainDSTexture = nullptr;
+    ID3D11DepthStencilView *m_pMainDS = nullptr;
 
     struct ContextState {
         ID3D11RenderTargetView *m_pCurrentRTView = nullptr;

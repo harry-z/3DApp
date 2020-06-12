@@ -83,7 +83,7 @@ public:
 
 	virtual void ClearTarget(dword nFlag, dword color, float fDepth, byte stencil) = 0;
 	virtual void RestoreTarget() = 0;
-	virtual void SetTarget(CTexture *pColorBuffer, CTexture *pDepthStencilBuffer) = 0;
+	virtual void SetTarget(dword nNumColorBuffers, CTexture **ppColorBuffer, CTexture *pDepthStencilBuffer) = 0;
 
 	virtual void SetShader(CShader *pShader) = 0;
 
@@ -93,10 +93,8 @@ public:
 	virtual void SetVertexBuffers(const CArray<IHardwareBuffer*> &arrVertexBuffer) = 0;
 	virtual void SetIndexBuffer(IHardwareBuffer *pIndexBuffer) = 0;
 
-	virtual void Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nPrimitiveCount) = 0;
-	virtual void Draw(EPrimitiveType ePrimitiveType,
-		dword nVertexOffset, dword nVertexCount,
-		dword nIndexOffset, dword nPrimitiveCount) = 0;
+	virtual void Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nVertexCount, dword nPrimitiveCount) = 0;
+	virtual void Draw(EPrimitiveType ePrimitiveType, dword nVertexOffset, dword nVertexCount, dword nIndexOffset, dword nIndexCount, dword nPrimitiveCount) = 0;
 
 	virtual Matrix4 ConvertProjectionMatrixByAPI(const Matrix4 &proj) const = 0;
 

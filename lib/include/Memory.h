@@ -91,3 +91,39 @@ inline typename TEnableIf<!TIsTriviallyDestructible<T>::Value>::Type DestructIte
 template <class T>
 inline typename TEnableIf<TIsTriviallyDestructible<T>::Value>::Type DestructItems(T *pData, dword nCount)
 {}
+
+class CFrameAllocator
+{
+public:
+	CFrameAllocator();
+	~CFrameAllocator();
+
+	byte* Allocate(dword nSize);
+	void Reset();
+
+private:
+	static const dword SectionSize = 512 * 1024;
+	struct Section
+	{
+		Section *m_pNext = nullptr;
+		byte *m_pMemory = nullptr;
+		dword m_nCurrentSize = 0;
+		Section() {
+			m_pMemory = (byte *)malloc(SectionSize);
+		}
+		~Section() {
+			free(m_pMemory);
+		}
+		bool CanAllocate(dword nSize) const {
+			return SectionSize - m_nCurrentSize > nSize;
+		}
+		byte* Allocate(dword nSize) {
+			m_nCurrentSize += nSize;
+			return m_pMemory + m_nCurrentSize;
+		}
+		void Reset() { m_nCurrentSize = 0; }
+	};
+	Section *m_pFirstSection;
+	Section *m_pCurrentSection;
+};
+extern CFrameAllocator *g_pFrameAllocator;

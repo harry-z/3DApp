@@ -187,14 +187,14 @@ bool CHardwareBufferManagerDX11::Initialize()
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
 	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Normal, 0)
 	ADD_VERTEX_ELEM(2, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 6, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
-	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNT, 3)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNT)
 
 	BEGIN_VERTEX_ELEM_DECL(4)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
 	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 3, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Normal, 0)
 	ADD_VERTEX_ELEM(2, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 6, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Tangent, 0)
 	ADD_VERTEX_ELEM(3, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 9, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
-	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNTANT, 4)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNTANT)
 
 	BEGIN_VERTEX_ELEM_DECL(5)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
@@ -202,7 +202,7 @@ bool CHardwareBufferManagerDX11::Initialize()
 	ADD_VERTEX_ELEM(2, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 6, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
 	ADD_VERTEX_ELEM(3, EVertexUsage::EVertexUsage_PerVertex_Skinning, 0, EVertexType::EVertexType_UByte4, EVertexSemantic::EVertexSemantic_BlendIndices, 0)
 	ADD_VERTEX_ELEM(4, EVertexUsage::EVertexUsage_PerVertex_Skinning, sizeof(byte) * 4, EVertexType::EVertexType_Float4, EVertexSemantic::EVertexSemantic_BlendWeight, 0)
-	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNT_IDX_WEIGHT, 5)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNT_IDX_WEIGHT)
 
 	BEGIN_VERTEX_ELEM_DECL(6)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
@@ -211,12 +211,12 @@ bool CHardwareBufferManagerDX11::Initialize()
 	ADD_VERTEX_ELEM(3, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 9, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
 	ADD_VERTEX_ELEM(4, EVertexUsage::EVertexUsage_PerVertex_Skinning, 0, EVertexType::EVertexType_UByte4, EVertexSemantic::EVertexSemantic_BlendIndices, 0)
 	ADD_VERTEX_ELEM(5, EVertexUsage::EVertexUsage_PerVertex_Skinning, sizeof(byte) * 4, EVertexType::EVertexType_Float4, EVertexSemantic::EVertexSemantic_BlendWeight, 0)
-	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNTANT_IDX_WEIGHT, 6)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNTANT_IDX_WEIGHT)
 
 	BEGIN_VERTEX_ELEM_DECL(2)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float4, EVertexSemantic::EVertexSemantic_PositionT, 0)
 	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 4, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
-	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PTransformT, 2)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PTransformT)
 
 	BEGIN_VERTEX_ELEM_DECL(5)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Position, 0)
@@ -224,14 +224,34 @@ bool CHardwareBufferManagerDX11::Initialize()
 	ADD_VERTEX_ELEM(2, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 6, EVertexType::EVertexType_Float3, EVertexSemantic::EVertexSemantic_Tangent, 0)
 	ADD_VERTEX_ELEM(3, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 9, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
 	ADD_VERTEX_ELEM(4, EVertexUsage::EVertexUsage_PerVertex, sizeof(float) * 11, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 1)
-	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNTANT1T2, 5)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PNTANT1T2)
 
 	BEGIN_VERTEX_ELEM_DECL(2)
 	ADD_VERTEX_ELEM(0, EVertexUsage::EVertexUsage_PerVertex, 0, EVertexType::EVertexType_Short2, EVertexSemantic::EVertexSemantic_Position, 0)
 	ADD_VERTEX_ELEM(1, EVertexUsage::EVertexUsage_PerVertex, sizeof(short) * 2, EVertexType::EVertexType_Float2, EVertexSemantic::EVertexSemantic_Texcoord, 0)
-	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PSHORT2T, 2)
+	END_VERTEX_ELEM_DECL(EPredefinedVertexLayout::EPredefinedLayout_PSHORT2T)
 
 	return true;
+}
+
+IHardwareBuffer* CHardwareBufferManagerDX11::CreateVertexBuffer(bool bDynamic, dword nStride, dword nLength, const byte *pData)
+{
+	return nullptr;
+}
+
+IHardwareBuffer* CHardwareBufferManagerDX11::CreateIndexBuffer(bool bDynamic, dword nStride, dword nLength, const byte *pData)
+{
+	return nullptr;
+}
+
+void CHardwareBufferManagerDX11::DestroyVertexBuffer(IHardwareBuffer *pVertexBuffer)
+{
+
+}
+
+void CHardwareBufferManagerDX11::DestroyIndexBuffer(IHardwareBuffer *pIndexBuffer)
+{
+	
 }
 
 IVertexLayout* CHardwareBufferManagerDX11::GetOrCreatePredefinedVertexLayout(EPredefinedVertexLayout PredefinedLayout, const byte *pShaderByteCode, dword nShaderByteCodeLen)

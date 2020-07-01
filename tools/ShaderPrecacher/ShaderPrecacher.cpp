@@ -383,6 +383,7 @@ bool CompileAndCacheAllShaders(const CMap<String, char*> &arrShaderFiles, const 
             if (ShaderCodeConstIter) {
                 HRESULT hr = D3DCompile(ShaderCodeConstIter.Value(), 
                     strlen(ShaderCodeConstIter.Value()), 
+                    nullptr,
                     D3DMacros.Data(), 
                     &IncludeHandler, 
                     ShaderEntry.m_EntryPoint.c_str(), 

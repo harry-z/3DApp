@@ -90,19 +90,19 @@ void CTextureDX11::UpdateBuffer(const byte *pBuffer) {
 		if (m_TexType == ETextureType_1D)
 		{
 			D3D11_MAPPED_SUBRESOURCE MappedSubResource;
-			if (SUCCEEDED(m_pDeviceContext11->Map(m_Texture.m_pTexture1D, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedSubResource)))
+			if (SUCCEEDED(g_pDeviceContext11->Map(m_Texture.m_pTexture1D, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedSubResource)))
 			{
 				memcpy(MappedSubResource.pData, pBuffer, MappedSubResource.DepthPitch);
-				m_pDeviceContext11->Unmap(m_Texture.m_pTexture1D, 0);
+				g_pDeviceContext11->Unmap(m_Texture.m_pTexture1D, 0);
 			}
 		}
 		else if (m_TexType == ETextureType_2D)
 		{
 			D3D11_MAPPED_SUBRESOURCE MappedSubResource;
-			if (SUCCEEDED(m_pDeviceContext11->Map(m_Texture.m_pTexture2D, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedSubResource)))
+			if (SUCCEEDED(g_pDeviceContext11->Map(m_Texture.m_pTexture2D, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedSubResource)))
 			{
 				memcpy(MappedSubResource.pData, pBuffer, MappedSubResource.DepthPitch);
-				m_pDeviceContext11->Unmap(m_Texture.m_pTexture2D, 0);
+				g_pDeviceContext11->Unmap(m_Texture.m_pTexture2D, 0);
 			}
 		}
 	}
@@ -119,7 +119,7 @@ void CTextureDX11::Create(const String &sName, word nWidth, word nHeight,
 		if (eTextureType == ETextureType_1D) {
 			nHeight = 1;
 			if (eTextureUsage == ETextureUsage::ETextureUsage_Dynamic ||
-				eTextureUsage == ETextureUsage::ETextureUsage_DynamicFixedSize) // 一维只允许创建Dynamic类型的纹理
+				eTextureUsage == ETextureUsage::ETextureUsage_DynamicFixedSize)
             {
                 D3D11_TEXTURE1D_DESC Desc;
                 Desc.Width = nWidth;
@@ -143,7 +143,7 @@ void CTextureDX11::Create(const String &sName, word nWidth, word nHeight,
             Desc.MiscFlags = 0;
             Desc.SampleDesc.Count = 1;
             Desc.SampleDesc.Quality = 0;
-			if (eTextureUsage == ETextureUsage::ETextureUsage_Dynamic) // 创建Dynamic类型的二维纹理
+			if (eTextureUsage == ETextureUsage::ETextureUsage_Dynamic)
             {
                 Desc.Usage = D3D11_USAGE_DYNAMIC;
                 Desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -151,7 +151,7 @@ void CTextureDX11::Create(const String &sName, word nWidth, word nHeight,
                 hr = g_pDevice11->CreateTexture2D(&Desc, nullptr, &m_Texture.m_pTexture2D);
             }
 			else if (eTextureUsage == ETextureUsage::ETextureUsage_RenderTarget || 
-				eTextureUsage == ETextureUsage::ETextureUsage_RenderTargetFixedSize) { // 创建RenderTarget类型的二维纹理
+				eTextureUsage == ETextureUsage::ETextureUsage_RenderTargetFixedSize) {
                 Desc.Usage = D3D11_USAGE_DEFAULT;
                 Desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
                 Desc.CPUAccessFlags = 0;
@@ -168,14 +168,14 @@ void CTextureDX11::Create(const String &sName, word nWidth, word nHeight,
 				{
 					D3D11_SHADER_RESOURCE_VIEW_DESC SRViewDesc;
 					SRViewDesc.Format = d3d_fmt;
-					SRViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+					SRViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 					SRViewDesc.Texture2D.MostDetailedMip = 0;
 					SRViewDesc.Texture2D.MipLevels = 0;
 					hr = g_pDevice11->CreateShaderResourceView(m_Texture.m_pTexture2D, &SRViewDesc, &m_pSRView);
 				}
 			}
 			else if (eTextureUsage == ETextureUsage::ETextureUsage_DepthStencil ||
-				eTextureUsage == ETextureUsage::ETextureUsage_DepthStencilFixedSize) { // 创建DepthStencil类型的二维纹理
+				eTextureUsage == ETextureUsage::ETextureUsage_DepthStencilFixedSize) {
 				Desc.Usage = D3D11_USAGE_DEFAULT;
                 Desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
                 Desc.CPUAccessFlags = 0;
@@ -184,7 +184,7 @@ void CTextureDX11::Create(const String &sName, word nWidth, word nHeight,
 				{
 					D3D11_DEPTH_STENCIL_VIEW_DESC DSViewDesc;
 					DSViewDesc.Format = d3d_fmt;
-					DSViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+					DSViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 					DSViewDesc.Flags = 0;
 					DSViewDesc.Texture2D.MipSlice = 0;
 					hr = g_pDevice11->CreateDepthStencilView(m_Texture.m_pTexture2D, &DSViewDesc, &m_pDSView);
@@ -216,8 +216,8 @@ void CTextureDX11::Load(TEXTURE_FILE_DESC *pDesc, bool bGamma) {
 			Desc.MipLevels = pDesc->nMipLevel;
 			Desc.ArraySize = 1;
 			Desc.Format = d3d_fmt;
-			Desc.Usage = bNeedAutoMipMap ? D3D11_USAGE_DEFAULT : D3D11_USAGE_IMMUTABLE;
-			Desc.BindFlags = bNeedAutoMipMap ? (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) : (D3D11_BIND_SHADER_RESOURCE);
+			Desc.Usage = bNeedAutoMipmap ? D3D11_USAGE_DEFAULT : D3D11_USAGE_IMMUTABLE;
+			Desc.BindFlags = bNeedAutoMipmap ? (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) : (D3D11_BIND_SHADER_RESOURCE);
 			Desc.CPUAccessFlags = 0;
 			Desc.MiscFlags = bNeedAutoMipmap ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
 			D3D11_SUBRESOURCE_DATA SubRcData;
@@ -242,14 +242,14 @@ void CTextureDX11::Load(TEXTURE_FILE_DESC *pDesc, bool bGamma) {
 			Desc.MipLevels = pDesc->nMipLevel;
 			Desc.ArraySize = 1;
 			Desc.Format = d3d_fmt;
-			Desc.Usage = bNeedAutoMipMap ? D3D11_USAGE_DEFAULT : D3D11_USAGE_IMMUTABLE;
-			Desc.BindFlags = bNeedAutoMipMap ? (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) : (D3D11_BIND_SHADER_RESOURCE);
+			Desc.Usage = bNeedAutoMipmap ? D3D11_USAGE_DEFAULT : D3D11_USAGE_IMMUTABLE;
+			Desc.BindFlags = bNeedAutoMipmap ? (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) : (D3D11_BIND_SHADER_RESOURCE);
 			Desc.CPUAccessFlags = 0;
 			Desc.MiscFlags = bNeedAutoMipmap ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
 			Desc.SampleDesc.Count = 1;
             Desc.SampleDesc.Quality = 0;
 			dword nNumBytes, nNumRowBytes, nNumRows;
-			GetSurfaceInfo(pDesc->nWidth, pDesc->nHeight, pDesc->nDepth, pDesc->eFormat, &nNumBytes, &nNumRowBytes, nNumRows);
+			GetSurfaceInfo(pDesc->nWidth, pDesc->nHeight, pDesc->nDepth, pDesc->eFormat, &nNumBytes, &nNumRowBytes, &nNumRows);
 			D3D11_SUBRESOURCE_DATA SubRcData;
 			SubRcData.pSysMem = pDesc->pData;
 			SubRcData.SysMemPitch = nNumRowBytes;
@@ -273,18 +273,18 @@ void CTextureDX11::Load(TEXTURE_FILE_DESC *pDesc, bool bGamma) {
 			Desc.MipLevels = pDesc->nMipLevel;
 			Desc.ArraySize = 6;
 			Desc.Format = d3d_fmt;
-			Desc.Usage = bNeedAutoMipMap ? D3D11_USAGE_DEFAULT : D3D11_USAGE_IMMUTABLE;
-			Desc.BindFlags = bNeedAutoMipMap ? (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) : (D3D11_BIND_SHADER_RESOURCE);
+			Desc.Usage = bNeedAutoMipmap ? D3D11_USAGE_DEFAULT : D3D11_USAGE_IMMUTABLE;
+			Desc.BindFlags = bNeedAutoMipmap ? (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) : (D3D11_BIND_SHADER_RESOURCE);
 			Desc.CPUAccessFlags = 0;
 			Desc.MiscFlags = (bNeedAutoMipmap ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0) | D3D11_RESOURCE_MISC_TEXTURECUBE;
 			Desc.SampleDesc.Count = 1;
             Desc.SampleDesc.Quality = 0;
 			dword nNumBytes, nNumRowBytes, nNumRows;
-			GetSurfaceInfo(pDesc->nWidth, pDesc->nHeight, pDesc->nDepth, pDesc->eFormat, &nNumBytes, &nNumRowBytes, nNumRows);
+			GetSurfaceInfo(pDesc->nWidth, pDesc->nHeight, pDesc->nDepth, pDesc->eFormat, &nNumBytes, &nNumRowBytes, &nNumRows);
 			D3D11_SUBRESOURCE_DATA SubRcData[6];
-			for (int32 i = 0; i < 6; ++i)
+			for (dword i = 0; i < 6; ++i)
 			{
-				memcpy(SubRcData[i].pSysMem, pDesc->pData + nNumRowBytes * nNumRows * i, nNumRowBytes * nNumRows);
+				SubRcData[i].pSysMem = pDesc->pData + nNumRowBytes * nNumRows * i;
 				SubRcData[i].SysMemPitch = nNumRowBytes;
 				SubRcData[i].SysMemSlicePitch = 0;
 			}
@@ -306,16 +306,13 @@ void CTextureDX11::Load(TEXTURE_FILE_DESC *pDesc, bool bGamma) {
 			Desc.Height = pDesc->nHeight;
 			Desc.Depth = pDesc->nDepth;
 			Desc.MipLevels = pDesc->nMipLevel;
-			Desc.ArraySize = 1;
 			Desc.Format = d3d_fmt;
-			Desc.Usage = bNeedAutoMipMap ? D3D11_USAGE_DEFAULT : D3D11_USAGE_IMMUTABLE;
-			Desc.BindFlags = bNeedAutoMipMap ? (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) : (D3D11_BIND_SHADER_RESOURCE);
+			Desc.Usage = bNeedAutoMipmap ? D3D11_USAGE_DEFAULT : D3D11_USAGE_IMMUTABLE;
+			Desc.BindFlags = bNeedAutoMipmap ? (D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET) : (D3D11_BIND_SHADER_RESOURCE);
 			Desc.CPUAccessFlags = 0;
 			Desc.MiscFlags = (bNeedAutoMipmap ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0) | D3D11_RESOURCE_MISC_TEXTURECUBE;
-			Desc.SampleDesc.Count = 1;
-            Desc.SampleDesc.Quality = 0;
 			dword nNumBytes, nNumRowBytes, nNumRows;
-			GetSurfaceInfo(pDesc->nWidth, pDesc->nHeight, pDesc->nDepth, pDesc->eFormat, &nNumBytes, &nNumRowBytes, nNumRows);
+			GetSurfaceInfo(pDesc->nWidth, pDesc->nHeight, pDesc->nDepth, pDesc->eFormat, &nNumBytes, &nNumRowBytes, &nNumRows);
 			D3D11_SUBRESOURCE_DATA SubRcData;
 			SubRcData.pSysMem = pDesc->pData;
 			SubRcData.SysMemPitch = nNumRowBytes;

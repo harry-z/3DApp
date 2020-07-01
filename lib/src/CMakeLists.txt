@@ -14,7 +14,7 @@ if (${RENDER_API} STREQUAL "D3D9")
 elseif (${RENDER_API} STREQUAL "D3D11")
     add_definitions("-DRENDERAPI_DX11")
     aux_source_directory(${PROJECT_SOURCE_DIR}/lib/src/Backend/D3D11 RENDER_API_SRC)
-    link_libraries(d3d11 d3dcompiler dxgi)
+    link_libraries(d3d11 d3dcompiler dxgi dxguid)
 endif ()
 
 if (WIN32)

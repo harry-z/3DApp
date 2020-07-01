@@ -12,6 +12,9 @@ public:
 	virtual bool Initialize(IDisplay *pDisplay) override;
 	virtual void Shutdown() override;
 
+    virtual void BeginRendering() override {}
+    virtual void EndRendering() override {}
+
     virtual EDeviceState CheckDeviceState() override { return EDeviceState::EDevState_Ok; }
     virtual bool HandleDeviceLost() override { return true; }
 

@@ -1,6 +1,9 @@
 #include "RenderBackendDX11.h"
 #include "..\..\Windows\IDisplay_Windows.h"
 
+ID3D11Device *g_pDevice11;
+ID3D11DeviceContext *g_pDeviceContext11;
+
 CRenderBackendDX11::CRenderBackendDX11()
 {
 
@@ -76,7 +79,7 @@ bool CRenderBackendDX11::Initialize(IDisplay *pDisplay)
         return false;
     D3D11_DEPTH_STENCIL_VIEW_DESC DSViewDesc;
     DSViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    DSViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+    DSViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
     DSViewDesc.Flags = 0;
     DSViewDesc.Texture2D.MipSlice = 0;
     hr = m_pD3DDevice11->CreateDepthStencilView(m_pMainDSTexture, &DSViewDesc, &m_pMainDS);

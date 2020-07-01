@@ -53,10 +53,15 @@ bool CShaderDX11::Load(EShaderType eType, const byte *pszShaderByteCode, dword n
     }
 }
 
+const ShaderUniformInfo& CShaderDX11::GetUniformInfoByName(const IdString &szName) const
+{
+    return m_VariableMap.Find(szName).Value();
+}
+
 bool CShaderDX11::FillVariableMap(LPCVOID pFunction, dword nCodeSize)
 {
     ID3D11ShaderReflection *pShaderReflection = nullptr;
-    HRESULT hr = D3DReflect(pFunction, nCodeSize, &pShaderReflection);
+    HRESULT hr = D3DReflect(pFunction, nCodeSize, IID_ID3D11ShaderReflection, (void**)&pShaderReflection);
     if (SUCCEEDED(hr))
     {
         struct Reflector {
@@ -93,8 +98,8 @@ bool CShaderDX11::FillVariableMap(LPCVOID pFunction, dword nCodeSize)
             }
             if (nRegisterIndex == 0xFFFFFFFF)
                 continue;
-            void *pConstantBuffer = MEMALLOC(ShaderBufferDesc.Size);
-            m_ConstantBuffers.Add(pConstantBuffer);
+            void *pSysMemConstantBuffer = MEMALLOC(ShaderBufferDesc.Size);
+            m_ConstantBuffers.Add(pSysMemConstantBuffer);
             for (UINT nVariable = 0; nVariable < ShaderBufferDesc.Variables; ++nVariable)
             {
                 ID3D11ShaderReflectionVariable *pVariable = pConstantBuffer->GetVariableByIndex(nVariable);
@@ -104,7 +109,7 @@ bool CShaderDX11::FillVariableMap(LPCVOID pFunction, dword nCodeSize)
                 D3D11_SHADER_TYPE_DESC ShaderTypeDesc;
                 pVariableType->GetDesc(&ShaderTypeDesc);
                 m_VariableMap.Insert(IdString(ShaderVariableDesc.Name), 
-                    ShaderVariableInfo(nRegisterIndex, MappingShaderConstantType(ShaderTypeDesc.Type), ShaderVariableDesc.StartOffset, ShaderVariableDesc.Size));
+                    ShaderUniformInfo(ShaderVariableDesc.Name, MappingShaderConstantType(ShaderTypeDesc.Type), nRegisterIndex, ShaderVariableDesc.StartOffset, ShaderVariableDesc.Size));
             }
         }
         return true;
@@ -158,13 +163,13 @@ bool CShaderManagerDX11::LoadShaders() {
 #endif
 
     ID3DBlob *pVertexByteCode = nullptr, *pPixelByteCode = nullptr, *pByteError = nullptr;
-    HRESULT hr = D3DCompile(szDefaultShader.c_str(), szDefaultShader.length(), nullptr, nullptr, "VS_Default", "vs_5_0", dwFlag, 0, &pVertexByteCode, &pByteError);
+    HRESULT hr = D3DCompile(szDefaultShader.c_str(), szDefaultShader.length(), nullptr, nullptr, nullptr, "VS_Default", "vs_5_0", dwFlag, 0, &pVertexByteCode, &pByteError);
     if (FAILED(hr))
     {
         SAFE_RELEASE(pByteError);
         return false;
     }
-    hr = D3DCompile(szDefaultShader.c_str(), szDefaultShader.length(), nullptr, nullptr, "PS_Default", "ps_5_0", dwFlag, 0, &pPixelByteCode, &pByteError); 
+    hr = D3DCompile(szDefaultShader.c_str(), szDefaultShader.length(), nullptr, nullptr, nullptr, "PS_Default", "ps_5_0", dwFlag, 0, &pPixelByteCode, &pByteError); 
     if (FAILED(hr))
     {
         SAFE_RELEASE(pByteError);
@@ -172,7 +177,7 @@ bool CShaderManagerDX11::LoadShaders() {
     }
 
     m_pDefaultVertexShader = NEW_TYPE(CShaderDX11);
-    if (!m_pDefaultVertexShader->Load(EShaderType::EShaderType_Vertex, (byte *)pVertexByteCode->GetBufferPointer()))
+    if (!m_pDefaultVertexShader->Load(EShaderType::EShaderType_Vertex, (byte *)pVertexByteCode->GetBufferPointer(), pVertexByteCode->GetBufferSize()))
     {
         SAFE_RELEASE(pVertexByteCode);
         return false;
@@ -180,7 +185,7 @@ bool CShaderManagerDX11::LoadShaders() {
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create Default Vertex Shader");
 
     m_pDefaultPixelShader = NEW_TYPE(CShaderDX11);
-    if (!m_pDefaultPixelShader->Load(EShaderType::EShaderType_Pixel, (byte *)pPixelByteCode->GetBufferPointer()))
+    if (!m_pDefaultPixelShader->Load(EShaderType::EShaderType_Pixel, (byte *)pPixelByteCode->GetBufferPointer(), pVertexByteCode->GetBufferSize()))
     {
         SAFE_RELEASE(pPixelByteCode);
         return false;
@@ -247,13 +252,13 @@ void CRenderBackendDX11::SetShader(CShader *pShader)
         case EShaderType::EShaderType_Vertex:
         {
             CShaderDX11 *pShaderDX11 = static_cast<CShaderDX11*>(pShader);
-            m_pD3DContext11->VSSetShader(pShaderDX11->m_Shader.m_pVertexShader);
+            m_pD3DContext11->VSSetShader(pShaderDX11->m_Shader.m_pVertexShader, nullptr, 0);
             break;
         }
         case EShaderType::EShaderType_Pixel:
         {
             CShaderDX11 *pShaderDX11 = static_cast<CShaderDX11*>(pShader);
-            m_pD3DContext11->PSSetShader(pShaderDX11->m_Shader.m_pPixelShader);
+            m_pD3DContext11->PSSetShader(pShaderDX11->m_Shader.m_pPixelShader, nullptr, 0);
             break;
         }
     }

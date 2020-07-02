@@ -73,7 +73,7 @@ bool CShaderDX9::FillVariableMap(LPCVOID pFunction, dword nCodeSize)
             if (SUCCEEDED(hr))
             {
                 m_VariableMap.Insert(IdString(ConstDesc.Name), 
-                    ShaderVariableInfo(ConstDesc.Name, MappingShaderConstantType(ConstDesc.Type), ConstDesc.RegisterIndex, ConstDesc.Bytes, 0)
+                    ShaderUniformInfo(ConstDesc.Name, MappingShaderConstantType(ConstDesc.Type), ConstDesc.RegisterIndex, ConstDesc.Bytes, 0)
                 );
             }
         }
@@ -88,6 +88,11 @@ bool CShaderDX9::FillVariableMap(LPCVOID pFunction, dword nCodeSize)
 //     CMap<IdString, dword>::_MyConstIterType CIter = m_ConstantMap.Find(szName);
 //     return CIter ? CIter.Value() : 0xFFFFFFFF;
 // }
+
+const ShaderUniformInfo& CShaderDX9::GetUniformInfoByName(const IdString &szName) const
+{
+    return m_VariableMap.Find(szName).Value();
+}
 
 CShaderManagerDX9::~CShaderManagerDX9() {
     m_ShaderMap.Clear();
@@ -146,7 +151,7 @@ bool CShaderManagerDX9::LoadShaders() {
     }
 
     m_pDefaultVertexShader = NEW_TYPE(CShaderDX9);
-    if (!m_pDefaultVertexShader->Load(EShaderType::EShaderType_Vertex, (byte *)pVertexByteCode->GetBufferPointer()))
+    if (!m_pDefaultVertexShader->Load(EShaderType::EShaderType_Vertex, (byte *)pVertexByteCode->GetBufferPointer(), pVertexByteCode->GetBufferSize()))
     {
         SAFE_RELEASE(pVertexByteCode);
         return false;
@@ -154,7 +159,7 @@ bool CShaderManagerDX9::LoadShaders() {
     pLog->Log(ELogType::eLogType_Info, ELogFlag::eLogFlag_Critical, "Create Default Vertex Shader");
 
     m_pDefaultPixelShader = NEW_TYPE(CShaderDX9);
-    if (!m_pDefaultPixelShader->Load(EShaderType::EShaderType_Pixel, (byte *)pPixelByteCode->GetBufferPointer()))
+    if (!m_pDefaultPixelShader->Load(EShaderType::EShaderType_Pixel, (byte *)pPixelByteCode->GetBufferPointer(), pPixelByteCode->GetBufferSize()))
     {
         SAFE_RELEASE(pPixelByteCode);
         return false;

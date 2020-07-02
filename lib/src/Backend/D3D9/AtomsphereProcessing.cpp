@@ -146,5 +146,6 @@ bool CAtomsphereRendererDX9::ProcessSingleScatteringTexture(const String &szShad
     // CHECK_ERROR(hr)
     // hr = g_pDevice9->CreatePixelShader((const DWORD*)pIrradianceBufferCode->GetBufferPointer(), &m_pIrradianceShader);
     // SAFE_RELEASE(pIrradianceBufferCode);
-    // CHECK_ERROR(hr)    
+    // CHECK_ERROR(hr)   
+    return false; 
 }

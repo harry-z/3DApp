@@ -1,6 +1,7 @@
 #include "RenderStageDX9.h"
 #include "Shader.h"
 #include "Material.h"
+#include "HardwareBuffer.h"
 #include "RenderBackend.h"
 #include "../../RendererStableHeader.h"
 
@@ -43,7 +44,7 @@ void RenderStageDX9_SetShaderAutoConstants(ShaderObject *pShaderObject, Matrix4 
     CShaderManager * __restrict pShaderManager = Global::m_pShaderManager;
     for (const auto &AutoVariable : pShaderObject->m_arrAutoShaderVar)
     {
-        const ShaderVariableInfo &VariableInfo = pShader->GetUniformInfoByName(AutoVariable);
+        const ShaderUniformInfo &VariableInfo = pShader->GetUniformInfoByName(AutoVariable);
         if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_WorldMatrix)
             (*pFuncF)(VariableInfo.m_nRegisterIndex, pWorldTransform->m, 4);
         else if (AutoVariable == AutoUpdatedShaderConstantIdStr::s_WorldViewMatrix)

@@ -10,7 +10,7 @@ public:
     CShaderDX9();
     virtual ~CShaderDX9();
     virtual bool Load(EShaderType eType, const byte *pszShaderByteCode, dword nCodeSize) override;
-    virtual const ShaderVariableInfo& GetUniformInfoByName(const IdString &szName) const override;
+    virtual const ShaderUniformInfo& GetUniformInfoByName(const IdString &szName) const override;
 
     union {
         LPDIRECT3DVERTEXSHADER9 m_pVertexShader;
